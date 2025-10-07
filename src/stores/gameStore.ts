@@ -131,12 +131,20 @@ interface GameState {
   setCurrentLocation: (locationId: string) => void;
   discoverLocation: (locationId: string) => void;
   isLocationDiscovered: (locationId: string) => boolean;
-  completeQuest: (questId: string) => void;
+  
+  // Quest Actions
   startQuest: (questId: string) => void;
+  completeQuest: (questId: string) => void;
+  abandonQuest: (questId: string) => void;
+  isQuestActive: (questId: string) => boolean;
+  isQuestCompleted: (questId: string) => boolean;
+  
+  // Character Actions
   recruitCharacter: (character: Character) => void;
   isCharacterRecruited: (characterId: string) => boolean;
   getRecruitedCharacter: (characterId: string) => RecruitedCharacter | undefined;
   updateRecruitedCharacter: (characterId: string, updates: Partial<RecruitedCharacter>) => void;
+  
   startGame: () => void;
   
   // ==================== Event Actions ====================
@@ -364,6 +372,34 @@ export const useGameStore = create<GameState>()(
             },
           });
         }
+      },
+
+      abandonQuest: (questId: string) => {
+        set((state) => ({
+          progress: {
+            ...state.progress,
+            activeQuests: state.progress.activeQuests.filter((id) => id !== questId),
+          },
+        }));
+
+        // Add event
+        get().addEvent({
+          type: "quest",
+          data: {
+            action: "abandon_quest",
+            questId,
+          },
+        });
+      },
+
+      isQuestActive: (questId: string) => {
+        const state = get();
+        return state.progress.activeQuests.includes(questId);
+      },
+
+      isQuestCompleted: (questId: string) => {
+        const state = get();
+        return state.progress.completedQuests.includes(questId);
       },
 
       recruitCharacter: (character: Character) => {
