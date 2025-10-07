@@ -14,7 +14,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 5,
     height: 5,
     shape: "rectangular",
-    tiles: [],
+    tiles: Array.from({ length: 25 }, (_, i) => ({
+      x: i % 5,
+      y: Math.floor(i / 5),
+      type: "grass" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-001", "enemy-003"], // Ice Slime, Forest Goblin
     startPositions: {
       ally: [
         { x: 0, y: 2 },
@@ -37,7 +44,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 5,
     height: 5,
     shape: "rectangular",
-    tiles: [],
+    tiles: Array.from({ length: 25 }, (_, i) => ({
+      x: i % 5,
+      y: Math.floor(i / 5),
+      type: "mountain" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-001", "enemy-002"], // Ice Slime, Ice Wolf
     startPositions: {
       ally: [
         { x: 0, y: 2 },
@@ -62,7 +76,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 7,
     height: 7,
     shape: "rectangular",
-    tiles: [],
+    tiles: Array.from({ length: 49 }, (_, i) => ({
+      x: i % 7,
+      y: Math.floor(i / 7),
+      type: "grass" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-002", "enemy-003", "enemy-011"], // Ice Wolf, Forest Goblin, Frost Giant
     startPositions: {
       ally: [
         { x: 0, y: 3 },
@@ -86,7 +107,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 7,
     height: 7,
     shape: "rectangular",
-    tiles: [],
+    tiles: Array.from({ length: 49 }, (_, i) => ({
+      x: i % 7,
+      y: Math.floor(i / 7),
+      type: "mountain" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-003", "enemy-011"], // Forest Goblin, Frost Giant
     startPositions: {
       ally: [
         { x: 0, y: 3 },
@@ -112,7 +140,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 9,
     height: 9,
     shape: "rectangular",
-    tiles: [],
+    tiles: Array.from({ length: 81 }, (_, i) => ({
+      x: i % 9,
+      y: Math.floor(i / 9),
+      type: "grass" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-011", "enemy-012"], // Frost Giant, Ice Golem
     startPositions: {
       ally: [
         { x: 0, y: 4 },
@@ -137,7 +172,15 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 9,
     height: 9,
     shape: "irregular",
-    tiles: [],
+    tiles: Array.from({ length: 81 }, (_, i) => ({
+      x: i % 9,
+      y: Math.floor(i / 9),
+      type: "lava" as const,
+      isWalkable: true,
+      height: 0,
+      effect: { type: "damage" as const, element: "fire" as const, value: 10 },
+    })),
+    enemies: ["enemy-012"], // Ice Golem
     startPositions: {
       ally: [
         { x: 1, y: 4 },
@@ -163,7 +206,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 10,
     height: 10,
     shape: "rectangular",
-    tiles: [],
+    tiles: Array.from({ length: 100 }, (_, i) => ({
+      x: i % 10,
+      y: Math.floor(i / 10),
+      type: "ice" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-101", "enemy-011"], // Frost Dragon (Boss), Frost Giant
     startPositions: {
       ally: [
         { x: 1, y: 5 },
@@ -186,7 +236,14 @@ export const mockBattleMaps: BattleMapConfig[] = [
     width: 12,
     height: 10,
     shape: "irregular",
-    tiles: [],
+    tiles: Array.from({ length: 120 }, (_, i) => ({
+      x: i % 12,
+      y: Math.floor(i / 12),
+      type: "ice" as const,
+      isWalkable: true,
+      height: 0,
+    })),
+    enemies: ["enemy-201"], // Ancient Ice God (Legendary Boss)
     startPositions: {
       ally: [
         { x: 1, y: 5 },

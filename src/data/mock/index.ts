@@ -19,5 +19,5 @@ export * from "./skills.mock";
 // Quests
 export * from "./quests.mock";
 
-// Battles
-export * from "./battles.mock";
+// Battle Maps
+export * from "./battleMaps.mock";

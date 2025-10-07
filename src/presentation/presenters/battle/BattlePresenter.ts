@@ -1,14 +1,15 @@
 import { mockBattleMaps } from "@/src/data/mock/battleMaps.mock";
 import { mockCharacters } from "@/src/data/mock/characters.mock";
+import { mockEnemies } from "@/src/data/mock/enemies.mock";
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
-import { Character } from "@/src/domain/types/character.types";
+import { Character, Enemy } from "@/src/domain/types/character.types";
 
 /**
  * Battle Unit - Character with position on grid
  */
 export interface BattleUnit {
   id: string;
-  character: Character;
+  character: Character | Enemy;
   position: { x: number; y: number };
   currentHp: number;
   currentMp: number;
@@ -70,26 +71,43 @@ export class BattlePresenter {
         };
       }).filter(Boolean) as BattleUnit[];
 
-      // Get enemy units (mock)
-      const enemyCharacters = mockCharacters.filter((c) => !c.isPlayable).slice(0, 4);
+      // Get enemy units from battleMap.enemies (Master Data)
+      const enemyIds = battleMap.enemies || [];
+      const enemies = mockEnemies.filter((enemy) => enemyIds.includes(enemy.id));
+      
+      console.log("🎮 Battle Setup:", {
+        mapId,
+        enemyIds,
+        foundEnemies: enemies.length,
+        enemyPositions: battleMap.startPositions.enemy.length,
+      });
+      
       const enemyUnits: BattleUnit[] = battleMap.startPositions.enemy.map((pos, index) => {
-        const character = enemyCharacters[index];
-        if (!character) return null;
+        const enemy = enemies[index];
+        if (!enemy) return null;
         
         return {
-          id: `enemy-${character.id}`,
-          character,
+          id: `enemy-${enemy.id}`,
+          character: enemy,
           position: pos,
-          currentHp: character.stats.maxHp,
-          currentMp: character.stats.maxMp,
+          currentHp: enemy.stats.maxHp,
+          currentMp: enemy.stats.maxMp,
           isAlly: false,
           hasActed: false,
         };
       }).filter(Boolean) as BattleUnit[];
 
+      console.log("⚔️ Units created:", {
+        allyUnits: allyUnits.length,
+        enemyUnits: enemyUnits.length,
+        total: allyUnits.length + enemyUnits.length,
+      });
+
       // Calculate turn order (based on agility - Dragon Quest Tact style)
       const allUnits = [...allyUnits, ...enemyUnits];
       const turnOrder = allUnits.sort((a, b) => b.character.stats.agi - a.character.stats.agi);
+      
+      console.log("📋 Turn order:", turnOrder.map(u => ({ name: u.character.name, agi: u.character.stats.agi })));
 
       // Initial battle state
       const state: BattleState = {

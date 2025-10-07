@@ -200,6 +200,7 @@ export const mockLocations: Location[] = [
     },
     metadata: {
       npcs: ["npc-mayor", "npc-blacksmith", "npc-merchant"],
+      battleMaps: ["map-forest-clearing", "map-cave-entrance"],
       shops: ["shop-weapons", "shop-armor", "shop-items"],
       services: ["inn", "guild", "bank"],
     },

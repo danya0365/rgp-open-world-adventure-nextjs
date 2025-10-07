@@ -1,11 +1,12 @@
-import { mockLocations } from "@/src/data/mock/locations.mock";
-import { mockCharacters } from "@/src/data/mock/characters.mock";
-import { mockQuests } from "@/src/data/mock/quests.mock";
 import { mockBattleMaps } from "@/src/data/mock/battleMaps.mock";
-import { Location } from "@/src/domain/types/location.types";
-import { Character } from "@/src/domain/types/character.types";
-import { Quest } from "@/src/domain/types/quest.types";
+import { mockCharacters } from "@/src/data/mock/characters.mock";
+import { mockEnemies } from "@/src/data/mock/enemies.mock";
+import { mockLocations } from "@/src/data/mock/locations.mock";
+import { mockQuests } from "@/src/data/mock/quests.mock";
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
+import { Character, Enemy } from "@/src/domain/types/character.types";
+import { Location } from "@/src/domain/types/location.types";
+import { Quest } from "@/src/domain/types/quest.types";
 
 /**
  * Location Detail View Model
@@ -15,7 +16,7 @@ export interface LocationDetailViewModel {
   location: Location | null;
   npcs: Character[]; // NPCs in this location
   availableQuests: Quest[]; // Quests available in this location
-  enemies: Character[]; // Enemies that can be encountered
+  enemies: Enemy[]; // Enemies that can be encountered
   battleMaps: BattleMapConfig[]; // Battle maps for this location
   services: {
     hasShop: boolean;
@@ -81,31 +82,27 @@ export class LocationDetailPresenter {
       };
     }
 
-    // Get NPCs in this location (mock: filter by location metadata)
-    const npcs = this.characters.filter(
-      (char) => !char.isPlayable && char.class === "priest" // Mock filter for NPCs
-    );
+    // Get NPCs from location metadata
+    const npcIds = location.metadata?.npcs || [];
+    const npcs = this.characters.filter((char) => npcIds.includes(char.id));
 
     // Get available quests for this location
     const availableQuests = this.quests.filter(
       (quest) => quest.status === "available" || quest.status === "active"
     );
 
-    // Get enemies for this location
-    const enemies = this.characters.filter(
-      (char) => !char.isPlayable && char.class !== "priest" // Mock filter for enemies
+    // Get battle maps from location metadata (Master Data)
+    const battleMapIds = location.metadata?.battleMaps || [];
+    const battleMaps = this.battleMaps.filter((map) =>
+      battleMapIds.includes(map.id)
     );
 
-    // Get battle maps for this location (mock: use size based on level)
-    const battleMaps = this.battleMaps.filter(
-      (map) => {
-        const level = location.requiredLevel || 1;
-        if (level <= 5) return map.size === "small";
-        if (level <= 15) return map.size === "medium";
-        if (level <= 30) return map.size === "large";
-        return map.size === "boss";
-      }
-    );
+    // Get enemies from battle maps (each map has its own enemies)
+    const enemyIds = new Set<string>();
+    battleMaps.forEach((map) => {
+      map.enemies.forEach((enemyId) => enemyIds.add(enemyId));
+    });
+    const enemies = mockEnemies.filter((enemy) => enemyIds.has(enemy.id));
 
     // Determine services (mock: based on location type)
     const services = {
@@ -139,7 +136,7 @@ export class LocationDetailPresenter {
    */
   private calculateDangerLevel(location: Location): number {
     const level = location.requiredLevel || 1;
-    
+
     if (level <= 5) return 1; // Low
     if (level <= 15) return 2; // Medium
     if (level <= 30) return 3; // High

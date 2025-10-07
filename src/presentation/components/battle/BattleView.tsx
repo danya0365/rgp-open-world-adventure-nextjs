@@ -538,11 +538,27 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 {Array.from({ length: battleMap.height }).map((_, y) =>
                   Array.from({ length: battleMap.width }).map((_, x) => {
                     const unit = getUnitAtPosition(x, y);
+                    const tile = battleMap.tiles.find(t => t.x === x && t.y === y);
                     const isObstacle = battleMap.obstacles?.some(obs => obs.x === x && obs.y === y) || false;
+                    const isUnwalkable = tile && !tile.isWalkable;
                     // Always show ranges for current unit
                     const isInMoveRange = isTileInMovementRange(x, y);
                     const isInAttackRange = isTileInAttackRange(x, y);
                     const isCurrent = unit?.id === currentUnitId;
+
+                    // Get tile icon based on type
+                    const getTileIcon = () => {
+                      if (!tile) return null;
+                      switch (tile.type) {
+                        case "grass": return "🌿";
+                        case "water": return "💧";
+                        case "mountain": return "⛰️";
+                        case "lava": return "🔥";
+                        case "ice": return "❄️";
+                        case "poison": return "☠️";
+                        default: return null;
+                      }
+                    };
 
                     return (
                       <button
@@ -550,28 +566,36 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         onClick={() => handleTileClick(x, y)}
                         className={`
                           aspect-square relative rounded-lg transition-all
+                          bg-slate-800
                           ${
-                            isObstacle 
-                              ? "bg-slate-700 cursor-not-allowed"
+                            isObstacle || isUnwalkable
+                              ? "opacity-50 cursor-not-allowed"
                               : isInMoveRange && isInAttackRange && currentUnit?.isAlly
-                              ? "bg-purple-900/50 hover:bg-purple-800/50"
+                              ? "ring-2 ring-purple-500"
                               : isInMoveRange && isInAttackRange && currentUnit && !currentUnit.isAlly
-                              ? "bg-yellow-900/40 hover:bg-yellow-800/40"
+                              ? "ring-2 ring-yellow-500"
                               : isInMoveRange && currentUnit?.isAlly
-                              ? "bg-blue-900/50 hover:bg-blue-800/50"
+                              ? "ring-2 ring-blue-500"
                               : isInMoveRange && currentUnit && !currentUnit.isAlly
-                              ? "bg-orange-900/40 hover:bg-orange-800/40"
+                              ? "ring-2 ring-orange-500"
                               : isInAttackRange && currentUnit?.isAlly
-                              ? "bg-red-900/50 hover:bg-red-800/50"
+                              ? "ring-2 ring-red-500"
                               : isInAttackRange && currentUnit && !currentUnit.isAlly
-                              ? "bg-red-900/40 hover:bg-red-800/40"
-                              : "bg-slate-800 hover:bg-slate-700"
+                              ? "ring-2 ring-red-500"
+                              : ""
                           }
-                          ${isCurrent && currentUnit?.isAlly ? "ring-2 ring-green-400" : ""}
-                          ${isCurrent && currentUnit && !currentUnit.isAlly ? "ring-2 ring-orange-400" : ""}
+                          ${isCurrent && currentUnit?.isAlly ? "ring-4 ring-green-400" : ""}
+                          ${isCurrent && currentUnit && !currentUnit.isAlly ? "ring-4 ring-orange-400" : ""}
                         `}
-                        disabled={isObstacle}
+                        disabled={isObstacle || isUnwalkable}
                       >
+                        {/* Tile Icon */}
+                        {getTileIcon() && !unit && (
+                          <div className="absolute inset-0 flex items-center justify-center text-2xl opacity-30">
+                            {getTileIcon()}
+                          </div>
+                        )}
+
                         {/* Grid Coordinates (debug) */}
                         <span className="absolute top-0 left-1 text-[8px] text-gray-600">
                           {x},{y}
@@ -602,6 +626,13 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                             🪨
                           </div>
                         )}
+
+                        {/* Tile Effect Indicator (top-right corner) */}
+                        {tile?.effect && tile.effect.type === "damage" && (
+                          <div className="absolute top-0.5 right-0.5 text-xs animate-pulse">
+                            ⚠️
+                          </div>
+                        )}
                       </button>
                     );
                   })
@@ -626,7 +657,9 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                     </div>
                     <div className="flex-1">
                       <p className="text-white font-semibold">{currentUnit.character.name}</p>
-                      <p className="text-gray-400 text-xs capitalize">{currentUnit.character.class}</p>
+                      <p className="text-gray-400 text-xs capitalize">
+                        {'class' in currentUnit.character ? currentUnit.character.class : currentUnit.character.type}
+                      </p>
                     </div>
                   </div>
                   
@@ -685,8 +718,8 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             {/* Turn Order */}
             <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
               <h2 className="text-lg font-bold text-white mb-3">Turn Order</h2>
-              <div className="space-y-2">
-                {storeTurnOrder.slice(0, 5).map((unit, index) => (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {storeTurnOrder.map((unit, index) => (
                   <div 
                     key={unit.id}
                     className={`flex items-center gap-2 p-2 rounded-lg ${

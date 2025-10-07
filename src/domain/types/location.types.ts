@@ -72,6 +72,7 @@ export interface MapTile {
 
 export interface LocationMetadata {
   npcs?: string[]; // NPC IDs
+  battleMaps?: string[]; // Battle Map IDs for this location (each map has its own enemies)
   shops?: string[]; // Shop IDs
   services?: string[]; // Service types
   exits?: LocationConnection[];
