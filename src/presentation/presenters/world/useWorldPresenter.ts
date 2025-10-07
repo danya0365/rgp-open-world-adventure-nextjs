@@ -101,6 +101,18 @@ export function useWorldPresenter(
     }
   }, [viewModel]);
 
+  /**
+   * Custom setCurrentLocation that also updates breadcrumb
+   */
+  const handleSetCurrentLocation = useCallback((location: Location | null) => {
+    setCurrentLocation(location);
+    
+    // Clear breadcrumb when going back to main map
+    if (location === null) {
+      setBreadcrumb([]);
+    }
+  }, []);
+
   return {
     // State
     viewModel,
@@ -112,6 +124,6 @@ export function useWorldPresenter(
     // Actions
     loadData,
     navigateToLocation,
-    setCurrentLocation,
+    setCurrentLocation: handleSetCurrentLocation,
   };
 }
