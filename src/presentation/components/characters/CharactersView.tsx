@@ -7,12 +7,17 @@ import { CharacterCard } from "@/src/presentation/components/character/Character
 import { Button, Modal } from "@/src/presentation/components/ui";
 import { Users, Filter, Search } from "lucide-react";
 import Link from "next/link";
+import { usePartyStore } from "@/src/stores/partyStore";
+import { useRouter } from "next/navigation";
 
 interface CharactersViewProps {
   initialViewModel?: CharactersViewModel;
 }
 
 export function CharactersView({ initialViewModel }: CharactersViewProps) {
+  const router = useRouter();
+  const { addToParty, isInParty, party } = usePartyStore();
+  
   const {
     viewModel,
     loading,
@@ -25,6 +30,21 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
     setFilterClass,
     setShowOnlyPlayable,
   } = useCharactersPresenter(initialViewModel);
+
+  const handleAddToParty = (character: Character) => {
+    // Check if party is full
+    if (party.length >= 4) {
+      alert("ทีมเต็มแล้ว! (สูงสุด 4 คน)");
+      return;
+    }
+
+    const success = addToParty(character);
+    if (success) {
+      setSelectedCharacter(null);
+      // Navigate to party page
+      router.push("/party");
+    }
+  };
 
   // Show loading only on initial load
   if (loading && !viewModel) {
@@ -197,7 +217,11 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             title={selectedCharacter.name}
             size="lg"
           >
-            <CharacterDetailContent character={selectedCharacter} />
+            <CharacterDetailContent 
+              character={selectedCharacter}
+              onAddToParty={handleAddToParty}
+              isInParty={isInParty(selectedCharacter.id)}
+            />
           </Modal>
         )}
 
@@ -215,7 +239,17 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
   );
 }
 
-function CharacterDetailContent({ character }: { character: Character }) {
+interface CharacterDetailContentProps {
+  character: Character;
+  onAddToParty: (character: Character) => void;
+  isInParty: boolean;
+}
+
+function CharacterDetailContent({ 
+  character, 
+  onAddToParty,
+  isInParty 
+}: CharacterDetailContentProps) {
   return (
     <div className="space-y-6">
       {/* Description */}
@@ -358,9 +392,19 @@ function CharacterDetailContent({ character }: { character: Character }) {
       {/* Actions */}
       <div className="flex gap-4 pt-4">
         {character.isPlayable ? (
-          <Button variant="primary" className="flex-1">
-            เลือกเข้าทีม
-          </Button>
+          isInParty ? (
+            <Button variant="ghost" className="flex-1" disabled>
+              ✓ อยู่ในทีมแล้ว
+            </Button>
+          ) : (
+            <Button 
+              variant="primary" 
+              className="flex-1"
+              onClick={() => onAddToParty(character)}
+            >
+              เลือกเข้าทีม
+            </Button>
+          )
         ) : character.isRecruitable ? (
           <Button variant="action" className="flex-1" disabled>
             ต้องทำเควสต์ก่อน
