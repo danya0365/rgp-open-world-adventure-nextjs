@@ -2,8 +2,11 @@
 
 import { BattleViewModel } from "@/src/presentation/presenters/battle/BattlePresenter";
 import { useBattlePresenter } from "@/src/presentation/presenters/battle/useBattlePresenter";
+import { useBattleStore } from "@/src/stores/battleStore";
 import Link from "next/link";
-import { ArrowLeft, Swords, Heart, Zap, Shield, Users } from "lucide-react";
+import { ArrowLeft, Swords, Heart, Zap, Shield, Users, Trophy, Skull } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface BattleViewProps {
   mapId: string;
@@ -11,21 +14,192 @@ interface BattleViewProps {
 }
 
 export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
+  const router = useRouter();
+  
+  // Presenter for initial data
   const {
-    viewModel,
+    viewModel: presenterViewModel,
     loading,
     error,
-    selectedUnitId,
-    movementRange,
-    attackRange,
-    selectUnit,
-    moveUnit,
-    endTurn,
-    selectAction,
   } = useBattlePresenter(mapId, initialViewModel);
 
+  // Battle Store for state management
+  const {
+    allyUnits: storeAllyUnits,
+    enemyUnits: storeEnemyUnits,
+    turn,
+    phase,
+    currentUnitId,
+    turnOrder: storeTurnOrder,
+    rewards,
+    initBattle,
+    moveUnit: storeMoveUnit,
+    attackUnit: storeAttackUnit,
+    endTurn: storeEndTurn,
+    resetBattle,
+  } = useBattleStore();
+
+  const [movementRange, setMovementRange] = useState<{ x: number; y: number }[]>([]);
+  const [attackRange, setAttackRange] = useState<{ x: number; y: number }[]>([]);
+  const [originalPosition, setOriginalPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // Get current unit
+  const currentUnit = [...storeAllyUnits, ...storeEnemyUnits].find(u => u.id === currentUnitId);
+
+  // Initialize battle when presenter data is ready
+  useEffect(() => {
+    if (presenterViewModel && storeAllyUnits.length === 0) {
+      initBattle(
+        presenterViewModel.battleMap.id,
+        presenterViewModel.allyUnits,
+        presenterViewModel.enemyUnits
+      );
+    }
+  }, [presenterViewModel, storeAllyUnits.length, initBattle]);
+
+  // Save original position when turn starts
+  useEffect(() => {
+    if (currentUnit && !currentUnit.hasActed) {
+      setOriginalPosition({ ...currentUnit.position });
+      console.log("💾 Saved original position:", currentUnit.position);
+    }
+  }, [currentUnitId]); // Only when turn changes
+
+  // Calculate ranges - ALWAYS show for current unit's turn
+  useEffect(() => {
+    if (!presenterViewModel || !currentUnit) {
+      console.log("❌ No presenterViewModel or currentUnit", { presenterViewModel: !!presenterViewModel, currentUnit: !!currentUnit });
+      setMovementRange([]);
+      setAttackRange([]);
+      return;
+    }
+
+    // Check if there are enemies to attack
+    const hasEnemies = currentUnit.isAlly 
+      ? storeEnemyUnits.length > 0 
+      : storeAllyUnits.length > 0;
+
+    console.log("🎯 Calculating ranges for:", {
+      unit: currentUnit.character.name,
+      isAlly: currentUnit.isAlly,
+      currentPosition: currentUnit.position,
+      originalPosition: originalPosition,
+      hasActed: currentUnit.hasActed,
+      hasEnemies: hasEnemies,
+      mov: currentUnit.character.stats.mov
+    });
+
+    // Movement range - use ORIGINAL position ONLY
+    const moveRange: { x: number; y: number }[] = [];
+    const positionForMove = originalPosition || currentUnit.position;
+    const range = currentUnit.character.stats.mov;
+
+    // Attack range - use CURRENT position (after move)
+    // Only show if there are enemies
+    const atkRange: { x: number; y: number }[] = [];
+    const attackRangeValue = 2; // Can be based on weapon
+
+    for (let x = 0; x < presenterViewModel.battleMap.width; x++) {
+      for (let y = 0; y < presenterViewModel.battleMap.height; y++) {
+        // Check if tile is occupied
+        const occupied = [...storeAllyUnits, ...storeEnemyUnits].some(
+          u => u.position.x === x && u.position.y === y
+        );
+        
+        // Movement range from ORIGINAL position ONLY
+        const moveDistance = Math.abs(x - positionForMove.x) + Math.abs(y - positionForMove.y);
+        if (moveDistance <= range && moveDistance > 0 && !occupied) {
+          moveRange.push({ x, y });
+        }
+
+        // Attack range from CURRENT position - only if enemies exist
+        if (hasEnemies) {
+          const attackDistance = Math.abs(x - currentUnit.position.x) + Math.abs(y - currentUnit.position.y);
+          if (attackDistance <= attackRangeValue && attackDistance > 0) {
+            atkRange.push({ x, y });
+          }
+        }
+      }
+    }
+
+    console.log("✅ Ranges calculated:", {
+      movementRange: moveRange.length,
+      attackRange: atkRange.length,
+      hasEnemies: hasEnemies,
+      usingOriginalPos: !!originalPosition
+    });
+
+    setMovementRange(moveRange);
+    setAttackRange(atkRange);
+  }, [currentUnit, storeAllyUnits, storeEnemyUnits, presenterViewModel, originalPosition]);
+
+  // Enemy AI - Auto play enemy turn
+  useEffect(() => {
+    if (!currentUnit || currentUnit.isAlly || currentUnit.hasActed || !presenterViewModel) return;
+
+    const playEnemyTurn = async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+
+      // Find nearest ally
+      let nearestAlly = null;
+      let minDistance = Infinity;
+
+      for (const ally of storeAllyUnits) {
+        const distance = Math.abs(ally.position.x - currentUnit.position.x) + 
+                        Math.abs(ally.position.y - currentUnit.position.y);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestAlly = ally;
+        }
+      }
+
+      if (!nearestAlly) {
+        storeEndTurn();
+        return;
+      }
+
+      // Check if in attack range
+      const attackRangeValue = 2;
+      if (minDistance <= attackRangeValue) {
+        // Attack!
+        const damage = Math.max(1, currentUnit.character.stats.atk - nearestAlly.character.stats.def);
+        storeAttackUnit(currentUnit.id, nearestAlly.id, damage);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        storeEndTurn();
+      } else {
+        // Move toward ally
+        const dx = nearestAlly.position.x - currentUnit.position.x;
+        const dy = nearestAlly.position.y - currentUnit.position.y;
+        
+        let newX = currentUnit.position.x;
+        let newY = currentUnit.position.y;
+        
+        // Move in the direction of the ally
+        if (Math.abs(dx) > Math.abs(dy)) {
+          newX += dx > 0 ? 1 : -1;
+        } else {
+          newY += dy > 0 ? 1 : -1;
+        }
+
+        // Check if tile is occupied
+        const occupied = [...storeAllyUnits, ...storeEnemyUnits].some(
+          u => u.position.x === newX && u.position.y === newY
+        );
+
+        if (!occupied) {
+          storeMoveUnit(currentUnit.id, newX, newY);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        storeEndTurn();
+      }
+    };
+
+    playEnemyTurn();
+  }, [currentUnit, storeAllyUnits, storeEnemyUnits, presenterViewModel, storeMoveUnit, storeAttackUnit, storeEndTurn]);
+
   // Show loading state
-  if (loading && !viewModel) {
+  if (loading && !presenterViewModel) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
@@ -37,7 +211,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
   }
 
   // Show error state
-  if (error && !viewModel) {
+  if (error && !presenterViewModel) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
@@ -56,7 +230,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
   }
 
   // Show not found state
-  if (!viewModel) {
+  if (!presenterViewModel) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
@@ -73,35 +247,111 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     );
   }
 
-  const { battleMap, allyUnits, enemyUnits, state, turnOrder } = viewModel;
-  const currentUnit = [...allyUnits, ...enemyUnits].find(u => u.id === state.currentUnitId);
+  const { battleMap } = presenterViewModel;
 
   // Helper: Check if tile is in range
   const isTileInMovementRange = (x: number, y: number) => {
-    return movementRange.some(pos => pos.x === x && pos.y === y);
+    const inRange = movementRange.some(pos => pos.x === x && pos.y === y);
+    return inRange;
   };
 
   const isTileInAttackRange = (x: number, y: number) => {
-    return attackRange.some(pos => pos.x === x && pos.y === y);
+    const inRange = attackRange.some(pos => pos.x === x && pos.y === y);
+    if (x === 2 && y === 1) {
+      console.log("🔴 Checking tile (2,1) for attack range:", { 
+        inRange, 
+        attackRangeTotal: attackRange.length,
+        attackRangeSample: attackRange.slice(0, 5)
+      });
+    }
+    return inRange;
   };
 
   // Helper: Get unit at position
   const getUnitAtPosition = (x: number, y: number) => {
-    return [...allyUnits, ...enemyUnits].find(u => u.position.x === x && u.position.y === y);
+    return [...storeAllyUnits, ...storeEnemyUnits].find(u => u.position.x === x && u.position.y === y);
   };
 
   // Helper: Handle tile click
   const handleTileClick = (x: number, y: number) => {
+    // Only allow actions for current unit if it's ally's turn
+    if (!currentUnit || !currentUnit.isAlly || currentUnit.hasActed) return;
+    
     const unit = getUnitAtPosition(x, y);
     
-    if (unit) {
-      // Click on unit
-      selectUnit(unit.id);
-    } else if (selectedUnitId && isTileInMovementRange(x, y)) {
-      // Move to empty tile
-      moveUnit(selectedUnitId, x, y);
+    if (unit && unit.id !== currentUnit.id) {
+      // Click on another unit - try to attack if in range
+      if (isTileInAttackRange(x, y) && !unit.isAlly) {
+        const damage = Math.max(1, currentUnit.character.stats.atk - unit.character.stats.def);
+        storeAttackUnit(currentUnit.id, unit.id, damage);
+      }
+    } else if (!unit && isTileInMovementRange(x, y)) {
+      // Click on empty tile in movement range - move there
+      storeMoveUnit(currentUnit.id, x, y);
     }
   };
+
+  // Victory Screen
+  if (phase === "victory") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
+          <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
+          <h1 className="text-4xl font-bold text-white mb-2">Victory!</h1>
+          <p className="text-gray-400 mb-6">คุณชนะการต่อสู้!</p>
+          
+          {rewards && (
+            <div className="bg-slate-800/50 rounded-lg p-4 mb-6">
+              <h2 className="text-lg font-bold text-white mb-3">Rewards</h2>
+              <div className="space-y-2 text-left">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">EXP:</span>
+                  <span className="text-green-400 font-bold">+{rewards.exp}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Gold:</span>
+                  <span className="text-yellow-400 font-bold">+{rewards.gold}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <button
+            onClick={() => {
+              resetBattle();
+              router.push("/world");
+            }}
+            className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+          >
+            กลับแผนที่โลก
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Defeat Screen
+  if (phase === "defeat") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
+          <Skull className="w-20 h-20 text-red-400 mx-auto mb-4" />
+          <h1 className="text-4xl font-bold text-white mb-2">Defeat...</h1>
+          <p className="text-gray-400 mb-6">คุณแพ้การต่อสู้</p>
+          
+          <button
+            onClick={() => {
+              resetBattle();
+              router.push("/world");
+            }}
+            className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-semibold"
+          >
+            กลับแผนที่โลก
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 p-4">
@@ -125,7 +375,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
           <div className="flex items-center gap-4">
             <div className="px-4 py-2 bg-slate-800/50 rounded-lg">
               <p className="text-gray-400 text-sm">Turn</p>
-              <p className="text-2xl font-bold text-white">{state.turn}</p>
+              <p className="text-2xl font-bold text-white">{turn}</p>
             </div>
           </div>
         </div>
@@ -133,6 +383,84 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Battle Grid */}
           <div className="lg:col-span-3">
+            {/* Battle Status Message */}
+            {currentUnit && (
+              <div className={`mb-4 p-4 rounded-lg border ${
+                currentUnit.isAlly 
+                  ? "bg-blue-900/20 border-blue-500/30" 
+                  : "bg-orange-900/20 border-orange-500/30"
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+                    currentUnit.isAlly ? "bg-blue-600" : "bg-orange-600"
+                  }`}>
+                    {currentUnit.isAlly ? "🛡️" : "👹"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-bold text-lg">
+                      {currentUnit.isAlly ? "🎮 Your Turn" : "⏳ Enemy Turn"} - {currentUnit.character.name}
+                    </p>
+                    {currentUnit.isAlly && !currentUnit.hasActed ? (
+                      <p className="text-gray-300 text-sm">
+                        💡 คลิกช่อง<span className="text-blue-400 font-semibold">สีน้ำเงิน</span>เพื่อเคลื่อนที่ 
+                        หรือ คลิกศัตรูในช่อง<span className="text-red-400 font-semibold">สีแดง</span>เพื่อโจมตี
+                      </p>
+                    ) : currentUnit.isAlly && currentUnit.hasActed ? (
+                      <p className="text-gray-400 text-sm">
+                        ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot; เพื่อจบเทิร์น
+                      </p>
+                    ) : (
+                      <p className="text-orange-300 text-sm">
+                        🤖 AI กำลังคิด... ช่อง<span className="text-orange-400 font-semibold">สีส้ม</span>คือที่ศัตรูสามารถเคลื่อนที่ได้
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Legend - Color Guide */}
+            <div className="mb-4 p-3 bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg">
+              <p className="text-white font-semibold text-sm mb-2">📖 Legend (คำอธิบายสี)</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                {currentUnit?.isAlly ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-blue-900/50 border border-blue-500"></div>
+                      <span className="text-gray-300">เคลื่อนที่ได้</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-red-900/50 border border-red-500"></div>
+                      <span className="text-gray-300">โจมตีได้</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-purple-900/50 border border-purple-500"></div>
+                      <span className="text-gray-300">ทั้งสองอย่าง</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-orange-900/40 border border-orange-500"></div>
+                      <span className="text-gray-300">ศัตรูเคลื่อนที่</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-red-900/40 border border-red-500"></div>
+                      <span className="text-gray-300">ศัตรูโจมตี</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-yellow-900/40 border border-yellow-500"></div>
+                      <span className="text-gray-300">ทั้งสองอย่าง</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-slate-700 border border-slate-500"></div>
+                  <span className="text-gray-300">สิ่งกีดขวาง</span>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
               <div 
                 className="grid gap-1 mx-auto"
@@ -145,10 +473,10 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                   Array.from({ length: battleMap.width }).map((_, x) => {
                     const unit = getUnitAtPosition(x, y);
                     const isObstacle = battleMap.obstacles?.some(obs => obs.x === x && obs.y === y) || false;
-                    const isSelected = unit?.id === selectedUnitId;
+                    // Always show ranges for current unit
                     const isInMoveRange = isTileInMovementRange(x, y);
                     const isInAttackRange = isTileInAttackRange(x, y);
-                    const isCurrent = unit?.id === state.currentUnitId;
+                    const isCurrent = unit?.id === currentUnitId;
 
                     return (
                       <button
@@ -156,11 +484,25 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         onClick={() => handleTileClick(x, y)}
                         className={`
                           aspect-square relative rounded-lg transition-all
-                          ${isObstacle ? "bg-slate-700 cursor-not-allowed" : "bg-slate-800 hover:bg-slate-700"}
-                          ${isSelected ? "ring-2 ring-yellow-400" : ""}
-                          ${isInMoveRange ? "bg-blue-900/50 hover:bg-blue-800/50" : ""}
-                          ${isInAttackRange ? "bg-red-900/50 hover:bg-red-800/50" : ""}
-                          ${isCurrent ? "ring-2 ring-green-400" : ""}
+                          ${
+                            isObstacle 
+                              ? "bg-slate-700 cursor-not-allowed"
+                              : isInMoveRange && isInAttackRange && currentUnit?.isAlly
+                              ? "bg-purple-900/50 hover:bg-purple-800/50"
+                              : isInMoveRange && isInAttackRange && currentUnit && !currentUnit.isAlly
+                              ? "bg-yellow-900/40 hover:bg-yellow-800/40"
+                              : isInMoveRange && currentUnit?.isAlly
+                              ? "bg-blue-900/50 hover:bg-blue-800/50"
+                              : isInMoveRange && currentUnit && !currentUnit.isAlly
+                              ? "bg-orange-900/40 hover:bg-orange-800/40"
+                              : isInAttackRange && currentUnit?.isAlly
+                              ? "bg-red-900/50 hover:bg-red-800/50"
+                              : isInAttackRange && currentUnit && !currentUnit.isAlly
+                              ? "bg-red-900/40 hover:bg-red-800/40"
+                              : "bg-slate-800 hover:bg-slate-700"
+                          }
+                          ${isCurrent && currentUnit?.isAlly ? "ring-2 ring-green-400" : ""}
+                          ${isCurrent && currentUnit && !currentUnit.isAlly ? "ring-2 ring-orange-400" : ""}
                         `}
                         disabled={isObstacle}
                       >
@@ -181,7 +523,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                             {/* HP Bar */}
                             <div className="absolute bottom-1 left-1 right-1 h-1 bg-slate-700 rounded-full overflow-hidden">
                               <div 
-                                className={`h-full ${unit.isAlly ? "bg-green-500" : "bg-red-500"}`}
+                                className={`h-full transition-all ${unit.isAlly ? "bg-green-500" : "bg-red-500"}`}
                                 style={{ width: `${(unit.currentHp / unit.character.stats.maxHp) * 100}%` }}
                               />
                             </div>
@@ -233,7 +575,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       </div>
                       <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-green-500"
+                          className="h-full bg-green-500 transition-all"
                           style={{ width: `${(currentUnit.currentHp / currentUnit.character.stats.maxHp) * 100}%` }}
                         />
                       </div>
@@ -248,7 +590,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       </div>
                       <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-blue-500"
+                          className="h-full bg-blue-500 transition-all"
                           style={{ width: `${(currentUnit.currentMp / currentUnit.character.stats.maxMp) * 100}%` }}
                         />
                       </div>
@@ -258,20 +600,12 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                   {/* Actions */}
                   {currentUnit.isAlly && !currentUnit.hasActed && (
                     <div className="space-y-2 pt-2 border-t border-slate-700">
+                      <div className="text-xs text-gray-400 mb-2">
+                        💡 คลิกช่องสีน้ำเงินเพื่อเคลื่อนที่<br/>
+                        💡 คลิกศัตรูในช่องสีแดงเพื่อโจมตี
+                      </div>
                       <button
-                        onClick={() => selectAction("move")}
-                        className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-semibold"
-                      >
-                        Move
-                      </button>
-                      <button
-                        onClick={() => selectAction("attack")}
-                        className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-semibold"
-                      >
-                        Attack
-                      </button>
-                      <button
-                        onClick={endTurn}
+                        onClick={storeEndTurn}
                         className="w-full px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm"
                       >
                         End Turn
@@ -286,11 +620,11 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
               <h2 className="text-lg font-bold text-white mb-3">Turn Order</h2>
               <div className="space-y-2">
-                {turnOrder.slice(0, 5).map((unit, index) => (
+                {storeTurnOrder.slice(0, 5).map((unit, index) => (
                   <div 
                     key={unit.id}
                     className={`flex items-center gap-2 p-2 rounded-lg ${
-                      unit.id === state.currentUnitId ? "bg-green-900/30 border border-green-500/30" : "bg-slate-800/50"
+                      unit.id === currentUnitId ? "bg-green-900/30 border border-green-500/30" : "bg-slate-800/50"
                     }`}
                   >
                     <div className="text-gray-400 text-xs w-4">{index + 1}</div>
@@ -312,7 +646,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 Allies
               </h2>
               <div className="space-y-2">
-                {allyUnits.map(unit => (
+                {storeAllyUnits.map(unit => (
                   <div 
                     key={unit.id}
                     className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg"
@@ -338,7 +672,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 Enemies
               </h2>
               <div className="space-y-2">
-                {enemyUnits.map(unit => (
+                {storeEnemyUnits.map(unit => (
                   <div 
                     key={unit.id}
                     className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg"
