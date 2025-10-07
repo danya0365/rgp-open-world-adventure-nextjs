@@ -448,7 +448,27 @@
 
 ## 🔄 กำลังทำ (In Progress)
 
-**ไม่มีงานที่กำลังทำอยู่ในขณะนี้** - พร้อมเริ่ม Battle System! ⚔️
+### 🎮 Battle System - Phase 1 Complete (Foundation)
+**Status**: 70% Complete - Need improvements
+
+**✅ Completed:**
+- Battle grid rendering (dynamic size)
+- Unit positioning system
+- Turn order (AGI-based)
+- Movement range calculation (MOV stat)
+- Attack range calculation
+- Basic UI (grid, sidebar, stats)
+- Clean Architecture pattern
+
+**⏳ Need to Complete:**
+- [ ] Unit movement animation
+- [ ] Attack execution & damage display
+- [ ] Skill system integration
+- [ ] AI for enemy units
+- [ ] Battle victory/defeat conditions
+- [ ] Battle rewards system
+- [ ] Terrain effects (obstacles, height)
+- [ ] Status effects (buffs/debuffs)
 
 ---
 
@@ -658,7 +678,7 @@
 
 ## 📊 Progress Summary
 
-### Overall Progress: **68%** 🎮
+### Overall Progress: **72%** 🎮
 
 - ✅ **Design System**: 100%
 - ✅ **Mock Data**: 100%
@@ -669,7 +689,7 @@
 - ✅ **State Management (Game Store)**: 100% (Centralized Zustand + Multiple Parties)
 - ✅ **Game Layout & Navigation**: 100% (Global Navbar + Responsive)
 - ✅ **Quest System**: 100% (Clean Architecture + Full Features)
-- ⏳ **Combat System**: 0% ← **Next Priority!**
+- 🔄 **Combat System**: 70% (Foundation Complete, Need Actions & AI)
 - ⏳ **Inventory**: 0%
 - ⏳ **Backend**: 0%
 
@@ -721,14 +741,23 @@
 - ✅ Clean Architecture maintained
 - ✅ No duplicate UI elements
 
-### 📅 Day 13-20: Battle System (NEXT - HIGH PRIORITY) ⚔️
-- [ ] Create battle grid UI (Dynamic Tactical Grid)
-- [ ] Implement unit positioning
-- [ ] Add movement & attack range visualization
-- [ ] Create turn order system
-- [ ] Add action menu & skill selection
-- [ ] Implement basic battle animations
-- [ ] Clean Architecture pattern
+### ✅ Day 13: Battle System Foundation (COMPLETED - 70%)
+- ✅ Create battle grid UI (Dynamic Tactical Grid)
+- ✅ Implement unit positioning
+- ✅ Add movement & attack range visualization
+- ✅ Create turn order system (AGI-based)
+- ✅ Dragon Quest Tact Stats (wis, mov)
+- ✅ Clean Architecture pattern
+
+### 📅 Day 14-17: Battle System Actions (NEXT - HIGH PRIORITY) ⚔️
+- [ ] Implement unit movement execution
+- [ ] Add attack execution & damage animation
+- [ ] Skill selection UI & execution
+- [ ] Enemy AI (basic)
+- [ ] Victory/Defeat conditions
+- [ ] Battle rewards screen
+- [ ] Terrain effects (obstacles, height advantage)
+- [ ] Status effects system (buffs/debuffs)
 
 ---
 
@@ -874,34 +903,44 @@
 
 ---
 
-## 🎯 Next Phase: Battle System (Dynamic Tactical Grid)
+## 🎯 Next Phase: Battle System Actions & Polish
 
-### **Priority 1: Battle Grid Foundation** (Day 13-15)
-- [ ] Create `/app/battle/[mapId]/page.tsx`
-- [ ] Implement `BattlePresenter` (Clean Architecture)
-- [ ] Create `BattleView` component
-- [ ] Render dynamic grid (5x5 to 10x10+)
-- [ ] Display units on grid
-- [ ] Basic grid styling
+### **✅ Phase 1: Foundation (COMPLETED - 70%)**
+- ✅ Create `/app/battle/[mapId]/page.tsx`
+- ✅ Implement `BattlePresenter` (Clean Architecture)
+- ✅ Create `BattleView` component
+- ✅ Render dynamic grid (5x5 to 10x10+)
+- ✅ Display units on grid
+- ✅ Turn order system (AGI-based)
+- ✅ Movement/Attack range visualization
 
-### **Priority 2: Unit Positioning & Movement** (Day 16-17)
-- [ ] Implement unit placement system
-- [ ] Movement range calculation
-- [ ] Movement visualization (highlight tiles)
-- [ ] Drag & drop or click-to-move
-- [ ] Collision detection
+### **Priority 1: Movement & Attack Execution** (Day 14-15)
+- [ ] Execute unit movement (update position)
+- [ ] Movement animation (smooth transition)
+- [ ] Attack execution (damage calculation)
+- [ ] Damage number animation
+- [ ] HP bar animation
+- [ ] Unit death/removal
 
-### **Priority 3: Combat Actions** (Day 18-19)
-- [ ] Attack range visualization
-- [ ] Skill range patterns (cross, area, line)
-- [ ] Action menu UI
-- [ ] Skill selection
-- [ ] Damage calculation
+### **Priority 2: Action Menu & Skills** (Day 16)
+- [ ] Action menu UI (Move, Attack, Skill, Wait)
+- [ ] Skill selection modal
+- [ ] Skill range patterns (single, cross, area, line)
+- [ ] Skill execution & effects
+- [ ] MP consumption
 
-### **Priority 4: Turn System** (Day 20)
-- [ ] Turn order display
-- [ ] Speed-based initiative
-- [ ] Action points system
-- [ ] End turn functionality
+### **Priority 3: Enemy AI & Game Flow** (Day 17)
+- [ ] Basic enemy AI (move toward player, attack in range)
+- [ ] Victory condition (all enemies defeated)
+- [ ] Defeat condition (all allies defeated)
+- [ ] Battle rewards screen (EXP, Gold, Items)
+- [ ] Return to world map
 
-**พร้อมสร้าง Battle System ต่อไปได้เลยครับ!** ⚔️🎮
+### **Priority 4: Polish & Effects** (Day 18-20)
+- [ ] Terrain effects (obstacles, height advantage)
+- [ ] Status effects (buffs/debuffs)
+- [ ] Battle animations polish
+- [ ] Sound effects integration
+- [ ] Battle tutorial/help
+
+**ต่อไปทำ Movement & Attack Execution ครับ!** ⚔️🎮
