@@ -21,6 +21,7 @@ export interface BattleMapConfig {
   height: number; // Grid height (5-10+)
   shape: "rectangular" | "irregular" | "multi-level";
   tiles: BattleTile[];
+  obstacles?: GridPosition[]; // Optional obstacles on the map
   startPositions: {
     ally: GridPosition[];
     enemy: GridPosition[];

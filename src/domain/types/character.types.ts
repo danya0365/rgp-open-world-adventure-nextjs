@@ -16,16 +16,26 @@ export type CharacterClass =
 
 export type RarityType = "common" | "uncommon" | "rare" | "epic" | "legendary" | "mythic";
 
+/**
+ * Stats based on Dragon Quest Tact system
+ */
 export interface Stats {
+  // Core Stats
   hp: number;
   maxHp: number;
   mp: number;
   maxMp: number;
-  atk: number;
-  def: number;
-  int: number;
-  agi: number;
-  luk: number;
+  
+  // Combat Stats
+  atk: number;  // Attack (physical damage)
+  def: number;  // Defence (physical resistance)
+  
+  // Magic Stats
+  wis: number;  // Wisdom (magical damage & healing power)
+  
+  // Speed & Movement
+  agi: number;  // Agility (determines turn order & evasion)
+  mov: number;  // Movement range on grid (typically 2-4)
 }
 
 export interface ElementalAffinity {

@@ -35,7 +35,7 @@ export const mockWeapons: Weapon[] = [
     atk: 15,
     element: "water",
     statBonus: {
-      int: 30,
+      wis: 30,
       mp: 50,
     },
     requiredLevel: 5,
@@ -115,7 +115,7 @@ export const mockArmor: Armor[] = [
     sellPrice: 100,
     def: 20,
     statBonus: {
-      int: 25,
+      wis: 25,
       mp: 80,
     },
     elementalResistance: [

@@ -24,14 +24,17 @@ export interface ItemEffect {
   duration?: number; // turns
 }
 
+/**
+ * Stat Bonus based on Dragon Quest Tact system
+ */
 export interface StatBonus {
   hp?: number;
   mp?: number;
   atk?: number;
   def?: number;
-  int?: number;
+  wis?: number;  // Wisdom (magical damage & healing)
   agi?: number;
-  luk?: number;
+  mov?: number;  // Movement range
 }
 
 export interface Item {

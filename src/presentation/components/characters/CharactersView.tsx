@@ -293,9 +293,9 @@ function CharacterDetailContent({
             </div>
           </div>
           <div className="bg-slate-800/50 rounded-lg p-4">
-            <div className="text-sm text-gray-400 mb-1">INT</div>
+            <div className="text-sm text-gray-400 mb-1">WIS</div>
             <div className="text-2xl font-bold text-purple-400">
-              {character.stats.int}
+              {character.stats.wis}
             </div>
           </div>
           <div className="bg-slate-800/50 rounded-lg p-4">
@@ -305,9 +305,9 @@ function CharacterDetailContent({
             </div>
           </div>
           <div className="bg-slate-800/50 rounded-lg p-4">
-            <div className="text-sm text-gray-400 mb-1">LUK</div>
+            <div className="text-sm text-gray-400 mb-1">MOV</div>
             <div className="text-2xl font-bold text-yellow-400">
-              {character.stats.luk}
+              {character.stats.mov}
             </div>
           </div>
         </div>

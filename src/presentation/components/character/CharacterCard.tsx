@@ -141,9 +141,15 @@ export function CharacterCard({
               </div>
             </div>
             <div className="bg-slate-800/50 rounded p-2 text-center">
-              <div className="text-xs text-gray-400">INT</div>
+              <div className="text-xs text-gray-400">WIS</div>
               <div className="text-sm font-bold text-purple-400">
-                {character.stats.int}
+                {character.stats.wis}
+              </div>
+            </div>
+            <div className="bg-slate-800/50 rounded p-2 text-center">
+              <div className="text-xs text-gray-400">MOV</div>
+              <div className="text-sm font-bold text-blue-400">
+                {character.stats.mov}
               </div>
             </div>
           </div>

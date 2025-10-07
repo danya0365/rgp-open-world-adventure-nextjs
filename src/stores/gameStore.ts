@@ -48,9 +48,9 @@ export interface RecruitedCharacter {
     maxMp: number;
     atk: number;
     def: number;
-    int: number;
+    wis: number;
     agi: number;
-    luk: number;
+    mov: number;
   };
   
   // Equipment (references to item IDs)
