@@ -14,8 +14,36 @@ interface WorldViewProps {
 }
 
 export function WorldView({ initialViewModel }: WorldViewProps) {
-  const { party, setCurrentLocation: saveCurrentLocation } = useGameStore();
-  const partyStats = getPartyStats(party);
+  const { 
+    parties, 
+    activePartyId, 
+    progress,
+    setCurrentLocation: saveCurrentLocation 
+  } = useGameStore();
+  
+  // Get active party members
+  const activeParty = parties.find(p => p.id === activePartyId);
+  const activePartyMembers = activeParty?.members || [];
+  
+  // Convert to legacy format for getPartyStats
+  const activePartyCharacters = activePartyMembers.map(member => {
+    const recruited = progress.recruitedCharacters.find(rc => rc.characterId === member.characterId);
+    if (!recruited) return null;
+    
+    // This is a simplified version - in real app, you'd fetch full character data
+    return {
+      character: { 
+        id: member.characterId,
+        name: recruited.characterId,
+        level: 1,
+        stats: { maxHp: 100, maxMp: 50, atk: 10, def: 10, spd: 10 }
+      } as any,
+      position: member.position,
+      isLeader: member.isLeader,
+    };
+  }).filter(Boolean) as any[];
+  
+  const partyStats = getPartyStats(activePartyCharacters);
   
   const {
     viewModel,
@@ -78,7 +106,7 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
   }
 
   // Check if party is empty
-  if (party.length === 0) {
+  if (activePartyMembers.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
@@ -144,26 +172,24 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
               <div>
                 <h3 className="text-white font-semibold">ทีมปัจจุบัน</h3>
                 <p className="text-gray-400 text-sm">
-                  {party.length} สมาชิก | HP: {partyStats.totalHp.toLocaleString()} | MP: {partyStats.totalMp.toLocaleString()}
+                  {activePartyMembers.length} สมาชิก | HP: {partyStats.totalHp.toLocaleString()} | MP: {partyStats.totalMp.toLocaleString()}
                 </p>
               </div>
             </div>
             <Link
               href="/party"
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
             >
               จัดการทีม
             </Link>
           </div>
           <div className="mt-3 flex gap-2">
-            {party.map((member: import("@/src/stores/gameStore").PartyMember) => (
+            {activePartyCharacters.map((member) => (
               <div
                 key={member.character.id}
                 className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg"
               >
-                <span className="text-white text-sm font-medium">
-                  {member.character.name}
-                </span>
+                <span className="text-sm text-white">{member.character.name}</span>
+                <span className="text-xs text-gray-400">Lv {member.character.level}</span>
                 {member.isLeader && (
                   <span className="text-amber-400 text-xs">👑</span>
                 )}

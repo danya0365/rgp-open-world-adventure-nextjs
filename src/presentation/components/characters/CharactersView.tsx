@@ -8,15 +8,13 @@ import { Button, Modal } from "@/src/presentation/components/ui";
 import { Users, Filter, Search } from "lucide-react";
 import Link from "next/link";
 import { useGameStore } from "@/src/stores/gameStore";
-import { useRouter } from "next/navigation";
 
 interface CharactersViewProps {
   initialViewModel?: CharactersViewModel;
 }
 
 export function CharactersView({ initialViewModel }: CharactersViewProps) {
-  const router = useRouter();
-  const { addToParty, isInParty, party, recruitCharacter, isCharacterRecruited, progress } = useGameStore();
+  const { recruitCharacter, isCharacterRecruited, progress } = useGameStore();
   
   const {
     viewModel,
@@ -33,34 +31,8 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
 
   const handleRecruitCharacter = (character: Character) => {
     recruitCharacter(character);
-    // Don't close modal, let user decide what to do next
-  };
-
-  const handleAddToParty = (character: Character) => {
-    // Check if party is full
-    if (party.length >= 4) {
-      alert("ทีมเต็มแล้ว! (สูงสุด 4 คน)");
-      return;
-    }
-
-    const success = addToParty(character);
-    if (success) {
-      setSelectedCharacter(null);
-      // Show success message
-      const remaining = 4 - (party.length + 1);
-      if (remaining > 0) {
-        // Optional: You can add a toast notification here
-        console.log(`เพิ่ม ${character.name} เข้าทีมแล้ว! เลือกได้อีก ${remaining} คน`);
-      }
-    }
-  };
-  
-  const handleGoToParty = () => {
-    if (party.length === 0) {
-      alert("กรุณาเลือกตัวละครอย่างน้อย 1 คน");
-      return;
-    }
-    router.push("/party");
+    // Close modal after recruit
+    setSelectedCharacter(null);
   };
 
   // Show loading only on initial load
@@ -119,31 +91,27 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
           </Link>
         </div>
 
-        {/* Selected Characters Summary */}
-        {(progress.recruitedCharacters.length > 0 || party.length > 0) && (
+        {/* Recruited Characters Summary */}
+        {progress.recruitedCharacters.length > 0 && (
           <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-purple-400" />
                 <div>
                   <h3 className="text-white font-semibold">
-                    รีครูท: {progress.recruitedCharacters.length} คน | ทีม: {party.length}/4
+                    รีครูทแล้ว: {progress.recruitedCharacters.length} คน
                   </h3>
-                  {party.length > 0 && (
-                    <p className="text-gray-400 text-sm">
-                      ทีม: {party.map((m) => m.character.name).join(", ")}
-                    </p>
-                  )}
+                  <p className="text-gray-400 text-sm">
+                    ไปหน้า Party เพื่อจัดทีม
+                  </p>
                 </div>
               </div>
-              {party.length > 0 && (
-                <button
-                  onClick={handleGoToParty}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all font-semibold shadow-lg shadow-purple-500/50"
-                >
-                  ยืนยันและไปจัดทีม →
-                </button>
-              )}
+              <Link
+                href="/party"
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all font-semibold shadow-lg shadow-purple-500/50"
+              >
+                ไปจัดทีม →
+              </Link>
             </div>
           </div>
         )}
@@ -155,10 +123,7 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             <h1 className="text-4xl font-bold text-white">ตัวละคร</h1>
           </div>
           <p className="text-gray-400 text-lg">
-            {party.length === 0 
-              ? "เลือกตัวละครที่ต้องการเข้าทีม (สูงสุด 4 คน) แล้วกดยืนยัน"
-              : `เลือกแล้ว ${party.length}/4 คน - เลือกเพิ่มหรือกดยืนยันเพื่อไปจัดทีม`
-            }
+            รีครูทตัวละครแล้วไปจัดทีมที่หน้า Party
           </p>
         </div>
 
@@ -262,9 +227,7 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
           >
             <CharacterDetailContent 
               character={selectedCharacter}
-              onAddToParty={handleAddToParty}
               onRecruit={handleRecruitCharacter}
-              isInParty={isInParty(selectedCharacter.id)}
               isRecruited={isCharacterRecruited(selectedCharacter.id)}
             />
           </Modal>
@@ -286,17 +249,13 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
 
 interface CharacterDetailContentProps {
   character: Character;
-  onAddToParty: (character: Character) => void;
   onRecruit: (character: Character) => void;
-  isInParty: boolean;
   isRecruited: boolean;
 }
 
 function CharacterDetailContent({ 
   character, 
-  onAddToParty,
   onRecruit,
-  isInParty,
   isRecruited
 }: CharacterDetailContentProps) {
   return (
@@ -451,29 +410,10 @@ function CharacterDetailContent({
           </Button>
         )}
         
-        {/* Add to Party Button */}
-        {isRecruited && (
-          <>
-            {isInParty ? (
-              <Button variant="ghost" className="w-full" disabled>
-                ✓ อยู่ในทีมแล้ว
-              </Button>
-            ) : (
-              <Button 
-                variant="primary" 
-                className="w-full"
-                onClick={() => onAddToParty(character)}
-              >
-                เพิ่มเข้าทีม (Party)
-              </Button>
-            )}
-          </>
-        )}
-        
         {/* Status Messages */}
-        {!isRecruited && (
-          <p className="text-sm text-gray-400 text-center">
-            รีครูทตัวละครก่อนเพื่อเพิ่มเข้าทีม
+        {isRecruited && (
+          <p className="text-sm text-green-400 text-center">
+            ✓ รีครูทแล้ว - ไปหน้า Party เพื่อจัดทีม
           </p>
         )}
       </div>

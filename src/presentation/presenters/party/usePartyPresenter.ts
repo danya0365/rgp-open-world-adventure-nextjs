@@ -9,28 +9,23 @@ export interface PartyPresenterHook {
   loading: boolean;
   error: string | null;
 
-  // Party state from store
-  party: import("@/src/stores/gameStore").PartyMember[];
-  
-  // Modal states
-  isSelectModalOpen: boolean;
-  selectedPosition: number | null;
-  
-  // Game state
-  hasEverSelectedCharacter: boolean;
-
   // Actions
   loadData: () => Promise<void>;
-  addToParty: (character: Character, position?: number) => void;
-  removeFromParty: (characterId: string) => void;
-  swapPartyMembers: (pos1: number, pos2: number) => void;
-  setLeader: (characterId: string) => void;
-  clearParty: () => void;
-  isInParty: (characterId: string) => boolean;
-
-  // Modal actions
-  openSelectModal: (position: number) => void;
-  closeSelectModal: () => void;
+  
+  // Multiple Party Actions
+  createParty: (name: string) => import("@/src/stores/gameStore").Party;
+  deleteParty: (partyId: string) => void;
+  renameParty: (partyId: string, newName: string) => void;
+  copyParty: (partyId: string, newName: string) => import("@/src/stores/gameStore").Party;
+  setActiveParty: (partyId: string) => void;
+  getActiveParty: () => import("@/src/stores/gameStore").Party | null;
+  addToPartyV2: (partyId: string, characterId: string, position?: number) => boolean;
+  removeFromPartyV2: (partyId: string, characterId: string) => void;
+  
+  // State getters
+  parties: import("@/src/stores/gameStore").Party[];
+  activePartyId: string | null;
+  progress: import("@/src/stores/gameStore").GameProgress;
 }
 
 let presenterInstance: PartyPresenter | null = null;
@@ -230,31 +225,42 @@ export function usePartyPresenter(
     setError(null);
   }, []);
 
+  // Get multiple party state from store
+  const {
+    parties,
+    activePartyId,
+    createParty: storeCreateParty,
+    deleteParty: storeDeleteParty,
+    renameParty: storeRenameParty,
+    copyParty: storeCopyParty,
+    setActiveParty: storeSetActiveParty,
+    getActiveParty: storeGetActiveParty,
+    addToPartyV2: storeAddToPartyV2,
+    removeFromPartyV2: storeRemoveFromPartyV2,
+  } = useGameStore();
+
   return {
     // State
     viewModel,
     loading,
     error,
-    party,
-
-    // Modal states
-    isSelectModalOpen,
-    selectedPosition,
-    
-    // Game state
-    hasEverSelectedCharacter,
 
     // Actions
     loadData,
-    addToParty,
-    removeFromParty,
-    swapPartyMembers,
-    setLeader,
-    clearParty,
-    isInParty,
-
-    // Modal actions
-    openSelectModal,
-    closeSelectModal,
+    
+    // Multiple Party Actions
+    createParty: storeCreateParty,
+    deleteParty: storeDeleteParty,
+    renameParty: storeRenameParty,
+    copyParty: storeCopyParty,
+    setActiveParty: storeSetActiveParty,
+    getActiveParty: storeGetActiveParty,
+    addToPartyV2: storeAddToPartyV2,
+    removeFromPartyV2: storeRemoveFromPartyV2,
+    
+    // State getters
+    parties,
+    activePartyId,
+    progress,
   };
 }

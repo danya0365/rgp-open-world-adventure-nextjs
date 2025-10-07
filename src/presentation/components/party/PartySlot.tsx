@@ -29,19 +29,21 @@ export function PartySlot({
   };
 
   if (!member) {
-    // Empty slot
+    // Empty slot - clickable if onSelect is provided
+    const isClickable = !!onSelect;
+    
     return (
       <div
         className={`relative bg-slate-900/50 border-2 border-dashed border-slate-700 rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] transition-all duration-300 ${
-          isSelecting
+          isClickable
             ? "hover:border-purple-500 hover:bg-purple-900/20 cursor-pointer"
             : ""
         }`}
-        onClick={() => isSelecting && onSelect?.(position)}
+        onClick={() => isClickable && onSelect(position)}
       >
         <Users className="w-12 h-12 text-slate-600 mb-2" />
         <p className="text-slate-500 text-sm">Slot {position + 1}</p>
-        {isSelecting && (
+        {isClickable && (
           <p className="text-purple-400 text-xs mt-2">คลิกเพื่อเลือกตัวละคร</p>
         )}
       </div>

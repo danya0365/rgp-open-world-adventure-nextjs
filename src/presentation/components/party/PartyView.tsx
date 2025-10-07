@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PartyViewModel } from "@/src/presentation/presenters/party/PartyPresenter";
 import { usePartyPresenter } from "@/src/presentation/presenters/party/usePartyPresenter";
 import { getPartyStats, getPartySynergy } from "@/src/stores/gameStore";
@@ -7,6 +8,9 @@ import { Character } from "@/src/domain/types/character.types";
 import { PartySlot } from "@/src/presentation/components/party/PartySlot";
 import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
 import { Modal } from "@/src/presentation/components/ui";
+import { PartySlider } from "@/src/presentation/components/party/PartySlider";
+import { CreatePartyModal } from "@/src/presentation/components/party/CreatePartyModal";
+import { RenamePartyModal } from "@/src/presentation/components/party/RenamePartyModal";
 import { Users, Sparkles, Heart, Zap, Shield, Map, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -19,16 +23,73 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     viewModel,
     loading,
     error,
-    party,
-    isSelectModalOpen,
-    selectedPosition,
-    hasEverSelectedCharacter,
-    addToParty,
-    removeFromParty,
-    isInParty,
-    openSelectModal,
-    closeSelectModal,
+    // Multiple Party System (ผ่าน presenter)
+    parties,
+    activePartyId,
+    createParty,
+    setActiveParty,
+    renameParty,
+    copyParty,
+    deleteParty,
+    progress,
+    addToPartyV2,
+    removeFromPartyV2,
   } = usePartyPresenter(initialViewModel);
+
+  // Local state for modal
+  const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [renamePartyId, setRenamePartyId] = useState<string>("");
+  const [renamePartyName, setRenamePartyName] = useState<string>("");
+
+  // Initialize default parties if none exist
+  useEffect(() => {
+    if (parties.length === 0) {
+      const mainParty = createParty("Main Team");
+      createParty("Boss Team");
+      createParty("Farm Team");
+      setActiveParty(mainParty.id);
+    }
+  }, [parties.length, createParty, setActiveParty]);
+
+  const handleCreateParty = (name: string) => {
+    const newParty = createParty(name);
+    setActiveParty(newParty.id);
+  };
+
+  const handleRenameParty = (partyId: string, currentName: string) => {
+    setRenamePartyId(partyId);
+    setRenamePartyName(currentName);
+    setIsRenameModalOpen(true);
+  };
+
+  const handleRenameConfirm = (newName: string) => {
+    if (renamePartyId) {
+      renameParty(renamePartyId, newName);
+    }
+  };
+
+  const handleCopyParty = (partyId: string, currentName: string) => {
+    const newName = prompt(`Copy "${currentName}" as:`, `${currentName} (Copy)`);
+    if (newName && newName.trim()) {
+      copyParty(partyId, newName.trim());
+    }
+  };
+
+  const handleDeleteParty = (partyId: string) => {
+    if (parties.length <= 1) {
+      alert("ไม่สามารถลบ Party สุดท้ายได้!");
+      return;
+    }
+    
+    const party = parties.find(p => p.id === partyId);
+    if (party && confirm(`ต้องการลบ "${party.name}" หรือไม่?`)) {
+      deleteParty(partyId);
+    }
+  };
 
   // Show loading only on initial load
   if (loading && !viewModel) {
@@ -73,24 +134,50 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     );
   }
 
-  const stats = getPartyStats(party);
-  const synergies = getPartySynergy(party);
-  const availableChars = viewModel.playableCharacters.filter(
-    (c) => !isInParty(c.id)
-  );
+  // Get active party data
+  const activeParty = parties.find(p => p.id === activePartyId);
+  const activePartyMembers = activeParty?.members || [];
+  
+  // Get character objects from recruited characters
+  const activePartyCharacters = activePartyMembers.map(member => {
+    const recruited = progress.recruitedCharacters.find(rc => rc.characterId === member.characterId);
+    if (!recruited) return null;
+    
+    // Find character from master data
+    const character = viewModel?.playableCharacters.find(c => c.id === recruited.characterId);
+    if (!character) return null;
+    
+    return {
+      character,
+      position: member.position,
+      isLeader: member.isLeader,
+    };
+  }).filter(Boolean) as { character: Character; position: number; isLeader: boolean }[];
 
-  // Show warning if user has never selected a character
-  if (!hasEverSelectedCharacter) {
+  const stats = getPartyStats(activePartyCharacters);
+  const synergies = getPartySynergy(activePartyCharacters);
+  
+  // Available characters = recruited but not in active party
+  const availableChars = viewModel?.playableCharacters.filter(
+    (c) => {
+      const isRecruited = progress.recruitedCharacters.some(rc => rc.characterId === c.id);
+      const isInActiveParty = activePartyMembers.some(m => m.characterId === c.id);
+      return isRecruited && !isInActiveParty;
+    }
+  ) || [];
+
+  // Show warning if no recruited characters
+  if (progress.recruitedCharacters.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
           <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">ยังไม่ได้เลือกตัวละคร!</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">ยังไม่มีตัวละคร!</h2>
           <p className="text-gray-400 mb-6">
-            คุณต้องเลือกตัวละครก่อนจึงจะสามารถจัดทีมได้
+            คุณต้องรีครูทตัวละครก่อนจึงจะสามารถจัดทีมได้
             <br />
             <span className="text-sm text-gray-500 mt-2 block">
-              (ไปหน้าตัวละคร → คลิกตัวละคร → เลือกเข้าทีม)
+              (ไปหน้าตัวละคร → คลิกตัวละคร → รีครูท)
             </span>
           </p>
           <div className="flex flex-col gap-3">
@@ -98,7 +185,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
               href="/characters"
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
             >
-              เลือกตัวละคร
+              ไปรีครูทตัวละคร
             </Link>
             <Link
               href="/"
@@ -113,17 +200,38 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   }
 
   const handleSlotClick = (position: number) => {
-    openSelectModal(position);
+    setSelectedPosition(position);
+    setIsSelectModalOpen(true);
   };
 
   const handleCharacterSelect = (character: Character) => {
-    if (selectedPosition !== null) {
-      addToParty(character, selectedPosition);
+    console.log('🎮 handleCharacterSelect', {
+      character: character.name,
+      characterId: character.id,
+      selectedPosition,
+      activePartyId,
+    });
+    
+    if (selectedPosition !== null && activePartyId) {
+      // Add to active party using V2 API
+      const success = addToPartyV2(activePartyId, character.id, selectedPosition);
+      console.log('✅ addToPartyV2 result:', success);
+      
+      if (success) {
+        setIsSelectModalOpen(false);
+        setSelectedPosition(null);
+      } else {
+        console.error('❌ Failed to add to party');
+      }
+    } else {
+      console.error('❌ Missing data:', { selectedPosition, activePartyId });
     }
   };
 
   const handleRemove = (characterId: string) => {
-    removeFromParty(characterId);
+    if (activePartyId) {
+      removeFromPartyV2(activePartyId, characterId);
+    }
   };
 
   return (
@@ -152,8 +260,21 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
             <h1 className="text-4xl font-bold text-white">จัดการทีม</h1>
           </div>
           <p className="text-gray-400 text-lg">
-            เลือกตัวละครสูงสุด 4 ตัวเข้าทีม
+            จัดการหลาย Party พร้อมระบบ Team Synergy
           </p>
+        </div>
+
+        {/* Party Slider */}
+        <div className="mb-8">
+          <PartySlider
+            parties={parties}
+            activePartyId={activePartyId}
+            onPartyChange={setActiveParty}
+            onCreateParty={() => setIsCreateModalOpen(true)}
+            onRenameParty={handleRenameParty}
+            onCopyParty={handleCopyParty}
+            onDeleteParty={handleDeleteParty}
+          />
         </div>
 
         {/* Party Stats Summary */}
@@ -221,11 +342,12 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
 
         {/* Party Slots */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-4">ทีมของคุณ</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            ทีมของคุณ {activeParty ? `- ${activeParty.name}` : ''}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[0, 1, 2, 3].map((position) => {
-              const member =
-                party.find((m: import("@/src/stores/partyStore").PartyMember) => m.position === position) || null;
+              const member = activePartyCharacters.find(m => m.position === position) || null;
               return (
                 <PartySlot
                   key={position}
@@ -233,7 +355,6 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
                   member={member}
                   onRemove={handleRemove}
                   onSelect={handleSlotClick}
-                  isSelecting={!member}
                 />
               );
             })}
@@ -246,17 +367,12 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
             <h2 className="text-2xl font-bold text-white mb-4">
               ตัวละครที่สามารถเลือกได้ ({availableChars.length})
             </h2>
+            <p className="text-gray-400 mb-4">
+              คลิกช่องว่างด้านบนเพื่อเลือกตัวละครเข้าทีม
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {availableChars.map((character) => (
-                <div
-                  key={character.id}
-                  onClick={() => {
-                    if (party.length < 4) {
-                      addToParty(character);
-                    }
-                  }}
-                  className={party.length < 4 ? "cursor-pointer" : "opacity-50"}
-                >
+                <div key={character.id}>
                   <CharacterCard character={character} showStats={false} />
                 </div>
               ))}
@@ -265,7 +381,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
         )}
 
         {/* Start Adventure Button */}
-        {party.length > 0 && (
+        {activePartyMembers.length > 0 && (
           <div className="mt-8 p-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -273,7 +389,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
                 <div>
                   <h3 className="text-xl font-bold text-white">พร้อมออกผจญภัย!</h3>
                   <p className="text-gray-400 text-sm">
-                    ทีมของคุณมี {party.length} คน พร้อมสำรวจโลกแล้ว
+                    {activeParty?.name} มี {activePartyMembers.length} คน พร้อมสำรวจโลกแล้ว
                   </p>
                 </div>
               </div>
@@ -292,7 +408,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
         )}
 
         {/* Empty State */}
-        {party.length === 0 && (
+        {activePartyMembers.length === 0 && (
           <div className="text-center py-16">
             <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 text-lg mb-4">ยังไม่มีสมาชิกในทีม</p>
@@ -309,7 +425,10 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
         {/* Character Selection Modal */}
         <Modal
           isOpen={isSelectModalOpen}
-          onClose={closeSelectModal}
+          onClose={() => {
+            setIsSelectModalOpen(false);
+            setSelectedPosition(null);
+          }}
           title={`เลือกตัวละครสำหรับ Slot ${(selectedPosition || 0) + 1}`}
           size="xl"
         >
@@ -340,6 +459,21 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
             </div>
           </div>
         )}
+
+        {/* Create Party Modal */}
+        <CreatePartyModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateParty}
+        />
+
+        {/* Rename Party Modal */}
+        <RenamePartyModal
+          isOpen={isRenameModalOpen}
+          onClose={() => setIsRenameModalOpen(false)}
+          onRename={handleRenameConfirm}
+          currentName={renamePartyName}
+        />
       </div>
     </div>
   );
