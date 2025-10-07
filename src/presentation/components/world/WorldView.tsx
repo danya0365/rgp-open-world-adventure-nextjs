@@ -4,14 +4,18 @@ import { WorldViewModel } from "@/src/presentation/presenters/world/WorldPresent
 import { useWorldPresenter } from "@/src/presentation/presenters/world/useWorldPresenter";
 import { LocationCard } from "./LocationCard";
 import { Breadcrumb } from "./Breadcrumb";
-import { Map, Globe, MapPin, Compass } from "lucide-react";
+import { Map, Globe, MapPin, Compass, Users, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { usePartyStore, getPartyStats } from "@/src/stores/partyStore";
 
 interface WorldViewProps {
   initialViewModel?: WorldViewModel;
 }
 
 export function WorldView({ initialViewModel }: WorldViewProps) {
+  const { party } = usePartyStore();
+  const partyStats = getPartyStats(party);
+  
   const {
     viewModel,
     loading,
@@ -65,6 +69,35 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
     );
   }
 
+  // Check if party is empty
+  if (party.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <AlertTriangle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">ยังไม่มีทีม!</h2>
+          <p className="text-gray-400 mb-6">
+            คุณต้องเลือกตัวละครเข้าทีมก่อนเริ่มผจญภัย
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/characters"
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+            >
+              เลือกตัวละคร
+            </Link>
+            <Link
+              href="/party"
+              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            >
+              ไปหน้าจัดการทีม
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Get locations to display
   const locationsToShow = currentLocation
     ? viewModel.locations.filter((loc) => loc.parentId === currentLocation.id)
@@ -74,7 +107,7 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Navigation */}
-        <div className="mb-6 flex gap-2">
+        <div className="mb-6 flex flex-wrap gap-2">
           <Link
             href="/"
             className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
@@ -93,6 +126,42 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
           >
             ทีม
           </Link>
+        </div>
+
+        {/* Party Display */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="w-6 h-6 text-purple-400" />
+              <div>
+                <h3 className="text-white font-semibold">ทีมปัจจุบัน</h3>
+                <p className="text-gray-400 text-sm">
+                  {party.length} สมาชิก | HP: {partyStats.totalHp.toLocaleString()} | MP: {partyStats.totalMp.toLocaleString()}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/party"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
+            >
+              จัดการทีม
+            </Link>
+          </div>
+          <div className="mt-3 flex gap-2">
+            {party.map((member) => (
+              <div
+                key={member.character.id}
+                className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg"
+              >
+                <span className="text-white text-sm font-medium">
+                  {member.character.name}
+                </span>
+                {member.isLeader && (
+                  <span className="text-amber-400 text-xs">👑</span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Header */}

@@ -7,7 +7,7 @@ import { Character } from "@/src/domain/types/character.types";
 import { PartySlot } from "@/src/presentation/components/party/PartySlot";
 import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
 import { Modal } from "@/src/presentation/components/ui";
-import { Users, Sparkles, Heart, Zap, Shield } from "lucide-react";
+import { Users, Sparkles, Heart, Zap, Shield, Map, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 interface PartyViewProps {
@@ -230,14 +230,45 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
           </div>
         )}
 
+        {/* Start Adventure Button */}
+        {party.length > 0 && (
+          <div className="mt-8 p-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Map className="w-8 h-8 text-purple-400" />
+                <div>
+                  <h3 className="text-xl font-bold text-white">พร้อมออกผจญภัย!</h3>
+                  <p className="text-gray-400 text-sm">
+                    ทีมของคุณมี {party.length} คน พร้อมสำรวจโลกแล้ว
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/world"
+                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 transition-all duration-300 hover:scale-105"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <Map className="w-5 h-5" />
+                  เริ่มผจญภัย
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Empty State */}
         {party.length === 0 && (
           <div className="text-center py-16">
             <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 text-lg mb-4">ยังไม่มีสมาชิกในทีม</p>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-4">
               คลิกที่ช่องว่างหรือเลือกตัวละครด้านล่างเพื่อเพิ่มเข้าทีม
             </p>
+            <div className="flex items-center justify-center gap-2 text-amber-400">
+              <AlertCircle className="w-5 h-5" />
+              <p className="text-sm">ต้องมีอย่างน้อย 1 คนเพื่อเริ่มผจญภัย</p>
+            </div>
           </div>
         )}
 
