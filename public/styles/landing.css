@@ -6,23 +6,38 @@
     position: relative;
   }
   
-  /* Pitch Pattern Background */
-  .pitch-pattern {
+  /* Fantasy Grid Pattern Background */
+  .fantasy-grid {
     background-image: 
       repeating-linear-gradient(
         0deg,
         transparent,
         transparent 50px,
-        rgba(255, 255, 255, 0.1) 50px,
-        rgba(255, 255, 255, 0.1) 51px
+        rgba(139, 92, 246, 0.1) 50px,
+        rgba(139, 92, 246, 0.1) 51px
       ),
       repeating-linear-gradient(
         90deg,
         transparent,
         transparent 50px,
-        rgba(255, 255, 255, 0.1) 50px,
-        rgba(255, 255, 255, 0.1) 51px
+        rgba(139, 92, 246, 0.1) 50px,
+        rgba(139, 92, 246, 0.1) 51px
       );
+  }
+
+  /* Animated Gradient Background */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
   }
 }
 
@@ -31,14 +46,64 @@
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
-  /* Gradient utilities */
-  .gradient-green {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    }
+    to {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 30px rgba(236, 72, 153, 0.5);
+    }
+  }
+
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .delay-1000 {
+    animation-delay: 1000ms;
   }
   
-  .gradient-pitch {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
+  /* Gradient utilities */
+  .gradient-purple-pink {
+    background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  }
+
+  .gradient-blue-purple {
+    background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+  }
+  
+  .gradient-fantasy {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
   }
   
   /* Text utilities */
@@ -48,5 +113,14 @@
   
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.5), 0 0 40px rgba(236, 72, 153, 0.3);
+  }
+
+  /* Backdrop utilities */
+  .backdrop-blur-fantasy {
+    backdrop-filter: blur(12px) saturate(150%);
   }
 }
