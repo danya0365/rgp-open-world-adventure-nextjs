@@ -41,9 +41,21 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
     const success = addToParty(character);
     if (success) {
       setSelectedCharacter(null);
-      // Navigate to party page
-      router.push("/party");
+      // Show success message
+      const remaining = 4 - (party.length + 1);
+      if (remaining > 0) {
+        // Optional: You can add a toast notification here
+        console.log(`เพิ่ม ${character.name} เข้าทีมแล้ว! เลือกได้อีก ${remaining} คน`);
+      }
     }
+  };
+  
+  const handleGoToParty = () => {
+    if (party.length === 0) {
+      alert("กรุณาเลือกตัวละครอย่างน้อย 1 คน");
+      return;
+    }
+    router.push("/party");
   };
 
   // Show loading only on initial load
@@ -100,13 +112,30 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
           >
             ← หน้าแรก
           </Link>
-          <Link
-            href="/party"
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            จัดการทีม →
-          </Link>
         </div>
+
+        {/* Selected Characters Summary */}
+        {party.length > 0 && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Users className="w-6 h-6 text-purple-400" />
+                <div>
+                  <h3 className="text-white font-semibold">ตัวละครที่เลือก: {party.length}/4</h3>
+                  <p className="text-gray-400 text-sm">
+                    {party.map((m) => m.character.name).join(", ")}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleGoToParty}
+                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all font-semibold shadow-lg shadow-purple-500/50"
+              >
+                ยืนยันและไปจัดทีม →
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div className="mb-8">
@@ -115,7 +144,10 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             <h1 className="text-4xl font-bold text-white">ตัวละคร</h1>
           </div>
           <p className="text-gray-400 text-lg">
-            เลือกและจัดการทีมนักผจญภัยของคุณ
+            {party.length === 0 
+              ? "เลือกตัวละครที่ต้องการเข้าทีม (สูงสุด 4 คน) แล้วกดยืนยัน"
+              : `เลือกแล้ว ${party.length}/4 คน - เลือกเพิ่มหรือกดยืนยันเพื่อไปจัดทีม`
+            }
           </p>
         </div>
 
