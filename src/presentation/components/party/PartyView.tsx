@@ -7,7 +7,7 @@ import { Character } from "@/src/domain/types/character.types";
 import { PartySlot } from "@/src/presentation/components/party/PartySlot";
 import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
 import { Modal } from "@/src/presentation/components/ui";
-import { Users, Sparkles, Heart, Zap, Shield, ArrowLeft } from "lucide-react";
+import { Users, Sparkles, Heart, Zap, Shield } from "lucide-react";
 import Link from "next/link";
 
 interface PartyViewProps {
@@ -95,16 +95,24 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
+        {/* Navigation */}
+        <div className="mb-6 flex gap-2">
+          <Link
+            href="/"
+            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
+          >
+            ← หน้าแรก
+          </Link>
           <Link
             href="/characters"
-            className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 mb-4"
+            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            กลับไปหน้าตัวละคร
+            ← ตัวละคร
           </Link>
+        </div>
 
+        {/* Header */}
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Users className="w-10 h-10 text-purple-400" />
             <h1 className="text-4xl font-bold text-white">จัดการทีม</h1>
