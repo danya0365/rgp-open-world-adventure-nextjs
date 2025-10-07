@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import { BattleUnit } from "@/src/presentation/presenters/battle/BattlePresenter";
+import { create } from "zustand";
 
 /**
  * Battle Phase
@@ -18,22 +18,22 @@ interface BattleState {
   // Battle Info
   battleId: string | null;
   mapId: string | null;
-  
+
   // Units
   allyUnits: BattleUnit[];
   enemyUnits: BattleUnit[];
-  
+
   // Turn Management
   turn: number;
   phase: BattlePhase;
   currentUnitId: string | null;
   turnOrder: BattleUnit[];
-  
+
   // Action State
   selectedAction: BattleActionType;
   selectedUnitId: string | null;
   selectedSkillId: string | null;
-  
+
   // Battle Results
   rewards: {
     exp: number;
@@ -52,26 +52,26 @@ interface BattleActions {
     allyUnits: BattleUnit[],
     enemyUnits: BattleUnit[]
   ) => void;
-  
+
   // Unit Actions
   moveUnit: (unitId: string, x: number, y: number) => void;
   attackUnit: (attackerId: string, targetId: string, damage: number) => void;
   useSkill: (casterId: string, targetId: string, skillId: string) => void;
-  
+
   // Turn Management
   endTurn: () => void;
   nextUnit: () => void;
-  
+
   // Selection
   selectUnit: (unitId: string | null) => void;
   selectAction: (action: BattleActionType) => void;
   selectSkill: (skillId: string | null) => void;
-  
+
   // Battle Flow
   checkVictory: () => boolean;
   checkDefeat: () => boolean;
   endBattle: (victory: boolean, rewards?: BattleState["rewards"]) => void;
-  
+
   // Reset
   resetBattle: () => void;
 }
@@ -105,7 +105,9 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   initBattle: (mapId, allyUnits, enemyUnits) => {
     // Calculate turn order (based on AGI)
     const allUnits = [...allyUnits, ...enemyUnits];
-    const turnOrder = allUnits.sort((a, b) => b.character.stats.agi - a.character.stats.agi);
+    const turnOrder = allUnits.sort(
+      (a, b) => b.character.stats.agi - a.character.stats.agi
+    );
 
     set({
       battleId: `battle-${Date.now()}`,
@@ -171,8 +173,12 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
       });
 
       // Remove dead units
-      const filteredAllyUnits = newAllyUnits.filter((unit) => unit.currentHp > 0);
-      const filteredEnemyUnits = newEnemyUnits.filter((unit) => unit.currentHp > 0);
+      const filteredAllyUnits = newAllyUnits.filter(
+        (unit) => unit.currentHp > 0
+      );
+      const filteredEnemyUnits = newEnemyUnits.filter(
+        (unit) => unit.currentHp > 0
+      );
 
       return {
         allyUnits: filteredAllyUnits,
@@ -221,18 +227,30 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   endTurn: () => {
     set((state) => {
       // Reset hasActed for all units
-      const newAllyUnits = state.allyUnits.map((unit) => ({ ...unit, hasActed: false }));
-      const newEnemyUnits = state.enemyUnits.map((unit) => ({ ...unit, hasActed: false }));
+      const newAllyUnits = state.allyUnits.map((unit) => ({
+        ...unit,
+        hasActed: false,
+      }));
+      const newEnemyUnits = state.enemyUnits.map((unit) => ({
+        ...unit,
+        hasActed: false,
+      }));
 
       // Get all alive units
       const aliveUnitIds = new Set([
-        ...newAllyUnits.filter(unit => unit.currentHp > 0).map(unit => unit.id),
-        ...newEnemyUnits.filter(unit => unit.currentHp > 0).map(unit => unit.id)
+        ...newAllyUnits
+          .filter((unit) => unit.currentHp > 0)
+          .map((unit) => unit.id),
+        ...newEnemyUnits
+          .filter((unit) => unit.currentHp > 0)
+          .map((unit) => unit.id),
       ]);
 
       // Filter turn order to only include alive units
-      const aliveTurnOrder = state.turnOrder.filter(unit => aliveUnitIds.has(unit.id));
-      
+      const aliveTurnOrder = state.turnOrder.filter((unit) =>
+        aliveUnitIds.has(unit.id)
+      );
+
       // If no alive units left, return current state (shouldn't happen as battle should end first)
       if (aliveTurnOrder.length === 0) {
         return {
@@ -244,16 +262,16 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
       }
 
       // Find the next alive unit in the turn order
-      const currentIndex = state.currentUnitId 
-        ? aliveTurnOrder.findIndex((u) => u.id === state.currentUnitId) 
+      const currentIndex = state.currentUnitId
+        ? aliveTurnOrder.findIndex((u) => u.id === state.currentUnitId)
         : -1;
-      
+
       // Get next unit index, wrapping around if needed
-      let nextIndex = (currentIndex + 1) % aliveTurnOrder.length;
-      
+      const nextIndex = (currentIndex + 1) % aliveTurnOrder.length;
+
       // If we were at the end of the turn order, increment the turn counter
       const isNewTurn = currentIndex >= aliveTurnOrder.length - 1;
-      
+
       // Get the next alive unit
       const nextUnit = aliveTurnOrder[nextIndex];
 
@@ -301,7 +319,9 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
    */
   checkVictory: () => {
     const { enemyUnits } = get();
-    return enemyUnits.length === 0 || enemyUnits.every((unit) => unit.currentHp <= 0);
+    return (
+      enemyUnits.length === 0 || enemyUnits.every((unit) => unit.currentHp <= 0)
+    );
   },
 
   /**
@@ -309,7 +329,9 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
    */
   checkDefeat: () => {
     const { allyUnits } = get();
-    return allyUnits.length === 0 || allyUnits.every((unit) => unit.currentHp <= 0);
+    return (
+      allyUnits.length === 0 || allyUnits.every((unit) => unit.currentHp <= 0)
+    );
   },
 
   /**
