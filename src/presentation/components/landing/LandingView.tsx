@@ -1,6 +1,6 @@
 "use client";
 
-import { Sword, Users, Map, Sparkles, Shield, Zap, Trophy, BookOpen } from "lucide-react";
+import { Sword, Shield, Users, Sparkles, Zap, Map, BookOpen, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -53,14 +53,22 @@ export function LandingView() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link
-              href="/party"
+              href="/world"
               className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 transition-all duration-300 hover:scale-105"
             >
               <span className="relative z-10 flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                จัดการทีม
+                <Map className="w-5 h-5" />
+                สำรวจโลก
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </Link>
+
+            <Link
+              href="/party"
+              className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-semibold text-white hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+            >
+              <Users className="w-5 h-5" />
+              จัดการทีม
             </Link>
 
             <Link
