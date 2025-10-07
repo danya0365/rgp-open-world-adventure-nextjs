@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { PartyViewModel, PartyPresenter, PartyPresenterFactory } from "./PartyPresenter";
-import { usePartyStore } from "@/src/stores/partyStore";
+import { useGameStore } from "@/src/stores/gameStore";
 import { Character } from "@/src/domain/types/character.types";
 
 export interface PartyPresenterHook {
@@ -10,11 +10,14 @@ export interface PartyPresenterHook {
   error: string | null;
 
   // Party state from store
-  party: import("@/src/stores/partyStore").PartyMember[];
+  party: import("@/src/stores/gameStore").PartyMember[];
   
   // Modal states
   isSelectModalOpen: boolean;
   selectedPosition: number | null;
+  
+  // Game state
+  hasEverSelectedCharacter: boolean;
 
   // Actions
   loadData: () => Promise<void>;
@@ -68,7 +71,14 @@ export function usePartyPresenter(
     setLeader: storeSetLeader,
     clearParty: storeClearParty,
     isInParty: storeIsInParty,
-  } = usePartyStore();
+    events,
+  } = useGameStore();
+  
+  // Check if user has ever selected a character
+  // by checking if there are any "add_to_party" events or current party members
+  const hasEverSelectedCharacter = party.length > 0 || events.some(
+    (e) => e.type === "quest" && e.data.action === "add_to_party"
+  );
 
   /**
    * Load data from presenter
@@ -216,6 +226,9 @@ export function usePartyPresenter(
     // Modal states
     isSelectModalOpen,
     selectedPosition,
+    
+    // Game state
+    hasEverSelectedCharacter,
 
     // Actions
     loadData,

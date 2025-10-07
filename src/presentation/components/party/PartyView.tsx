@@ -2,7 +2,7 @@
 
 import { PartyViewModel } from "@/src/presentation/presenters/party/PartyPresenter";
 import { usePartyPresenter } from "@/src/presentation/presenters/party/usePartyPresenter";
-import { getPartyStats, getPartySynergy } from "@/src/stores/partyStore";
+import { getPartyStats, getPartySynergy } from "@/src/stores/gameStore";
 import { Character } from "@/src/domain/types/character.types";
 import { PartySlot } from "@/src/presentation/components/party/PartySlot";
 import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
@@ -22,6 +22,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     party,
     isSelectModalOpen,
     selectedPosition,
+    hasEverSelectedCharacter,
     addToParty,
     removeFromParty,
     isInParty,
@@ -77,6 +78,39 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   const availableChars = viewModel.playableCharacters.filter(
     (c) => !isInParty(c.id)
   );
+
+  // Show warning if user has never selected a character
+  if (!hasEverSelectedCharacter) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">ยังไม่ได้เลือกตัวละคร!</h2>
+          <p className="text-gray-400 mb-6">
+            คุณต้องเลือกตัวละครก่อนจึงจะสามารถจัดทีมได้
+            <br />
+            <span className="text-sm text-gray-500 mt-2 block">
+              (ไปหน้าตัวละคร → คลิกตัวละคร → เลือกเข้าทีม)
+            </span>
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/characters"
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+            >
+              เลือกตัวละคร
+            </Link>
+            <Link
+              href="/"
+              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            >
+              กลับหน้าแรก
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSlotClick = (position: number) => {
     openSelectModal(position);

@@ -7,7 +7,7 @@ import { CharacterCard } from "@/src/presentation/components/character/Character
 import { Button, Modal } from "@/src/presentation/components/ui";
 import { Users, Filter, Search } from "lucide-react";
 import Link from "next/link";
-import { usePartyStore } from "@/src/stores/partyStore";
+import { useGameStore } from "@/src/stores/gameStore";
 import { useRouter } from "next/navigation";
 
 interface CharactersViewProps {
@@ -16,7 +16,7 @@ interface CharactersViewProps {
 
 export function CharactersView({ initialViewModel }: CharactersViewProps) {
   const router = useRouter();
-  const { addToParty, isInParty, party } = usePartyStore();
+  const { addToParty, isInParty, party } = useGameStore();
   
   const {
     viewModel,

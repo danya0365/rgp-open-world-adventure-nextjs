@@ -6,14 +6,14 @@ import { LocationCard } from "./LocationCard";
 import { Breadcrumb } from "./Breadcrumb";
 import { Map, Globe, MapPin, Compass, Users, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { usePartyStore, getPartyStats } from "@/src/stores/partyStore";
+import { useGameStore, getPartyStats } from "@/src/stores/gameStore";
 
 interface WorldViewProps {
   initialViewModel?: WorldViewModel;
 }
 
 export function WorldView({ initialViewModel }: WorldViewProps) {
-  const { party } = usePartyStore();
+  const { party, setCurrentLocation: saveCurrentLocation } = useGameStore();
   const partyStats = getPartyStats(party);
   
   const {
@@ -25,6 +25,11 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
     navigateToLocation,
     setCurrentLocation,
   } = useWorldPresenter(initialViewModel);
+  
+  // Save location to game store when it changes
+  if (currentLocation && currentLocation.id !== party[0]?.character.id) {
+    saveCurrentLocation(currentLocation.id);
+  }
 
   // Show loading only on initial load
   if (loading && !viewModel) {
@@ -148,7 +153,7 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
             </Link>
           </div>
           <div className="mt-3 flex gap-2">
-            {party.map((member) => (
+            {party.map((member: import("@/src/stores/gameStore").PartyMember) => (
               <div
                 key={member.character.id}
                 className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg"
