@@ -106,10 +106,17 @@
     - [ ] `battle_units` - Units in battle (grid positions)
     - [ ] `combat_actions` - Turn history
     - [ ] `formations` - Pre-battle formations
-  - [ ] **Characters & Party**
-    - [ ] `party_members` - Available companions
-    - [ ] `active_party` - Current party (max 4)
-    - [ ] `character_stats` - Level, HP, MP, Stats
+  - [ ] **Characters & Party (Dragon Quest Tact Style)**
+    - [ ] `recruited_characters` - All recruited characters (unlimited)
+    - [ ] `parties` - Multiple party configurations (unlimited parties)
+      - [ ] `party_id` - Unique party ID
+      - [ ] `party_name` - Custom party name (e.g., "Main Team", "Boss Team", "Farm Team")
+      - [ ] `party_members` - 4 character slots (can be empty)
+      - [ ] `is_active` - Currently active party
+      - [ ] `formation_type` - Formation preset
+      - [ ] `created_at`, `updated_at`
+    - [ ] `active_party_id` - Currently selected party
+    - [ ] `character_stats` - Level, HP, MP, Stats (per recruited character)
     - [ ] `character_skills` - Skills & abilities
     - [ ] `relationships` - Friendship & romance
   - [ ] **Items & Equipment**
@@ -209,14 +216,29 @@
   - [ ] Rewards display
   - [ ] Track/untrack toggle
 
-### 2.4 Character & Party Management
-- [ ] **Party Screen** (`/game/party`)
-  - [ ] Active party (4 members)
-  - [ ] Available companions
-  - [ ] Character stats display
-  - [ ] Equipment preview
-  - [ ] Switch party members
-  - [ ] Relationship levels
+### 2.4 Character & Party Management (Dragon Quest Tact Style)
+- [ ] **Party Management Screen** (`/game/party`)
+  - [ ] **Multiple Party System** (unlimited parties)
+    - [ ] Party list/tabs (Main, Boss, Farm, Custom 1-10, etc.)
+    - [ ] Create new party (with custom name)
+    - [ ] Delete party
+    - [ ] Rename party
+    - [ ] Copy party configuration
+    - [ ] Set active party (for battle)
+  - [ ] **Party Editor** (per party)
+    - [ ] 4 character slots
+    - [ ] Drag & drop to reorder
+    - [ ] Add/remove characters
+    - [ ] Leader selection
+    - [ ] Formation preview
+    - [ ] Team stats summary
+    - [ ] Team synergy display
+  - [ ] **Recruited Characters Pool**
+    - [ ] All recruited characters (unlimited)
+    - [ ] Filter by class/element
+    - [ ] Sort by level/stats
+    - [ ] Character availability indicator (in other parties)
+    - [ ] Quick add to current party
 - [ ] **Character Detail** (`/game/character/[id]`)
   - [ ] Character portrait & bio
   - [ ] Stats (HP, MP, STR, DEF, INT, AGI, LUK)
@@ -224,6 +246,7 @@
   - [ ] Equipment slots (Weapon, Armor, Accessory x2)
   - [ ] Skill tree viewer
   - [ ] Relationship dialogue
+  - [ ] Party membership display (which parties this character is in)
 - [ ] **Character Progression**
   - [ ] Level up screen
   - [ ] Stat allocation

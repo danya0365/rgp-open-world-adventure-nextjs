@@ -121,7 +121,11 @@
 
 ### 🎮 Phase 4: Party Management System
 
-#### ✅ 4.1 Party System Complete (Clean Architecture)
+#### ✅ 4.1 Party System Complete (Clean Architecture) - **NEEDS REFACTOR**
+⚠️ **Current Implementation**: Single party only (max 4 members)
+🎯 **New Requirement**: Multiple parties (Dragon Quest Tact style)
+
+**Current Features**:
 - ✅ **Party Store** (`/src/stores/partyStore.ts`)
   - Zustand state management
   - LocalStorage persistence
@@ -157,6 +161,15 @@
   - Tank Protection (Warrior/Paladin)
   - High Damage (Mage/Archer/Assassin)
 
+**🔄 TODO: Refactor to Multiple Party System**
+- [ ] Support unlimited parties
+- [ ] Party tabs/list UI
+- [ ] Create/delete/rename parties
+- [ ] Copy party configuration
+- [ ] Active party selection
+- [ ] Character can be in multiple parties
+- [ ] Party membership tracking
+
 ---
 
 ### 📚 Documentation
@@ -172,7 +185,14 @@
 
 ## 🔄 กำลังทำ (In Progress)
 
-### ไม่มี - พร้อมเริ่มงานใหม่!
+### 🗺️ World Map System (2025-10-07)
+- ✅ World Map UI complete
+- ✅ Hierarchical navigation
+- ✅ Breadcrumb system
+- ✅ Location discovery
+- ✅ Party validation (must have party to enter)
+- ⚠️ Fixed infinite render bug
+- ⚠️ Fixed breadcrumb navigation bug
 
 ---
 
@@ -180,10 +200,11 @@
 
 ### 🎯 Priority 1: Core Game UI (Week 1-2)
 
-#### ✅ A. Party Management System 🎮 (COMPLETED)
+#### ✅ A. Party Management System 🎮 (COMPLETED - NEEDS REFACTOR)
 **Completed**: 2025-10-07
+⚠️ **Status**: Single party implementation complete, needs refactor to multiple parties
 
-**Features**:
+**Current Features**:
 - ✅ Party selection UI (เลือก 4 ตัวละครเข้าทีม)
 - ✅ Party composition display
 - ✅ Team synergy indicators (5 types)
@@ -197,6 +218,15 @@
 - ✅ `/src/presentation/components/party/PartyView.tsx` - UI component
 - ✅ `/src/presentation/components/party/PartySlot.tsx` - Party slot component
 - ✅ `/src/stores/partyStore.ts` - Zustand store
+
+**🔄 Refactor Required**:
+- [ ] Change from single party to multiple parties
+- [ ] Add party tabs/list UI
+- [ ] Add create/delete/rename party
+- [ ] Add copy party feature
+- [ ] Add active party selection
+- [ ] Update gameStore to support multiple parties
+- [ ] Update all party-related components
 
 ---
 
@@ -348,18 +378,18 @@
 
 ## 📊 Progress Summary
 
-### Overall Progress: **40%** 🎮
+### Overall Progress: **50%** 🎮
 
 - ✅ **Design System**: 100%
 - ✅ **Mock Data**: 100%
 - ✅ **Component Library**: 100%
 - ✅ **Character UI**: 100% (Clean Architecture)
 - ✅ **Party Management**: 100% (Clean Architecture)
-- ⏳ **World Map**: 0%
+- ✅ **World Map**: 90% (UI complete, need polish)
+- ✅ **State Management (Game Store)**: 80% (Centralized Zustand)
 - ⏳ **Quest System**: 0%
 - ⏳ **Combat System**: 0%
 - ⏳ **Inventory**: 0%
-- ⏳ **State Management**: 20% (Party Store done)
 - ⏳ **Backend**: 0%
 
 ---
@@ -372,13 +402,24 @@
 - ✅ Add synergy system
 - ✅ Clean Architecture pattern
 
-### 🔄 Day 3-5: World Map (NEXT)
-- [ ] Create location navigation
-- [ ] Implement breadcrumb
-- [ ] Add location discovery
-- [ ] Clean Architecture pattern
+### ✅ Day 3-5: World Map (COMPLETED)
+- ✅ Create location navigation
+- ✅ Implement breadcrumb
+- ✅ Add location discovery
+- ✅ Clean Architecture pattern
+- ✅ Party validation
+- ✅ Fixed bugs
 
-### Day 6-7: Quest System
+### 🔄 Day 6-7: Multiple Party System Refactor (CURRENT)
+- [ ] Refactor gameStore to support multiple parties
+- [ ] Create Party interface (id, name, members, isActive)
+- [ ] Add party CRUD operations
+- [ ] Update Party UI to show party list/tabs
+- [ ] Add create/delete/rename party UI
+- [ ] Add copy party feature
+- [ ] Update all components to use active party
+
+### Day 8-10: Quest System
 - [ ] Create quest log UI
 - [ ] Implement quest cards
 - [ ] Add objectives tracker
@@ -400,11 +441,36 @@
 
 ## 🎉 Recent Achievements (2025-10-07)
 
+### ✅ Centralized Game State Management
+- สร้าง `gameStore` แบบ centralized (Zustand)
+- แยก Master Data กับ Game State ชัดเจน
+- เปลี่ยนจาก `unlockedCharacters` → `recruitedCharacters`
+- เก็บ full character state (level, exp, stats, equipment, skills)
+- Persist ใน LocalStorage
+- Validation methods (canEnterPartyPage, canEnterWorldMap)
+
+### ✅ Character Recruitment System
+- Recruit characters (unlimited)
+- Party system (max 4 members)
+- Track recruited date & last updated
+- Update character progression (level up, equipment, skills)
+
+### ✅ World Map System
+- Hierarchical location navigation
+- Breadcrumb system
+- Party display in world map
+- Location discovery tracking
+- Validation (must have party to enter)
+- Fixed infinite render bug
+- Fixed breadcrumb navigation bug
+
 ### ✅ Party Management System
 - สร้างระบบจัดการทีมสมบูรณ์
 - Clean Architecture pattern
 - Team Synergy detection
 - LocalStorage persistence
+- Multi-select characters before confirming
+- Summary bar with confirmation button
 
 ### ✅ Clean Architecture Refactoring
 - Refactored Characters page
