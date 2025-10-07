@@ -254,10 +254,10 @@
 
 ---
 
-### 📍 Phase 5: Location Detail Page
+### 📍 Phase 5: World Map & Location System
 
-#### ✅ 5.1 Location Detail Complete (Clean Architecture) ✨
-**Completed**: 2025-10-07 (18:32)
+#### ✅ 5.1 URL-Based Navigation & Unified Location System ✨
+**Completed**: 2025-10-07 (20:13)
 🎯 **Implementation**: Entry point to Battle System with full location information
 
 **Features**:
@@ -326,9 +326,39 @@
 - ✅ `/src/data/mock/battleMaps.mock.ts` - Battle maps data
 - ✅ Updated `/src/domain/types/battle.types.ts` - Added description field
 
+**Major Improvements (2025-10-07 Evening)**:
+- ✅ **URL-Based Navigation** - เปลี่ยนจาก local state เป็น URL state
+  - `/world` → Root locations
+  - `/world/[id]` → Location detail + children
+  - `/world/[id]/[childId]` → Hierarchical navigation
+  - ✅ Refresh ได้, Share URL ได้, Back/Forward ทำงาน
+  
+- ✅ **Unified Route** - รวม 2 routes เป็น 1
+  - ลบ `/app/location/[id]` ออก
+  - ใช้ `/app/world/[[...path]]` เดียว
+  - แสดง Location Detail เมื่อมี currentLocation
+  - แสดง Children Grid เมื่อมี children
+  
+- ✅ **Refactored Components**
+  - ใช้ `LocationDetailView` (สมบูรณ์) แทน `LocationDetailSection`
+  - เพิ่ม props: `hideBackButton`, `hideHeader`, `hideStats`, `compact`
+  - ไม่มีข้อมูลซ้ำซ้อนระหว่าง WorldView และ LocationDetailView
+  
+- ✅ **Clean Architecture Maintained**
+  - Presenter Pattern ครบถ้วน
+  - Actions: `enterBattle()`, `startQuest()`, `talkToNPC()`, `accessService()`
+  - Loading/Error states
+  - ViewModel-driven UI
+
 **Navigation Flow**:
 ```
-World Map → Location Card (Click) → Location Detail → Enter Battle → Battle System
+/world → Root Locations
+  ↓ Click Location
+/world/continent-1 → Continent Detail + Children Grid
+  ↓ Click Child
+/world/continent-1/city-1 → City Detail (no children) + Battle Arena
+  ↓ Click "Enter Battle"
+/battle/[mapId] → Battle System (Next Phase)
 ```
 
 ---
@@ -418,7 +448,7 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 
 ## 🔄 กำลังทำ (In Progress)
 
-**ไม่มีงานที่กำลังทำอยู่ในขณะนี้** - พร้อมเริ่มงานใหม่!
+**ไม่มีงานที่กำลังทำอยู่ในขณะนี้** - พร้อมเริ่ม Battle System! ⚔️
 
 ---
 
@@ -628,19 +658,18 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 
 ## 📊 Progress Summary
 
-### Overall Progress: **65%** 🎮
+### Overall Progress: **68%** 🎮
 
 - ✅ **Design System**: 100%
 - ✅ **Mock Data**: 100%
 - ✅ **Component Library**: 100%
 - ✅ **Character UI**: 100% (Clean Architecture)
 - ✅ **Multiple Party Management**: 100% (Dragon Quest Tact Style)
-- ✅ **World Map**: 100% (Clean Architecture + Bug Fixes)
+- ✅ **World Map & Location System**: 100% (URL-Based Navigation + Unified Routes)
 - ✅ **State Management (Game Store)**: 100% (Centralized Zustand + Multiple Parties)
 - ✅ **Game Layout & Navigation**: 100% (Global Navbar + Responsive)
-- ✅ **Location Detail Page**: 100% (Entry to Battle System)
 - ✅ **Quest System**: 100% (Clean Architecture + Full Features)
-- ⏳ **Combat System**: 0%
+- ⏳ **Combat System**: 0% ← **Next Priority!**
 - ⏳ **Inventory**: 0%
 - ⏳ **Backend**: 0%
 
@@ -683,19 +712,16 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 - ✅ Quest filtering & actions
 - ✅ Quest detail modal
 
-### ✅ Day 11-12: Location Detail Page (COMPLETED)
-- ✅ Create location detail page structure
-- ✅ Implement LocationDetailPresenter
-- ✅ Create LocationDetailView component
-- ✅ Add NPCs list display
-- ✅ Add enemy preview (bestiary)
-- ✅ Add "Enter Battle" button
-- ✅ Add services display
-- ✅ Clean Architecture pattern
-- ✅ Battle maps mock data
-- ✅ World map integration
+### ✅ Day 11-12: World Map & Location System (COMPLETED)
+- ✅ URL-based navigation (/world/[[...path]])
+- ✅ Unified route (merged 2 routes into 1)
+- ✅ Location detail with actions
+- ✅ Hierarchical navigation
+- ✅ Battle maps integration
+- ✅ Clean Architecture maintained
+- ✅ No duplicate UI elements
 
-### 📅 Day 13-19: Battle System (NEXT)
+### 📅 Day 13-20: Battle System (NEXT - HIGH PRIORITY) ⚔️
 - [ ] Create battle grid UI (Dynamic Tactical Grid)
 - [ ] Implement unit positioning
 - [ ] Add movement & attack range visualization
@@ -720,8 +746,8 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 
 ## 🎉 Recent Achievements (2025-10-07)
 
-### ✅ Location Detail Page 📍
-**Completed**: 2025-10-07 (18:32)
+### ✅ World Map & Location System Refactoring 🗺️
+**Completed**: 2025-10-07 (20:13)
 - ✅ Entry point to Battle System
 - ✅ Location information & stats display
 - ✅ Danger level system (5 levels: Low → Extreme)
@@ -733,7 +759,11 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 - ✅ Battle maps mock data (8 configurations)
 - ✅ World map integration (click → detail page)
 - ✅ Clean Architecture pattern
-- ✅ Navigation flow: World Map → Location Detail → Battle
+- ✅ **URL-Based Navigation** - เปลี่ยนจาก local state เป็น URL
+- ✅ **Unified Routes** - รวม 2 routes เป็น 1 (/world/[[...path]])
+- ✅ **Component Reusability** - ใช้ LocationDetailView แบบ compact
+- ✅ **No Duplicate UI** - ไม่มีข้อมูลซ้ำซ้อน
+- ✅ Navigation flow: /world → /world/[id] → /world/[id]/[childId] → Battle
 
 ### ✅ Game Layout & Navigation 🎨
 **Completed**: 2025-10-07 (18:18)
@@ -824,7 +854,7 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 
 ---
 
-## 🚀 Ready to Continue!
+## 🚀 Ready for Battle System!
 
 เรามี foundation ที่แข็งแกร่งแล้ว:
 - ✅ Design System ครบถ้วน
@@ -832,15 +862,46 @@ World Map → Location Card (Click) → Location Detail → Enter Battle → Bat
 - ✅ Mock Data ครบทุกส่วน (Characters, Items, Skills, Quests, Locations, Battle Maps)
 - ✅ Character Management สมบูรณ์ (Clean Architecture)
 - ✅ Multiple Party Management สมบูรณ์ (Dragon Quest Tact Style)
-- ✅ World Map Navigation สมบูรณ์ (Clean Architecture)
+- ✅ **World Map & Location System สมบูรณ์** (URL-Based Navigation) ← ปรับปรุงใหม่!
 - ✅ Quest System สมบูรณ์ (Clean Architecture)
 - ✅ Game Layout & Navigation สมบูรณ์ (Global Navbar)
-- ✅ **Location Detail Page สมบูรณ์** (Entry to Battle System) ← ใหม่!
 - ✅ Centralized State Management (Zustand + LocalStorage)
 
 **Navigation Flow พร้อมแล้ว:**
 ```
-World Map → Location Detail → Battle System
+/world → /world/[id] → /world/[id]/[childId] → /battle/[mapId]
 ```
 
-**พร้อมสร้าง Combat System (Dynamic Tactical Grid) ต่อไปได้เลยครับ!** ⚔️🎮
+---
+
+## 🎯 Next Phase: Battle System (Dynamic Tactical Grid)
+
+### **Priority 1: Battle Grid Foundation** (Day 13-15)
+- [ ] Create `/app/battle/[mapId]/page.tsx`
+- [ ] Implement `BattlePresenter` (Clean Architecture)
+- [ ] Create `BattleView` component
+- [ ] Render dynamic grid (5x5 to 10x10+)
+- [ ] Display units on grid
+- [ ] Basic grid styling
+
+### **Priority 2: Unit Positioning & Movement** (Day 16-17)
+- [ ] Implement unit placement system
+- [ ] Movement range calculation
+- [ ] Movement visualization (highlight tiles)
+- [ ] Drag & drop or click-to-move
+- [ ] Collision detection
+
+### **Priority 3: Combat Actions** (Day 18-19)
+- [ ] Attack range visualization
+- [ ] Skill range patterns (cross, area, line)
+- [ ] Action menu UI
+- [ ] Skill selection
+- [ ] Damage calculation
+
+### **Priority 4: Turn System** (Day 20)
+- [ ] Turn order display
+- [ ] Speed-based initiative
+- [ ] Action points system
+- [ ] End turn functionality
+
+**พร้อมสร้าง Battle System ต่อไปได้เลยครับ!** ⚔️🎮
