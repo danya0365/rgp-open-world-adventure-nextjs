@@ -3,10 +3,19 @@
 import { BattleViewModel } from "@/src/presentation/presenters/battle/BattlePresenter";
 import { useBattlePresenter } from "@/src/presentation/presenters/battle/useBattlePresenter";
 import { useBattleStore } from "@/src/stores/battleStore";
+import {
+  ArrowLeft,
+  Heart,
+  Shield,
+  Skull,
+  Swords,
+  Trophy,
+  Users,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, Swords, Heart, Zap, Shield, Users, Trophy, Skull } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface BattleViewProps {
   mapId: string;
@@ -15,7 +24,7 @@ interface BattleViewProps {
 
 export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
   const router = useRouter();
-  
+
   // Presenter for initial data
   const {
     viewModel: presenterViewModel,
@@ -39,12 +48,29 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     resetBattle,
   } = useBattleStore();
 
-  const [movementRange, setMovementRange] = useState<{ x: number; y: number }[]>([]);
-  const [attackRange, setAttackRange] = useState<{ x: number; y: number }[]>([]);
-  const [originalPosition, setOriginalPosition] = useState<{ x: number; y: number } | null>(null);
+  const [movementRange, setMovementRange] = useState<
+    { x: number; y: number }[]
+  >([]);
+  const [attackRange, setAttackRange] = useState<{ x: number; y: number }[]>(
+    []
+  );
+  const [originalPosition, setOriginalPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Get current unit
-  const currentUnit = [...storeAllyUnits, ...storeEnemyUnits].find(u => u.id === currentUnitId);
+  const currentUnit = [...storeAllyUnits, ...storeEnemyUnits].find(
+    (u) => u.id === currentUnitId
+  );
+
+  // Filter out dead units from turn order (check HP from store)
+  const aliveTurnOrder = storeTurnOrder.filter((unit) => {
+    const actualUnit = [...storeAllyUnits, ...storeEnemyUnits].find(
+      (u) => u.id === unit.id
+    );
+    return actualUnit && actualUnit.currentHp > 0;
+  });
 
   // Initialize battle when presenter data is ready
   useEffect(() => {
@@ -68,15 +94,18 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
   // Calculate ranges - ALWAYS show for current unit's turn
   useEffect(() => {
     if (!presenterViewModel || !currentUnit) {
-      console.log("❌ No presenterViewModel or currentUnit", { presenterViewModel: !!presenterViewModel, currentUnit: !!currentUnit });
+      console.log("❌ No presenterViewModel or currentUnit", {
+        presenterViewModel: !!presenterViewModel,
+        currentUnit: !!currentUnit,
+      });
       setMovementRange([]);
       setAttackRange([]);
       return;
     }
 
     // Check if there are enemies to attack
-    const hasEnemies = currentUnit.isAlly 
-      ? storeEnemyUnits.length > 0 
+    const hasEnemies = currentUnit.isAlly
+      ? storeEnemyUnits.length > 0
       : storeAllyUnits.length > 0;
 
     console.log("🎯 Calculating ranges for:", {
@@ -86,7 +115,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
       originalPosition: originalPosition,
       hasActed: currentUnit.hasActed,
       hasEnemies: hasEnemies,
-      mov: currentUnit.character.stats.mov
+      mov: currentUnit.character.stats.mov,
     });
 
     // Movement range - use BFS pathfinding (cannot jump over enemies)
@@ -97,13 +126,13 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     // BFS to find reachable tiles
     const visited = new Set<string>();
     const queue: { x: number; y: number; distance: number }[] = [
-      { x: positionForMove.x, y: positionForMove.y, distance: 0 }
+      { x: positionForMove.x, y: positionForMove.y, distance: 0 },
     ];
     visited.add(`${positionForMove.x},${positionForMove.y}`);
 
     while (queue.length > 0) {
       const current = queue.shift()!;
-      
+
       // Check 4 directions (up, down, left, right)
       const directions = [
         { x: current.x, y: current.y - 1 }, // up
@@ -114,10 +143,14 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
       for (const next of directions) {
         const key = `${next.x},${next.y}`;
-        
+
         // Check bounds
-        if (next.x < 0 || next.x >= presenterViewModel.battleMap.width || 
-            next.y < 0 || next.y >= presenterViewModel.battleMap.height) {
+        if (
+          next.x < 0 ||
+          next.x >= presenterViewModel.battleMap.width ||
+          next.y < 0 ||
+          next.y >= presenterViewModel.battleMap.height
+        ) {
           continue;
         }
 
@@ -126,16 +159,30 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
         // Check if tile is occupied by enemy (cannot pass through enemies)
         const occupiedByEnemy = currentUnit.isAlly
-          ? storeEnemyUnits.some(u => u.position.x === next.x && u.position.y === next.y)
-          : storeAllyUnits.some(u => u.position.x === next.x && u.position.y === next.y);
+          ? storeEnemyUnits.some(
+              (u) => u.position.x === next.x && u.position.y === next.y
+            )
+          : storeAllyUnits.some(
+              (u) => u.position.x === next.x && u.position.y === next.y
+            );
 
         // Skip if occupied by enemy (cannot pass through)
         if (occupiedByEnemy) continue;
 
         // Check if tile is final destination (cannot stop on ally)
         const occupiedByAlly = currentUnit.isAlly
-          ? storeAllyUnits.some(u => u.position.x === next.x && u.position.y === next.y && u.id !== currentUnit.id)
-          : storeEnemyUnits.some(u => u.position.x === next.x && u.position.y === next.y && u.id !== currentUnit.id);
+          ? storeAllyUnits.some(
+              (u) =>
+                u.position.x === next.x &&
+                u.position.y === next.y &&
+                u.id !== currentUnit.id
+            )
+          : storeEnemyUnits.some(
+              (u) =>
+                u.position.x === next.x &&
+                u.position.y === next.y &&
+                u.id !== currentUnit.id
+            );
 
         const newDistance = current.distance + 1;
 
@@ -153,18 +200,29 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
     // Show original position (start point) as moveable
     if (originalPosition) {
-      const alreadyExists = moveRange.some(pos => pos.x === originalPosition.x && pos.y === originalPosition.y);
+      const alreadyExists = moveRange.some(
+        (pos) => pos.x === originalPosition.x && pos.y === originalPosition.y
+      );
       if (!alreadyExists) {
         moveRange.push({ x: originalPosition.x, y: originalPosition.y });
       }
     }
 
     // Also show current position as moveable (where unit moved to)
-    if (originalPosition && 
-        (currentUnit.position.x !== originalPosition.x || currentUnit.position.y !== originalPosition.y)) {
-      const alreadyExists = moveRange.some(pos => pos.x === currentUnit.position.x && pos.y === currentUnit.position.y);
+    if (
+      originalPosition &&
+      (currentUnit.position.x !== originalPosition.x ||
+        currentUnit.position.y !== originalPosition.y)
+    ) {
+      const alreadyExists = moveRange.some(
+        (pos) =>
+          pos.x === currentUnit.position.x && pos.y === currentUnit.position.y
+      );
       if (!alreadyExists) {
-        moveRange.push({ x: currentUnit.position.x, y: currentUnit.position.y });
+        moveRange.push({
+          x: currentUnit.position.x,
+          y: currentUnit.position.y,
+        });
       }
     }
 
@@ -176,7 +234,9 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     if (hasEnemies) {
       for (let x = 0; x < presenterViewModel.battleMap.width; x++) {
         for (let y = 0; y < presenterViewModel.battleMap.height; y++) {
-          const attackDistance = Math.abs(x - currentUnit.position.x) + Math.abs(y - currentUnit.position.y);
+          const attackDistance =
+            Math.abs(x - currentUnit.position.x) +
+            Math.abs(y - currentUnit.position.y);
           if (attackDistance <= attackRangeValue && attackDistance > 0) {
             atkRange.push({ x, y });
           }
@@ -188,27 +248,40 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
       movementRange: moveRange.length,
       attackRange: atkRange.length,
       hasEnemies: hasEnemies,
-      usingOriginalPos: !!originalPosition
+      usingOriginalPos: !!originalPosition,
     });
 
     setMovementRange(moveRange);
     setAttackRange(atkRange);
-  }, [currentUnit, storeAllyUnits, storeEnemyUnits, presenterViewModel, originalPosition]);
+  }, [
+    currentUnit,
+    storeAllyUnits,
+    storeEnemyUnits,
+    presenterViewModel,
+    originalPosition,
+  ]);
 
   // Enemy AI - Auto play enemy turn
   useEffect(() => {
-    if (!currentUnit || currentUnit.isAlly || currentUnit.hasActed || !presenterViewModel) return;
+    if (
+      !currentUnit ||
+      currentUnit.isAlly ||
+      currentUnit.hasActed ||
+      !presenterViewModel
+    )
+      return;
 
     const playEnemyTurn = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
 
       // Find nearest ally
       let nearestAlly = null;
       let minDistance = Infinity;
 
       for (const ally of storeAllyUnits) {
-        const distance = Math.abs(ally.position.x - currentUnit.position.x) + 
-                        Math.abs(ally.position.y - currentUnit.position.y);
+        const distance =
+          Math.abs(ally.position.x - currentUnit.position.x) +
+          Math.abs(ally.position.y - currentUnit.position.y);
         if (distance < minDistance) {
           minDistance = distance;
           nearestAlly = ally;
@@ -224,18 +297,21 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
       const attackRangeValue = 2;
       if (minDistance <= attackRangeValue) {
         // Attack!
-        const damage = Math.max(1, currentUnit.character.stats.atk - nearestAlly.character.stats.def);
+        const damage = Math.max(
+          1,
+          currentUnit.character.stats.atk - nearestAlly.character.stats.def
+        );
         storeAttackUnit(currentUnit.id, nearestAlly.id, damage);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
         storeEndTurn();
       } else {
         // Move toward ally
         const dx = nearestAlly.position.x - currentUnit.position.x;
         const dy = nearestAlly.position.y - currentUnit.position.y;
-        
+
         let newX = currentUnit.position.x;
         let newY = currentUnit.position.y;
-        
+
         // Move in the direction of the ally
         if (Math.abs(dx) > Math.abs(dy)) {
           newX += dx > 0 ? 1 : -1;
@@ -245,20 +321,28 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
         // Check if tile is occupied
         const occupied = [...storeAllyUnits, ...storeEnemyUnits].some(
-          u => u.position.x === newX && u.position.y === newY
+          (u) => u.position.x === newX && u.position.y === newY
         );
 
         if (!occupied) {
           storeMoveUnit(currentUnit.id, newX, newY);
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
         storeEndTurn();
       }
     };
 
     playEnemyTurn();
-  }, [currentUnit, storeAllyUnits, storeEnemyUnits, presenterViewModel, storeMoveUnit, storeAttackUnit, storeEndTurn]);
+  }, [
+    currentUnit,
+    storeAllyUnits,
+    storeEnemyUnits,
+    presenterViewModel,
+    storeMoveUnit,
+    storeAttackUnit,
+    storeEndTurn,
+  ]);
 
   // Show loading state
   if (loading && !presenterViewModel) {
@@ -363,17 +447,17 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
   // Helper: Check if tile is in range
   const isTileInMovementRange = (x: number, y: number) => {
-    const inRange = movementRange.some(pos => pos.x === x && pos.y === y);
+    const inRange = movementRange.some((pos) => pos.x === x && pos.y === y);
     return inRange;
   };
 
   const isTileInAttackRange = (x: number, y: number) => {
-    const inRange = attackRange.some(pos => pos.x === x && pos.y === y);
+    const inRange = attackRange.some((pos) => pos.x === x && pos.y === y);
     if (x === 2 && y === 1) {
-      console.log("🔴 Checking tile (2,1) for attack range:", { 
-        inRange, 
+      console.log("🔴 Checking tile (2,1) for attack range:", {
+        inRange,
         attackRangeTotal: attackRange.length,
-        attackRangeSample: attackRange.slice(0, 5)
+        attackRangeSample: attackRange.slice(0, 5),
       });
     }
     return inRange;
@@ -381,20 +465,25 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
   // Helper: Get unit at position
   const getUnitAtPosition = (x: number, y: number) => {
-    return [...storeAllyUnits, ...storeEnemyUnits].find(u => u.position.x === x && u.position.y === y);
+    return [...storeAllyUnits, ...storeEnemyUnits].find(
+      (u) => u.position.x === x && u.position.y === y
+    );
   };
 
   // Helper: Handle tile click
   const handleTileClick = (x: number, y: number) => {
     // Only allow actions for current unit if it's ally's turn
     if (!currentUnit || !currentUnit.isAlly || currentUnit.hasActed) return;
-    
+
     const unit = getUnitAtPosition(x, y);
-    
+
     if (unit && unit.id !== currentUnit.id) {
       // Click on another unit - try to attack if in range
       if (isTileInAttackRange(x, y) && !unit.isAlly) {
-        const damage = Math.max(1, currentUnit.character.stats.atk - unit.character.stats.def);
+        const damage = Math.max(
+          1,
+          currentUnit.character.stats.atk - unit.character.stats.def
+        );
         storeAttackUnit(currentUnit.id, unit.id, damage);
       }
     } else if (!unit && isTileInMovementRange(x, y)) {
@@ -411,23 +500,27 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
           <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-white mb-2">Victory!</h1>
           <p className="text-gray-400 mb-6">คุณชนะการต่อสู้!</p>
-          
+
           {rewards && (
             <div className="bg-slate-800/50 rounded-lg p-4 mb-6">
               <h2 className="text-lg font-bold text-white mb-3">Rewards</h2>
               <div className="space-y-2 text-left">
                 <div className="flex justify-between">
                   <span className="text-gray-400">EXP:</span>
-                  <span className="text-green-400 font-bold">+{rewards.exp}</span>
+                  <span className="text-green-400 font-bold">
+                    +{rewards.exp}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Gold:</span>
-                  <span className="text-yellow-400 font-bold">+{rewards.gold}</span>
+                  <span className="text-yellow-400 font-bold">
+                    +{rewards.gold}
+                  </span>
                 </div>
               </div>
             </div>
           )}
-          
+
           <button
             onClick={() => {
               resetBattle();
@@ -450,7 +543,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
           <Skull className="w-20 h-20 text-red-400 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-white mb-2">Defeat...</h1>
           <p className="text-gray-400 mb-6">คุณแพ้การต่อสู้</p>
-          
+
           <button
             onClick={() => {
               resetBattle();
@@ -479,11 +572,13 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
               กลับ
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-white">{battleMap.name}</h1>
+              <h1 className="text-3xl font-bold text-white">
+                {battleMap.name}
+              </h1>
               <p className="text-gray-400">{battleMap.description}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="px-4 py-2 bg-slate-800/50 rounded-lg">
               <p className="text-gray-400 text-sm">Turn</p>
@@ -497,33 +592,50 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
           <div className="lg:col-span-3">
             {/* Battle Status Message */}
             {currentUnit && (
-              <div className={`mb-4 p-4 rounded-lg border ${
-                currentUnit.isAlly 
-                  ? "bg-blue-900/20 border-blue-500/30" 
-                  : "bg-orange-900/20 border-orange-500/30"
-              }`}>
+              <div
+                className={`mb-4 p-4 rounded-lg border ${
+                  currentUnit.isAlly
+                    ? "bg-blue-900/20 border-blue-500/30"
+                    : "bg-orange-900/20 border-orange-500/30"
+                }`}
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
-                    currentUnit.isAlly ? "bg-blue-600" : "bg-orange-600"
-                  }`}>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+                      currentUnit.isAlly ? "bg-blue-600" : "bg-orange-600"
+                    }`}
+                  >
                     {currentUnit.isAlly ? "🛡️" : "👹"}
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-bold text-lg">
-                      {currentUnit.isAlly ? "🎮 Your Turn" : "⏳ Enemy Turn"} - {currentUnit.character.name}
+                      {currentUnit.isAlly ? "🎮 Your Turn" : "⏳ Enemy Turn"} -{" "}
+                      {currentUnit.character.name}
                     </p>
                     {currentUnit.isAlly && !currentUnit.hasActed ? (
                       <p className="text-gray-300 text-sm">
-                        💡 คลิกช่อง<span className="text-blue-400 font-semibold">สีน้ำเงิน</span>เพื่อเคลื่อนที่ 
-                        หรือ คลิกศัตรูในช่อง<span className="text-red-400 font-semibold">สีแดง</span>เพื่อโจมตี
+                        💡 คลิกช่อง
+                        <span className="text-blue-400 font-semibold">
+                          สีน้ำเงิน
+                        </span>
+                        เพื่อเคลื่อนที่ หรือ คลิกศัตรูในช่อง
+                        <span className="text-red-400 font-semibold">
+                          สีแดง
+                        </span>
+                        เพื่อโจมตี
                       </p>
                     ) : currentUnit.isAlly && currentUnit.hasActed ? (
                       <p className="text-gray-400 text-sm">
-                        ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot; เพื่อจบเทิร์น
+                        ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot;
+                        เพื่อจบเทิร์น
                       </p>
                     ) : (
                       <p className="text-orange-300 text-sm">
-                        🤖 AI กำลังคิด... ช่อง<span className="text-orange-400 font-semibold">สีส้ม</span>คือที่ศัตรูสามารถเคลื่อนที่ได้
+                        🤖 AI กำลังคิด... ช่อง
+                        <span className="text-orange-400 font-semibold">
+                          สีส้ม
+                        </span>
+                        คือที่ศัตรูสามารถเคลื่อนที่ได้
                       </p>
                     )}
                   </div>
@@ -533,7 +645,9 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
             {/* Legend - Color Guide */}
             <div className="mb-4 p-3 bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg">
-              <p className="text-white font-semibold text-sm mb-2">📖 Legend (คำอธิบายสี)</p>
+              <p className="text-white font-semibold text-sm mb-2">
+                📖 Legend (คำอธิบายสี)
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                 {currentUnit?.isAlly ? (
                   <>
@@ -574,7 +688,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             </div>
 
             <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
-              <div 
+              <div
                 className="grid gap-1 mx-auto"
                 style={{
                   gridTemplateColumns: `repeat(${battleMap.width}, minmax(0, 1fr))`,
@@ -584,8 +698,13 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 {Array.from({ length: battleMap.height }).map((_, y) =>
                   Array.from({ length: battleMap.width }).map((_, x) => {
                     const unit = getUnitAtPosition(x, y);
-                    const tile = battleMap.tiles.find(t => t.x === x && t.y === y);
-                    const isObstacle = battleMap.obstacles?.some(obs => obs.x === x && obs.y === y) || false;
+                    const tile = battleMap.tiles.find(
+                      (t) => t.x === x && t.y === y
+                    );
+                    const isObstacle =
+                      battleMap.obstacles?.some(
+                        (obs) => obs.x === x && obs.y === y
+                      ) || false;
                     const isUnwalkable = tile && !tile.isWalkable;
                     // Always show ranges for current unit
                     const isInMoveRange = isTileInMovementRange(x, y);
@@ -596,13 +715,20 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                     const getTileIcon = () => {
                       if (!tile) return null;
                       switch (tile.type) {
-                        case "grass": return "🌿";
-                        case "water": return "💧";
-                        case "mountain": return "⛰️";
-                        case "lava": return "🔥";
-                        case "ice": return "❄️";
-                        case "poison": return "☠️";
-                        default: return null;
+                        case "grass":
+                          return "🌿";
+                        case "water":
+                          return "💧";
+                        case "mountain":
+                          return "⛰️";
+                        case "lava":
+                          return "🔥";
+                        case "ice":
+                          return "❄️";
+                        case "poison":
+                          return "☠️";
+                        default:
+                          return null;
                       }
                     };
 
@@ -616,22 +742,39 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                           ${
                             isObstacle || isUnwalkable
                               ? "opacity-50 cursor-not-allowed"
-                              : isInMoveRange && isInAttackRange && currentUnit?.isAlly
+                              : isInMoveRange &&
+                                isInAttackRange &&
+                                currentUnit?.isAlly
                               ? "ring-2 ring-purple-500"
-                              : isInMoveRange && isInAttackRange && currentUnit && !currentUnit.isAlly
+                              : isInMoveRange &&
+                                isInAttackRange &&
+                                currentUnit &&
+                                !currentUnit.isAlly
                               ? "ring-2 ring-yellow-500"
                               : isInMoveRange && currentUnit?.isAlly
                               ? "ring-2 ring-blue-500"
-                              : isInMoveRange && currentUnit && !currentUnit.isAlly
+                              : isInMoveRange &&
+                                currentUnit &&
+                                !currentUnit.isAlly
                               ? "ring-2 ring-orange-500"
                               : isInAttackRange && currentUnit?.isAlly
                               ? "ring-2 ring-red-500"
-                              : isInAttackRange && currentUnit && !currentUnit.isAlly
+                              : isInAttackRange &&
+                                currentUnit &&
+                                !currentUnit.isAlly
                               ? "ring-2 ring-red-500"
                               : ""
                           }
-                          ${isCurrent && currentUnit?.isAlly ? "ring-4 ring-green-400" : ""}
-                          ${isCurrent && currentUnit && !currentUnit.isAlly ? "ring-4 ring-orange-400" : ""}
+                          ${
+                            isCurrent && currentUnit?.isAlly
+                              ? "ring-4 ring-green-400"
+                              : ""
+                          }
+                          ${
+                            isCurrent && currentUnit && !currentUnit.isAlly
+                              ? "ring-4 ring-orange-400"
+                              : ""
+                          }
                         `}
                         disabled={isObstacle || isUnwalkable}
                       >
@@ -650,17 +793,27 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         {/* Unit */}
                         {unit && (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className={`
+                            <div
+                              className={`
                               w-10 h-10 rounded-full flex items-center justify-center text-xl
                               ${unit.isAlly ? "bg-blue-600" : "bg-red-600"}
-                            `}>
+                            `}
+                            >
                               {unit.isAlly ? "🛡️" : "👹"}
                             </div>
                             {/* HP Bar */}
                             <div className="absolute bottom-1 left-1 right-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full transition-all ${unit.isAlly ? "bg-green-500" : "bg-red-500"}`}
-                                style={{ width: `${(unit.currentHp / unit.character.stats.maxHp) * 100}%` }}
+                              <div
+                                className={`h-full transition-all ${
+                                  unit.isAlly ? "bg-green-500" : "bg-red-500"
+                                }`}
+                                style={{
+                                  width: `${
+                                    (unit.currentHp /
+                                      unit.character.stats.maxHp) *
+                                    100
+                                  }%`,
+                                }}
                               />
                             </div>
                           </div>
@@ -698,17 +851,25 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 </h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${currentUnit.isAlly ? "bg-blue-600" : "bg-red-600"}`}>
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                        currentUnit.isAlly ? "bg-blue-600" : "bg-red-600"
+                      }`}
+                    >
                       {currentUnit.isAlly ? "🛡️" : "👹"}
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-semibold">{currentUnit.character.name}</p>
+                      <p className="text-white font-semibold">
+                        {currentUnit.character.name}
+                      </p>
                       <p className="text-gray-400 text-xs capitalize">
-                        {'class' in currentUnit.character ? currentUnit.character.class : currentUnit.character.type}
+                        {"class" in currentUnit.character
+                          ? currentUnit.character.class
+                          : currentUnit.character.type}
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* Stats */}
                   <div className="space-y-2">
                     <div>
@@ -716,27 +877,45 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         <span className="text-gray-400 flex items-center gap-1">
                           <Heart className="w-3 h-3" /> HP
                         </span>
-                        <span className="text-white">{currentUnit.currentHp}/{currentUnit.character.stats.maxHp}</span>
+                        <span className="text-white">
+                          {currentUnit.currentHp}/
+                          {currentUnit.character.stats.maxHp}
+                        </span>
                       </div>
                       <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-green-500 transition-all"
-                          style={{ width: `${(currentUnit.currentHp / currentUnit.character.stats.maxHp) * 100}%` }}
+                          style={{
+                            width: `${
+                              (currentUnit.currentHp /
+                                currentUnit.character.stats.maxHp) *
+                              100
+                            }%`,
+                          }}
                         />
                       </div>
                     </div>
-                    
+
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-gray-400 flex items-center gap-1">
                           <Zap className="w-3 h-3" /> MP
                         </span>
-                        <span className="text-white">{currentUnit.currentMp}/{currentUnit.character.stats.maxMp}</span>
+                        <span className="text-white">
+                          {currentUnit.currentMp}/
+                          {currentUnit.character.stats.maxMp}
+                        </span>
                       </div>
                       <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-blue-500 transition-all"
-                          style={{ width: `${(currentUnit.currentMp / currentUnit.character.stats.maxMp) * 100}%` }}
+                          style={{
+                            width: `${
+                              (currentUnit.currentMp /
+                                currentUnit.character.stats.maxMp) *
+                              100
+                            }%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -747,7 +926,8 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                     <div className="space-y-2 pt-2 border-t border-slate-700">
                       {!currentUnit.hasActed && (
                         <div className="text-xs text-gray-400 mb-2">
-                          💡 คลิกช่องสีน้ำเงินเพื่อเคลื่อนที่<br/>
+                          💡 คลิกช่องสีน้ำเงินเพื่อเคลื่อนที่
+                          <br />
                           💡 คลิกศัตรูในช่องสีแดงเพื่อโจมตี
                         </div>
                       )}
@@ -767,19 +947,27 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
               <h2 className="text-lg font-bold text-white mb-3">Turn Order</h2>
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {storeTurnOrder.map((unit, index) => (
-                  <div 
+                {aliveTurnOrder.map((unit, index) => (
+                  <div
                     key={unit.id}
                     className={`flex items-center gap-2 p-2 rounded-lg ${
-                      unit.id === currentUnitId ? "bg-green-900/30 border border-green-500/30" : "bg-slate-800/50"
+                      unit.id === currentUnitId
+                        ? "bg-green-900/30 border border-green-500/30"
+                        : "bg-slate-800/50"
                     }`}
                   >
                     <div className="text-gray-400 text-xs w-4">{index + 1}</div>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${unit.isAlly ? "bg-blue-600" : "bg-red-600"}`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                        unit.isAlly ? "bg-blue-600" : "bg-red-600"
+                      }`}
+                    >
                       {unit.isAlly ? "🛡️" : "👹"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm truncate">{unit.character.name}</p>
+                      <p className="text-white text-sm truncate">
+                        {unit.character.name}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -793,8 +981,8 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 Allies
               </h2>
               <div className="space-y-2">
-                {storeAllyUnits.map(unit => (
-                  <div 
+                {storeAllyUnits.map((unit) => (
+                  <div
                     key={unit.id}
                     className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg"
                   >
@@ -802,9 +990,13 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       🛡️
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm truncate">{unit.character.name}</p>
+                      <p className="text-white text-sm truncate">
+                        {unit.character.name}
+                      </p>
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="text-gray-400">HP: {unit.currentHp}/{unit.character.stats.maxHp}</span>
+                        <span className="text-gray-400">
+                          HP: {unit.currentHp}/{unit.character.stats.maxHp}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -819,8 +1011,8 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 Enemies
               </h2>
               <div className="space-y-2">
-                {storeEnemyUnits.map(unit => (
-                  <div 
+                {storeEnemyUnits.map((unit) => (
+                  <div
                     key={unit.id}
                     className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg"
                   >
@@ -828,9 +1020,13 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       👹
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm truncate">{unit.character.name}</p>
+                      <p className="text-white text-sm truncate">
+                        {unit.character.name}
+                      </p>
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="text-gray-400">HP: {unit.currentHp}/{unit.character.stats.maxHp}</span>
+                        <span className="text-gray-400">
+                          HP: {unit.currentHp}/{unit.character.stats.maxHp}
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -224,15 +224,43 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
       const newAllyUnits = state.allyUnits.map((unit) => ({ ...unit, hasActed: false }));
       const newEnemyUnits = state.enemyUnits.map((unit) => ({ ...unit, hasActed: false }));
 
-      // Get next unit in turn order
-      const currentIndex = state.turnOrder.findIndex((u) => u.id === state.currentUnitId);
-      const nextIndex = (currentIndex + 1) % state.turnOrder.length;
-      const nextUnit = state.turnOrder[nextIndex];
+      // Get all alive units
+      const aliveUnitIds = new Set([
+        ...newAllyUnits.filter(unit => unit.currentHp > 0).map(unit => unit.id),
+        ...newEnemyUnits.filter(unit => unit.currentHp > 0).map(unit => unit.id)
+      ]);
+
+      // Filter turn order to only include alive units
+      const aliveTurnOrder = state.turnOrder.filter(unit => aliveUnitIds.has(unit.id));
+      
+      // If no alive units left, return current state (shouldn't happen as battle should end first)
+      if (aliveTurnOrder.length === 0) {
+        return {
+          allyUnits: newAllyUnits,
+          enemyUnits: newEnemyUnits,
+          selectedAction: null,
+          selectedUnitId: null,
+        };
+      }
+
+      // Find the next alive unit in the turn order
+      const currentIndex = state.currentUnitId 
+        ? aliveTurnOrder.findIndex((u) => u.id === state.currentUnitId) 
+        : -1;
+      
+      // Get next unit index, wrapping around if needed
+      let nextIndex = (currentIndex + 1) % aliveTurnOrder.length;
+      
+      // If we were at the end of the turn order, increment the turn counter
+      const isNewTurn = currentIndex >= aliveTurnOrder.length - 1;
+      
+      // Get the next alive unit
+      const nextUnit = aliveTurnOrder[nextIndex];
 
       return {
         allyUnits: newAllyUnits,
         enemyUnits: newEnemyUnits,
-        turn: nextIndex === 0 ? state.turn + 1 : state.turn,
+        turn: isNewTurn ? state.turn + 1 : state.turn,
         currentUnitId: nextUnit?.id || null,
         selectedAction: null,
         selectedUnitId: null,
