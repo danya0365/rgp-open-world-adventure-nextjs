@@ -7,14 +7,23 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
+interface WorldPageProps {
+  params: Promise<{
+    path?: string[];
+  }>;
+}
+
 /**
  * Generate metadata for the page
  */
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: WorldPageProps): Promise<Metadata> {
+  const { path } = await params;
+  const locationId = path?.[path.length - 1];
+  
   const presenter = await WorldPresenterFactory.createServer();
 
   try {
-    return presenter.generateMetadata();
+    return presenter.generateMetadata(locationId);
   } catch (error) {
     console.error("Error generating metadata:", error);
 
@@ -29,15 +38,23 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * World Map page - Server Component for SEO optimization
  * Uses presenter pattern following Clean Architecture
+ * 
+ * Routes:
+ * - /world → Show root locations
+ * - /world/[id] → Show location with id and its children
+ * - /world/[id]/[childId] → Hierarchical navigation
  */
-export default async function WorldPage() {
+export default async function WorldPage({ params }: WorldPageProps) {
+  const { path } = await params;
+  const locationId = path?.[path.length - 1]; // Get last segment as current location ID
+  
   const presenter = await WorldPresenterFactory.createServer();
 
   try {
     // Get view model from presenter
-    const viewModel = await presenter.getViewModel();
+    const viewModel = await presenter.getViewModel(locationId);
 
-    return <WorldView initialViewModel={viewModel} />;
+    return <WorldView initialViewModel={viewModel} currentLocationId={locationId} />;
   } catch (error) {
     console.error("Error fetching world data:", error);
 

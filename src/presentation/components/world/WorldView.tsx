@@ -2,59 +2,67 @@
 
 import { WorldViewModel } from "@/src/presentation/presenters/world/WorldPresenter";
 import { useWorldPresenter } from "@/src/presentation/presenters/world/useWorldPresenter";
-import { LocationCard } from "./LocationCard";
-import { Breadcrumb } from "./Breadcrumb";
-import { Map, Globe, MapPin, Compass, Users, AlertTriangle } from "lucide-react";
+import { getPartyStats, useGameStore } from "@/src/stores/gameStore";
+import {
+  AlertTriangle,
+  Compass,
+  Globe,
+  Map,
+  MapPin,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
-import { useGameStore, getPartyStats } from "@/src/stores/gameStore";
 import { useEffect } from "react";
+import { Breadcrumb } from "./Breadcrumb";
+import { LocationCard } from "./LocationCard";
 
 interface WorldViewProps {
   initialViewModel?: WorldViewModel;
+  currentLocationId?: string;
 }
 
-export function WorldView({ initialViewModel }: WorldViewProps) {
-  const { 
-    parties, 
-    activePartyId, 
-    progress,
-    setCurrentLocation: saveCurrentLocation 
-  } = useGameStore();
-  
-  // Get active party members
-  const activeParty = parties.find(p => p.id === activePartyId);
-  const activePartyMembers = activeParty?.members || [];
-  
-  // Convert to legacy format for getPartyStats
-  const activePartyCharacters = activePartyMembers.map(member => {
-    const recruited = progress.recruitedCharacters.find(rc => rc.characterId === member.characterId);
-    if (!recruited) return null;
-    
-    // This is a simplified version - in real app, you'd fetch full character data
-    return {
-      character: { 
-        id: member.characterId,
-        name: recruited.characterId,
-        level: 1,
-        stats: { maxHp: 100, maxMp: 50, atk: 10, def: 10, spd: 10 }
-      } as any,
-      position: member.position,
-      isLeader: member.isLeader,
-    };
-  }).filter(Boolean) as any[];
-  
-  const partyStats = getPartyStats(activePartyCharacters);
-  
+export function WorldView({
+  initialViewModel,
+  currentLocationId,
+}: WorldViewProps) {
   const {
-    viewModel,
-    loading,
-    error,
-    currentLocation,
-    breadcrumb,
-    navigateToLocation,
-    setCurrentLocation,
-  } = useWorldPresenter(initialViewModel);
-  
+    parties,
+    activePartyId,
+    progress,
+    setCurrentLocation: saveCurrentLocation,
+  } = useGameStore();
+
+  // Get active party members
+  const activeParty = parties.find((p) => p.id === activePartyId);
+  const activePartyMembers = activeParty?.members || [];
+
+  // Convert to legacy format for getPartyStats
+  const activePartyCharacters = activePartyMembers
+    .map((member) => {
+      const recruited = progress.recruitedCharacters.find(
+        (rc) => rc.characterId === member.characterId
+      );
+      if (!recruited) return null;
+
+      // This is a simplified version - in real app, you'd fetch full character data
+      return {
+        character: {
+          id: member.characterId,
+          name: recruited.characterId,
+          level: 1,
+          stats: { maxHp: 100, maxMp: 50, atk: 10, def: 10, spd: 10 },
+        } as any,
+        position: member.position,
+        isLeader: member.isLeader,
+      };
+    })
+    .filter(Boolean) as any[];
+
+  const partyStats = getPartyStats(activePartyCharacters);
+
+  const { viewModel, loading, error, currentLocation, breadcrumb } =
+    useWorldPresenter(initialViewModel, currentLocationId);
+
   // Save location to game store when it changes
   useEffect(() => {
     if (currentLocation) {
@@ -150,15 +158,13 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
               <div>
                 <h3 className="text-white font-semibold">ทีมปัจจุบัน</h3>
                 <p className="text-gray-400 text-sm">
-                  {activePartyMembers.length} สมาชิก | HP: {partyStats.totalHp.toLocaleString()} | MP: {partyStats.totalMp.toLocaleString()}
+                  {activePartyMembers.length} สมาชิก | HP:{" "}
+                  {partyStats.totalHp.toLocaleString()} | MP:{" "}
+                  {partyStats.totalMp.toLocaleString()}
                 </p>
               </div>
             </div>
-            <Link
-              href="/party"
-            >
-              จัดการทีม
-            </Link>
+            <Link href="/party">จัดการทีม</Link>
           </div>
           <div className="mt-3 flex gap-2">
             {activePartyCharacters.map((member) => (
@@ -166,8 +172,12 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
                 key={member.character.id}
                 className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg"
               >
-                <span className="text-sm text-white">{member.character.name}</span>
-                <span className="text-xs text-gray-400">Lv {member.character.level}</span>
+                <span className="text-sm text-white">
+                  {member.character.name}
+                </span>
+                <span className="text-xs text-gray-400">
+                  Lv {member.character.level}
+                </span>
                 {member.isLeader && (
                   <span className="text-amber-400 text-xs">👑</span>
                 )}
@@ -192,20 +202,7 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
         </div>
 
         {/* Breadcrumb */}
-        {breadcrumb.length > 0 && (
-          <Breadcrumb
-            path={breadcrumb}
-            onNavigate={(locationId) => {
-              if (locationId === "root") {
-                // Go back to root (show all continents)
-                setCurrentLocation(null);
-              } else {
-                // Navigate to specific location
-                navigateToLocation(locationId);
-              }
-            }}
-          />
-        )}
+        {breadcrumb.length > 0 && <Breadcrumb path={breadcrumb} />}
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -255,14 +252,16 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
           <h2 className="text-2xl font-bold text-white mb-4">
             {currentLocation ? "สถานที่ภายใน" : "ทวีปหลัก"}
           </h2>
-          
+
           {locationsToShow.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {locationsToShow.map((location) => (
                 <LocationCard
                   key={location.id}
                   location={location}
-                  onClick={() => navigateToLocation(location.id)}
+                  currentPath={
+                    currentLocationId ? `/world/${currentLocationId}` : "/world"
+                  }
                   isDiscovered={location.isDiscoverable}
                 />
               ))}
@@ -271,12 +270,12 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
             <div className="text-center py-16">
               <MapPin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400 text-lg">ไม่มีสถานที่ภายใน</p>
-              <button
-                onClick={() => setCurrentLocation(null)}
-                className="mt-4 text-purple-400 hover:text-purple-300 transition-colors"
+              <Link
+                href="/world"
+                className="mt-4 text-purple-400 hover:text-purple-300 transition-colors inline-block"
               >
                 ← กลับไปแผนที่หลัก
-              </button>
+              </Link>
             </div>
           )}
         </div>

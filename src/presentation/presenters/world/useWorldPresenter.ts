@@ -12,14 +12,12 @@ export interface WorldPresenterHook {
   loading: boolean;
   error: string | null;
 
-  // Current location state
+  // Current location state (from URL, read-only)
   currentLocation: Location | null;
   breadcrumb: Location[];
 
   // Actions
   loadData: () => Promise<void>;
-  navigateToLocation: (locationId: string) => void;
-  setCurrentLocation: (location: Location | null) => void;
 }
 
 let presenterInstance: WorldPresenter | null = null;
@@ -37,17 +35,34 @@ async function getPresenter(): Promise<WorldPresenter> {
 /**
  * Custom hook for World presenter
  * Provides state management and actions for world map operations
+ * 
+ * Note: Navigation is now handled by Next.js routing via URL
+ * currentLocation and breadcrumb are derived from URL params
  */
 export function useWorldPresenter(
-  initialViewModel: WorldViewModel | null = null
+  initialViewModel: WorldViewModel | null = null,
+  currentLocationId?: string
 ): WorldPresenterHook {
   const [viewModel, setViewModel] = useState<WorldViewModel | null>(
     initialViewModel || null
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
-  const [breadcrumb, setBreadcrumb] = useState<Location[]>([]);
+
+  // Derive currentLocation from URL (currentLocationId)
+  const currentLocation = currentLocationId && viewModel
+    ? viewModel.locations.find((loc) => loc.id === currentLocationId) || null
+    : null;
+
+  // Build breadcrumb from currentLocation
+  const breadcrumb: Location[] = [];
+  if (currentLocation && viewModel) {
+    let current: Location | undefined = currentLocation;
+    while (current) {
+      breadcrumb.unshift(current);
+      current = viewModel.locations.find((loc) => loc.id === current?.parentId);
+    }
+  }
 
   /**
    * Load data from presenter
@@ -58,7 +73,7 @@ export function useWorldPresenter(
 
     try {
       const presenter = await getPresenter();
-      const newViewModel = await presenter.getViewModel();
+      const newViewModel = await presenter.getViewModel(currentLocationId);
       setViewModel(newViewModel);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -67,7 +82,7 @@ export function useWorldPresenter(
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentLocationId]);
 
   /**
    * Load data on mount if no initial view model
@@ -77,41 +92,6 @@ export function useWorldPresenter(
       loadData();
     }
   }, [initialViewModel, loadData]);
-
-  /**
-   * Navigate to location
-   */
-  const navigateToLocation = useCallback((locationId: string) => {
-    if (!viewModel) return;
-
-    const location = viewModel.locations.find((loc) => loc.id === locationId);
-    if (location) {
-      setCurrentLocation(location);
-      
-      // Build breadcrumb
-      const path: Location[] = [];
-      let current: Location | undefined = location;
-      
-      while (current) {
-        path.unshift(current);
-        current = viewModel.locations.find((loc) => loc.id === current?.parentId);
-      }
-      
-      setBreadcrumb(path);
-    }
-  }, [viewModel]);
-
-  /**
-   * Custom setCurrentLocation that also updates breadcrumb
-   */
-  const handleSetCurrentLocation = useCallback((location: Location | null) => {
-    setCurrentLocation(location);
-    
-    // Clear breadcrumb when going back to main map
-    if (location === null) {
-      setBreadcrumb([]);
-    }
-  }, []);
 
   return {
     // State
@@ -123,7 +103,5 @@ export function useWorldPresenter(
 
     // Actions
     loadData,
-    navigateToLocation,
-    setCurrentLocation: handleSetCurrentLocation,
   };
 }

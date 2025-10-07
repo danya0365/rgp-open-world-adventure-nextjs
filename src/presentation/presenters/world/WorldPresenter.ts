@@ -31,8 +31,9 @@ export interface LocationDetailViewModel {
 export class WorldPresenter {
   /**
    * Get view model for world map page
+   * @param currentLocationId - Optional current location ID to show its children
    */
-  async getViewModel(): Promise<WorldViewModel> {
+  async getViewModel(currentLocationId?: string): Promise<WorldViewModel> {
     try {
       const locationTree = buildLocationTree(mockLocations);
       const rootLocations = locationTree.filter((loc) => !loc.parentId);
@@ -85,8 +86,20 @@ export class WorldPresenter {
 
   /**
    * Generate metadata for world page
+   * @param currentLocationId - Optional current location ID
    */
-  async generateMetadata() {
+  async generateMetadata(currentLocationId?: string) {
+    if (currentLocationId) {
+      const location = mockLocations.find((loc) => loc.id === currentLocationId);
+      if (location) {
+        return {
+          title: `${location.name} | แผนที่โลก | RPG Open World Adventure`,
+          description: location.description,
+          keywords: `${location.name}, world map, locations, exploration, rpg, adventure`,
+        };
+      }
+    }
+    
     return {
       title: "แผนที่โลก | RPG Open World Adventure",
       description: "สำรวจโลกแฟนตาซีกว้างใหญ่ พร้อมสถานที่มากกว่า 20+ แห่ง",
