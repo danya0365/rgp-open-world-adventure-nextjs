@@ -16,7 +16,7 @@ interface CharactersViewProps {
 
 export function CharactersView({ initialViewModel }: CharactersViewProps) {
   const router = useRouter();
-  const { addToParty, isInParty, party, unlockCharacter, isCharacterUnlocked, progress } = useGameStore();
+  const { addToParty, isInParty, party, recruitCharacter, isCharacterRecruited, progress } = useGameStore();
   
   const {
     viewModel,
@@ -31,8 +31,8 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
     setShowOnlyPlayable,
   } = useCharactersPresenter(initialViewModel);
 
-  const handleUnlockCharacter = (character: Character) => {
-    unlockCharacter(character.id);
+  const handleRecruitCharacter = (character: Character) => {
+    recruitCharacter(character);
     // Don't close modal, let user decide what to do next
   };
 
@@ -120,14 +120,14 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
         </div>
 
         {/* Selected Characters Summary */}
-        {(progress.unlockedCharacters.length > 0 || party.length > 0) && (
+        {(progress.recruitedCharacters.length > 0 || party.length > 0) && (
           <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-purple-400" />
                 <div>
                   <h3 className="text-white font-semibold">
-                    ปลดล็อค: {progress.unlockedCharacters.length} คน | ทีม: {party.length}/4
+                    รีครูท: {progress.recruitedCharacters.length} คน | ทีม: {party.length}/4
                   </h3>
                   {party.length > 0 && (
                     <p className="text-gray-400 text-sm">
@@ -263,9 +263,9 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             <CharacterDetailContent 
               character={selectedCharacter}
               onAddToParty={handleAddToParty}
-              onUnlock={handleUnlockCharacter}
+              onRecruit={handleRecruitCharacter}
               isInParty={isInParty(selectedCharacter.id)}
-              isUnlocked={isCharacterUnlocked(selectedCharacter.id)}
+              isRecruited={isCharacterRecruited(selectedCharacter.id)}
             />
           </Modal>
         )}
@@ -287,17 +287,17 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
 interface CharacterDetailContentProps {
   character: Character;
   onAddToParty: (character: Character) => void;
-  onUnlock: (character: Character) => void;
+  onRecruit: (character: Character) => void;
   isInParty: boolean;
-  isUnlocked: boolean;
+  isRecruited: boolean;
 }
 
 function CharacterDetailContent({ 
   character, 
   onAddToParty,
-  onUnlock,
+  onRecruit,
   isInParty,
-  isUnlocked
+  isRecruited
 }: CharacterDetailContentProps) {
   return (
     <div className="space-y-6">
@@ -440,19 +440,19 @@ function CharacterDetailContent({
 
       {/* Actions */}
       <div className="flex flex-col gap-3 pt-4">
-        {/* Unlock Button */}
-        {!isUnlocked && (
+        {/* Recruit Button */}
+        {!isRecruited && (
           <Button 
             variant="action" 
             className="w-full"
-            onClick={() => onUnlock(character)}
+            onClick={() => onRecruit(character)}
           >
-            🔓 ปลดล็อคตัวละคร
+            ⭐ รีครูทตัวละคร
           </Button>
         )}
         
         {/* Add to Party Button */}
-        {isUnlocked && (
+        {isRecruited && (
           <>
             {isInParty ? (
               <Button variant="ghost" className="w-full" disabled>
@@ -471,9 +471,9 @@ function CharacterDetailContent({
         )}
         
         {/* Status Messages */}
-        {!isUnlocked && (
+        {!isRecruited && (
           <p className="text-sm text-gray-400 text-center">
-            ปลดล็อคตัวละครก่อนเพื่อเพิ่มเข้าทีม
+            รีครูทตัวละครก่อนเพื่อเพิ่มเข้าทีม
           </p>
         )}
       </div>

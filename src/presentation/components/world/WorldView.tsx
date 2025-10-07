@@ -7,6 +7,7 @@ import { Breadcrumb } from "./Breadcrumb";
 import { Map, Globe, MapPin, Compass, Users, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useGameStore, getPartyStats } from "@/src/stores/gameStore";
+import { useEffect } from "react";
 
 interface WorldViewProps {
   initialViewModel?: WorldViewModel;
@@ -27,9 +28,11 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
   } = useWorldPresenter(initialViewModel);
   
   // Save location to game store when it changes
-  if (currentLocation && currentLocation.id !== party[0]?.character.id) {
-    saveCurrentLocation(currentLocation.id);
-  }
+  useEffect(() => {
+    if (currentLocation) {
+      saveCurrentLocation(currentLocation.id);
+    }
+  }, [currentLocation?.id, saveCurrentLocation]);
 
   // Show loading only on initial load
   if (loading && !viewModel) {
@@ -189,9 +192,11 @@ export function WorldView({ initialViewModel }: WorldViewProps) {
           <Breadcrumb
             path={breadcrumb}
             onNavigate={(locationId) => {
-              if (locationId === breadcrumb[0].id) {
+              if (locationId === "root") {
+                // Go back to root (show all continents)
                 setCurrentLocation(null);
               } else {
+                // Navigate to specific location
                 navigateToLocation(locationId);
               }
             }}

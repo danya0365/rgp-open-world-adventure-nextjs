@@ -22,27 +22,27 @@ export class PartyPresenter {
   /**
    * Get view model for party page
    * @param selectedCharacterIds - Character IDs that user has selected (from game state)
-   * @param unlockedCharacterIds - Character IDs that user has unlocked (from game state)
+   * @param recruitedCharacterIds - Character IDs that user has recruited (from game state)
    */
   async getViewModel(
     selectedCharacterIds: string[] = [],
-    unlockedCharacterIds: string[] = []
+    recruitedCharacterIds: string[] = []
   ): Promise<PartyViewModel> {
     try {
       // Get playable characters from master data
       const playableChars = getPlayableCharacters();
       
-      // Filter by game state: only show characters that user has selected
+      // Filter by game state: only show characters that user has recruited
       // This ensures we don't show all 8 characters by default
       let availablePlayableChars: Character[];
       
-      if (selectedCharacterIds.length === 0) {
-        // If no characters selected yet, show none (user must go to /characters first)
+      if (recruitedCharacterIds.length === 0) {
+        // If no characters recruited yet, show none (user must go to /characters first)
         availablePlayableChars = [];
       } else {
-        // Show only characters that user has selected or unlocked
+        // Show only characters that user has recruited
         availablePlayableChars = playableChars.filter(
-          (c) => selectedCharacterIds.includes(c.id) || unlockedCharacterIds.includes(c.id)
+          (c) => recruitedCharacterIds.includes(c.id)
         );
       }
       

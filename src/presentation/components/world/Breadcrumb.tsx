@@ -13,8 +13,9 @@ export function Breadcrumb({ path, onNavigate }: BreadcrumbProps) {
     <nav className="flex items-center gap-2 text-sm mb-6">
       {/* Home Icon */}
       <button
-        onClick={() => onNavigate?.(path[0].id)}
+        onClick={() => onNavigate?.("root")}
         className="flex items-center gap-1 text-gray-400 hover:text-purple-400 transition-colors"
+        title="กลับหน้าแรก"
       >
         <Home className="w-4 h-4" />
       </button>

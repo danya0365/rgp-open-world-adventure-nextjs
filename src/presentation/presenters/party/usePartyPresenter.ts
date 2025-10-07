@@ -88,10 +88,11 @@ export function usePartyPresenter(
 
     try {
       const presenter = await getPresenter();
-      // Pass selected and unlocked characters from game state to presenter
+      // Pass selected and recruited characters from game state to presenter
+      const recruitedCharacterIds = progress.recruitedCharacters.map(rc => rc.characterId);
       const newViewModel = await presenter.getViewModel(
         progress.selectedCharacters,
-        progress.unlockedCharacters
+        recruitedCharacterIds
       );
       setViewModel(newViewModel);
     } catch (err) {
@@ -101,7 +102,7 @@ export function usePartyPresenter(
     } finally {
       setLoading(false);
     }
-  }, [progress.selectedCharacters, progress.unlockedCharacters]);
+  }, [progress.selectedCharacters, progress.recruitedCharacters]);
 
   /**
    * Load data on mount if no initial view model
@@ -120,7 +121,7 @@ export function usePartyPresenter(
     if (initialViewModel) {
       loadData();
     }
-  }, [progress.selectedCharacters.length, progress.unlockedCharacters.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [progress.selectedCharacters.length, progress.recruitedCharacters.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Add character to party

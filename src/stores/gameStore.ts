@@ -21,12 +21,48 @@ export interface InventoryItem {
   equippedBy?: string; // Character ID
 }
 
+export interface RecruitedCharacter {
+  characterId: string; // Reference to master data
+  recruitedAt: string; // ISO timestamp
+  
+  // Character progression (mutable)
+  level: number;
+  exp: number;
+  maxExp: number;
+  
+  // Stats (can change with level up, equipment, etc.)
+  stats: {
+    hp: number;
+    maxHp: number;
+    mp: number;
+    maxMp: number;
+    atk: number;
+    def: number;
+    int: number;
+    agi: number;
+    luk: number;
+  };
+  
+  // Equipment (references to item IDs)
+  equipment: {
+    weapon?: string;
+    armor?: string;
+    accessory?: string;
+  };
+  
+  // Skills unlocked
+  unlockedSkills: string[]; // Skill IDs
+  
+  // Last updated
+  lastUpdated: string;
+}
+
 export interface GameProgress {
   currentLocationId: string | null;
   discoveredLocations: string[]; // Location IDs
   completedQuests: string[]; // Quest IDs
   activeQuests: string[]; // Quest IDs
-  unlockedCharacters: string[]; // Character IDs that user has unlocked (recruited)
+  recruitedCharacters: RecruitedCharacter[]; // Characters that user has recruited (with full state)
   selectedCharacters: string[]; // Character IDs that user has ever selected/added to party
   gameStarted: boolean;
   lastSaveTime: string;
@@ -83,8 +119,10 @@ interface GameState {
   isLocationDiscovered: (locationId: string) => boolean;
   completeQuest: (questId: string) => void;
   startQuest: (questId: string) => void;
-  unlockCharacter: (characterId: string) => void;
-  isCharacterUnlocked: (characterId: string) => boolean;
+  recruitCharacter: (character: Character) => void;
+  isCharacterRecruited: (characterId: string) => boolean;
+  getRecruitedCharacter: (characterId: string) => RecruitedCharacter | undefined;
+  updateRecruitedCharacter: (characterId: string, updates: Partial<RecruitedCharacter>) => void;
   startGame: () => void;
   
   // ==================== Event Actions ====================
@@ -110,7 +148,7 @@ const initialProgress: GameProgress = {
   discoveredLocations: [],
   completedQuests: [],
   activeQuests: [],
-  unlockedCharacters: [],
+  recruitedCharacters: [],
   selectedCharacters: [],
   gameStarted: false,
   lastSaveTime: new Date().toISOString(),
@@ -458,15 +496,31 @@ export const useGameStore = create<GameState>()(
         }
       },
 
-      unlockCharacter: (characterId: string) => {
+      recruitCharacter: (character: Character) => {
         const state = get();
-        if (!state.progress.unlockedCharacters.includes(characterId)) {
+        const isAlreadyRecruited = state.progress.recruitedCharacters.some(
+          (rc) => rc.characterId === character.id
+        );
+        
+        if (!isAlreadyRecruited) {
+          const recruitedChar: RecruitedCharacter = {
+            characterId: character.id,
+            recruitedAt: new Date().toISOString(),
+            level: character.level,
+            exp: character.exp,
+            maxExp: character.maxExp,
+            stats: { ...character.stats },
+            equipment: { ...character.equipment },
+            unlockedSkills: [...character.skills],
+            lastUpdated: new Date().toISOString(),
+          };
+          
           set((state) => ({
             progress: {
               ...state.progress,
-              unlockedCharacters: [
-                ...state.progress.unlockedCharacters,
-                characterId,
+              recruitedCharacters: [
+                ...state.progress.recruitedCharacters,
+                recruitedChar,
               ],
             },
           }));
@@ -475,16 +529,39 @@ export const useGameStore = create<GameState>()(
           get().addEvent({
             type: "discovery",
             data: {
-              action: "unlock_character",
-              characterId,
+              action: "recruit_character",
+              characterId: character.id,
+              characterName: character.name,
             },
           });
         }
       },
       
-      isCharacterUnlocked: (characterId: string) => {
+      isCharacterRecruited: (characterId: string) => {
         const state = get();
-        return state.progress.unlockedCharacters.includes(characterId);
+        return state.progress.recruitedCharacters.some(
+          (rc) => rc.characterId === characterId
+        );
+      },
+      
+      getRecruitedCharacter: (characterId: string) => {
+        const state = get();
+        return state.progress.recruitedCharacters.find(
+          (rc) => rc.characterId === characterId
+        );
+      },
+      
+      updateRecruitedCharacter: (characterId: string, updates: Partial<RecruitedCharacter>) => {
+        set((state) => ({
+          progress: {
+            ...state.progress,
+            recruitedCharacters: state.progress.recruitedCharacters.map((rc) =>
+              rc.characterId === characterId
+                ? { ...rc, ...updates, lastUpdated: new Date().toISOString() }
+                : rc
+            ),
+          },
+        }));
       },
 
       startGame: () => {
