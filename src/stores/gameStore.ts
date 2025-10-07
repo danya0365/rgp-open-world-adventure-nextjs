@@ -26,7 +26,8 @@ export interface GameProgress {
   discoveredLocations: string[]; // Location IDs
   completedQuests: string[]; // Quest IDs
   activeQuests: string[]; // Quest IDs
-  unlockedCharacters: string[]; // Character IDs
+  unlockedCharacters: string[]; // Character IDs that user has unlocked (recruited)
+  selectedCharacters: string[]; // Character IDs that user has ever selected/added to party
   gameStarted: boolean;
   lastSaveTime: string;
 }
@@ -109,6 +110,7 @@ const initialProgress: GameProgress = {
   completedQuests: [],
   activeQuests: [],
   unlockedCharacters: [],
+  selectedCharacters: [],
   gameStarted: false,
   lastSaveTime: new Date().toISOString(),
 };
@@ -175,6 +177,19 @@ export const useGameStore = create<GameState>()(
         set({
           party: [...state.party, newMember],
         });
+
+        // Track that this character has been selected
+        if (!state.progress.selectedCharacters.includes(character.id)) {
+          set((state) => ({
+            progress: {
+              ...state.progress,
+              selectedCharacters: [
+                ...state.progress.selectedCharacters,
+                character.id,
+              ],
+            },
+          }));
+        }
 
         // Add event
         get().addEvent({

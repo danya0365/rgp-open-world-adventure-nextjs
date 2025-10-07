@@ -35,7 +35,9 @@ export default async function PartyPage() {
 
   try {
     // Get view model from presenter
-    const viewModel = await presenter.getViewModel();
+    // Note: On server side, we don't have access to game state yet
+    // So we pass empty arrays, and client will reload with actual game state
+    const viewModel = await presenter.getViewModel([], []);
 
     return <PartyView initialViewModel={viewModel} />;
   } catch (error) {

@@ -71,17 +71,16 @@ export function usePartyPresenter(
     setLeader: storeSetLeader,
     clearParty: storeClearParty,
     isInParty: storeIsInParty,
-    events,
+    progress,
   } = useGameStore();
   
   // Check if user has ever selected a character
-  // by checking if there are any "add_to_party" events or current party members
-  const hasEverSelectedCharacter = party.length > 0 || events.some(
-    (e) => e.type === "quest" && e.data.action === "add_to_party"
-  );
+  // by checking game state (NOT mock data)
+  const hasEverSelectedCharacter = progress.selectedCharacters.length > 0;
 
   /**
    * Load data from presenter
+   * Pass game state to presenter for filtering
    */
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -89,7 +88,11 @@ export function usePartyPresenter(
 
     try {
       const presenter = await getPresenter();
-      const newViewModel = await presenter.getViewModel();
+      // Pass selected and unlocked characters from game state to presenter
+      const newViewModel = await presenter.getViewModel(
+        progress.selectedCharacters,
+        progress.unlockedCharacters
+      );
       setViewModel(newViewModel);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -98,7 +101,7 @@ export function usePartyPresenter(
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [progress.selectedCharacters, progress.unlockedCharacters]);
 
   /**
    * Load data on mount if no initial view model
@@ -108,6 +111,16 @@ export function usePartyPresenter(
       loadData();
     }
   }, [initialViewModel, loadData]);
+  
+  /**
+   * Reload data when selected or unlocked characters change
+   * This ensures the view model is updated with game state
+   */
+  useEffect(() => {
+    if (initialViewModel) {
+      loadData();
+    }
+  }, [progress.selectedCharacters.length, progress.unlockedCharacters.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Add character to party
