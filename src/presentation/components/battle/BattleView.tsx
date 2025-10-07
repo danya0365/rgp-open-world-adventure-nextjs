@@ -89,47 +89,93 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
       mov: currentUnit.character.stats.mov
     });
 
-    // Movement range - use ORIGINAL position ONLY
+    // Movement range - use BFS pathfinding (cannot jump over enemies)
     const moveRange: { x: number; y: number }[] = [];
     const positionForMove = originalPosition || currentUnit.position;
     const range = currentUnit.character.stats.mov;
+
+    // BFS to find reachable tiles
+    const visited = new Set<string>();
+    const queue: { x: number; y: number; distance: number }[] = [
+      { x: positionForMove.x, y: positionForMove.y, distance: 0 }
+    ];
+    visited.add(`${positionForMove.x},${positionForMove.y}`);
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      
+      // Check 4 directions (up, down, left, right)
+      const directions = [
+        { x: current.x, y: current.y - 1 }, // up
+        { x: current.x, y: current.y + 1 }, // down
+        { x: current.x - 1, y: current.y }, // left
+        { x: current.x + 1, y: current.y }, // right
+      ];
+
+      for (const next of directions) {
+        const key = `${next.x},${next.y}`;
+        
+        // Check bounds
+        if (next.x < 0 || next.x >= presenterViewModel.battleMap.width || 
+            next.y < 0 || next.y >= presenterViewModel.battleMap.height) {
+          continue;
+        }
+
+        // Skip if already visited
+        if (visited.has(key)) continue;
+
+        // Check if tile is occupied by enemy (cannot pass through enemies)
+        const occupiedByEnemy = currentUnit.isAlly
+          ? storeEnemyUnits.some(u => u.position.x === next.x && u.position.y === next.y)
+          : storeAllyUnits.some(u => u.position.x === next.x && u.position.y === next.y);
+
+        // Skip if occupied by enemy (cannot pass through)
+        if (occupiedByEnemy) continue;
+
+        // Check if tile is final destination (cannot stop on ally)
+        const occupiedByAlly = currentUnit.isAlly
+          ? storeAllyUnits.some(u => u.position.x === next.x && u.position.y === next.y && u.id !== currentUnit.id)
+          : storeEnemyUnits.some(u => u.position.x === next.x && u.position.y === next.y && u.id !== currentUnit.id);
+
+        const newDistance = current.distance + 1;
+
+        // Add to movement range if within range and not occupied by ally
+        if (newDistance <= range) {
+          // Can pass through ally but cannot stop on ally
+          if (!occupiedByAlly) {
+            moveRange.push({ x: next.x, y: next.y });
+          }
+          visited.add(key);
+          queue.push({ x: next.x, y: next.y, distance: newDistance });
+        }
+      }
+    }
+
+    // Show original position (start point) as moveable
+    if (originalPosition) {
+      const alreadyExists = moveRange.some(pos => pos.x === originalPosition.x && pos.y === originalPosition.y);
+      if (!alreadyExists) {
+        moveRange.push({ x: originalPosition.x, y: originalPosition.y });
+      }
+    }
+
+    // Also show current position as moveable (where unit moved to)
+    if (originalPosition && 
+        (currentUnit.position.x !== originalPosition.x || currentUnit.position.y !== originalPosition.y)) {
+      const alreadyExists = moveRange.some(pos => pos.x === currentUnit.position.x && pos.y === currentUnit.position.y);
+      if (!alreadyExists) {
+        moveRange.push({ x: currentUnit.position.x, y: currentUnit.position.y });
+      }
+    }
 
     // Attack range - use CURRENT position (after move)
     // Only show if there are enemies
     const atkRange: { x: number; y: number }[] = [];
     const attackRangeValue = 2; // Can be based on weapon
 
-    for (let x = 0; x < presenterViewModel.battleMap.width; x++) {
-      for (let y = 0; y < presenterViewModel.battleMap.height; y++) {
-        // Check if tile is occupied
-        const occupied = [...storeAllyUnits, ...storeEnemyUnits].some(
-          u => u.position.x === x && u.position.y === y
-        );
-        
-        // Movement range from ORIGINAL position ONLY
-        const moveDistance = Math.abs(x - positionForMove.x) + Math.abs(y - positionForMove.y);
-        if (moveDistance <= range && moveDistance > 0 && !occupied) {
-          moveRange.push({ x, y });
-        }
-
-        // Show original position (start point) as moveable
-        if (originalPosition && x === originalPosition.x && y === originalPosition.y) {
-          const alreadyExists = moveRange.some(pos => pos.x === x && pos.y === y);
-          if (!alreadyExists) {
-            moveRange.push({ x, y });
-          }
-        }
-
-        // Also show current position as moveable (where unit moved to)
-        if (originalPosition && x === currentUnit.position.x && y === currentUnit.position.y) {
-          const alreadyExists = moveRange.some(pos => pos.x === x && pos.y === y);
-          if (!alreadyExists) {
-            moveRange.push({ x, y });
-          }
-        }
-
-        // Attack range from CURRENT position - only if enemies exist
-        if (hasEnemies) {
+    if (hasEnemies) {
+      for (let x = 0; x < presenterViewModel.battleMap.width; x++) {
+        for (let y = 0; y < presenterViewModel.battleMap.height; y++) {
           const attackDistance = Math.abs(x - currentUnit.position.x) + Math.abs(y - currentUnit.position.y);
           if (attackDistance <= attackRangeValue && attackDistance > 0) {
             atkRange.push({ x, y });
