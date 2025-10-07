@@ -15,6 +15,7 @@ export interface GridPosition {
 export interface BattleMapConfig {
   id: string;
   name: string;
+  description?: string;
   size: BattleMapSize;
   width: number; // Grid width (5-10+)
   height: number; // Grid height (5-10+)
