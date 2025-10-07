@@ -53,22 +53,22 @@ export function LandingView() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Link
-              href="/game/world"
+              href="/characters"
               className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 transition-all duration-300 hover:scale-105"
             >
               <span className="relative z-10 flex items-center gap-2">
-                <Sword className="w-5 h-5" />
-                เริ่มการผจญภัย
+                <Users className="w-5 h-5" />
+                เลือกตัวละคร
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
 
             <Link
-              href="/game/multiplayer"
+              href="/components-demo"
               className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg font-semibold text-white hover:bg-white/20 transition-all duration-300 hover:scale-105 flex items-center gap-2"
             >
-              <Users className="w-5 h-5" />
-              เล่นแบบ Co-op
+              <Sparkles className="w-5 h-5" />
+              ดู Components
             </Link>
           </div>
 

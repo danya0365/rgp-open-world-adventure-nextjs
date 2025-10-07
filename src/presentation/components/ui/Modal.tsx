@@ -1,8 +1,8 @@
 "use client";
 
-import { HTMLAttributes, forwardRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
+import { HTMLAttributes, forwardRef, useEffect } from "react";
 
 export interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean;
@@ -99,7 +99,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
           )}
 
           {/* Content */}
-          <div className="p-6">{children}</div>
+          <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
         </div>
       </div>
     );
@@ -114,7 +114,10 @@ export const ModalHeader = forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
+    className={cn(
+      "flex flex-col space-y-1.5 text-center sm:text-left",
+      className
+    )}
     {...props}
   />
 ));
@@ -138,11 +141,7 @@ export const ModalDescription = forwardRef<
   HTMLParagraphElement,
   HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-gray-400", className)}
-    {...props}
-  />
+  <p ref={ref} className={cn("text-sm text-gray-400", className)} {...props} />
 ));
 
 ModalDescription.displayName = "ModalDescription";
