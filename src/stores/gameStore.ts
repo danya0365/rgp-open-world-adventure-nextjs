@@ -512,10 +512,23 @@ export const useGameStore = create<GameState>()(
 
         const newParties = state.parties.filter((p) => p.id !== partyId);
         
+        // Determine new active party
+        let newActivePartyId = state.activePartyId;
+        
+        if (state.activePartyId === partyId) {
+          // If deleted party was active, set first party as active
+          newActivePartyId = newParties[0]?.id || null;
+        } else {
+          // Check if current active party still exists
+          const activeStillExists = newParties.some(p => p.id === state.activePartyId);
+          if (!activeStillExists) {
+            newActivePartyId = newParties[0]?.id || null;
+          }
+        }
+        
         set({
           parties: newParties,
-          // If deleted party was active, set first party as active
-          activePartyId: state.activePartyId === partyId ? newParties[0].id : state.activePartyId,
+          activePartyId: newActivePartyId,
         });
       },
 

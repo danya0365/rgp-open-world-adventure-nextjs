@@ -34,19 +34,17 @@ export function PartySlider({
   });
 
   const handlePrevious = () => {
-    if (currentIndex > 0) {
-      const newIndex = currentIndex - 1;
-      setCurrentIndex(newIndex);
-      onPartyChange(parties[newIndex].id);
-    }
+    // Loop: if at first, go to last
+    const newIndex = currentIndex === 0 ? parties.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+    onPartyChange(parties[newIndex].id);
   };
 
   const handleNext = () => {
-    if (currentIndex < parties.length - 1) {
-      const newIndex = currentIndex + 1;
-      setCurrentIndex(newIndex);
-      onPartyChange(parties[newIndex].id);
-    }
+    // Loop: if at last, go to first
+    const newIndex = currentIndex === parties.length - 1 ? 0 : currentIndex + 1;
+    setCurrentIndex(newIndex);
+    onPartyChange(parties[newIndex].id);
   };
 
   if (parties.length === 0) {
@@ -126,8 +124,7 @@ export function PartySlider({
       <div className="flex items-center justify-between mt-4">
         <button
           onClick={handlePrevious}
-          disabled={currentIndex === 0}
-          className="p-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -152,8 +149,7 @@ export function PartySlider({
 
         <button
           onClick={handleNext}
-          disabled={currentIndex === parties.length - 1}
-          className="p-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+          className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
