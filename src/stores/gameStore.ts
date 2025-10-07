@@ -9,14 +9,7 @@ import { Character } from "@/src/domain/types/character.types";
 
 // ==================== Types ====================
 
-// Legacy PartyMember (keep for backward compatibility)
-export interface PartyMember {
-  character: Character;
-  position: number; // 0-3 (party slot position)
-  isLeader: boolean;
-}
-
-// New Party System (Dragon Quest Tact Style)
+// Party System (Dragon Quest Tact Style)
 export interface PartyMemberV2 {
   characterId: string; // Reference to recruited character
   position: number; // 0-3 (party slot position)
@@ -98,7 +91,6 @@ interface GameState {
   // Party Management (Multiple Parties - Dragon Quest Tact Style)
   parties: Party[]; // Multiple parties (unlimited)
   activePartyId: string | null; // Currently active party
-  party: PartyMember[]; // Legacy: Keep for backward compatibility (will be deprecated)
   
   // Inventory
   inventory: InventoryItem[];
@@ -113,17 +105,7 @@ interface GameState {
   // UI State
   isLoading: boolean;
   
-  // ==================== Party Actions (Legacy) ====================
-  
-  addToParty: (character: Character, position?: number) => boolean;
-  removeFromParty: (characterId: string) => void;
-  swapPartyMembers: (position1: number, position2: number) => void;
-  setLeader: (characterId: string) => void;
-  clearParty: () => void;
-  isInParty: (characterId: string) => boolean;
-  getPartyMember: (position: number) => PartyMember | null;
-  
-  // ==================== Multiple Party Actions (New) ====================
+  // ==================== Multiple Party Actions ====================  
   
   createParty: (name: string) => Party;
   deleteParty: (partyId: string) => void;
@@ -195,7 +177,6 @@ export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       // Initial State
-      party: [],
       parties: [], // Will be initialized on first load
       activePartyId: null,
       inventory: [],
@@ -204,155 +185,7 @@ export const useGameStore = create<GameState>()(
       events: [],
       isLoading: false,
 
-      // ==================== Party Actions ====================
-
-      addToParty: (character: Character, position?: number) => {
-        const state = get();
-        
-        // Check if already in party
-        if (state.isInParty(character.id)) {
-          return false;
-        }
-
-        // Check if party is full (max 4)
-        if (state.party.length >= 4) {
-          return false;
-        }
-
-        // Determine position
-        let targetPosition = position;
-        if (targetPosition === undefined) {
-          // Find first empty slot
-          const occupiedPositions = state.party.map((m) => m.position);
-          for (let i = 0; i < 4; i++) {
-            if (!occupiedPositions.includes(i)) {
-              targetPosition = i;
-              break;
-            }
-          }
-        }
-
-        if (targetPosition === undefined) {
-          return false;
-        }
-
-        // Check if position is already occupied
-        const existingMember = state.party.find(
-          (m) => m.position === targetPosition
-        );
-        if (existingMember) {
-          return false;
-        }
-
-        const newMember: PartyMember = {
-          character,
-          position: targetPosition,
-          isLeader: state.party.length === 0, // First member is leader
-        };
-
-        set({
-          party: [...state.party, newMember],
-        });
-
-        // Track that this character has been selected
-        if (!state.progress.selectedCharacters.includes(character.id)) {
-          set((state) => ({
-            progress: {
-              ...state.progress,
-              selectedCharacters: [
-                ...state.progress.selectedCharacters,
-                character.id,
-              ],
-            },
-          }));
-        }
-
-        // Add event
-        get().addEvent({
-          type: "quest",
-          data: {
-            action: "add_to_party",
-            characterId: character.id,
-            characterName: character.name,
-          },
-        });
-
-        return true;
-      },
-
-      removeFromParty: (characterId: string) => {
-        const state = get();
-        const updatedParty = state.party.filter(
-          (m) => m.character.id !== characterId
-        );
-
-        // If leader was removed, make first member the new leader
-        if (updatedParty.length > 0) {
-          const hasLeader = updatedParty.some((m) => m.isLeader);
-          if (!hasLeader) {
-            updatedParty[0].isLeader = true;
-          }
-        }
-
-        set({ party: updatedParty });
-
-        // Add event
-        get().addEvent({
-          type: "quest",
-          data: {
-            action: "remove_from_party",
-            characterId,
-          },
-        });
-      },
-
-      swapPartyMembers: (position1: number, position2: number) => {
-        const state = get();
-        const member1 = state.party.find((m) => m.position === position1);
-        const member2 = state.party.find((m) => m.position === position2);
-
-        if (!member1 || !member2) {
-          return;
-        }
-
-        const updatedParty = state.party.map((member) => {
-          if (member.position === position1) {
-            return { ...member, position: position2 };
-          }
-          if (member.position === position2) {
-            return { ...member, position: position1 };
-          }
-          return member;
-        });
-
-        set({ party: updatedParty });
-      },
-
-      setLeader: (characterId: string) => {
-        const state = get();
-        const updatedParty = state.party.map((member) => ({
-          ...member,
-          isLeader: member.character.id === characterId,
-        }));
-
-        set({ party: updatedParty });
-      },
-
-      clearParty: () => {
-        set({ party: [] });
-      },
-
-      isInParty: (characterId: string) => {
-        const state = get();
-        return state.party.some((m) => m.character.id === characterId);
-      },
-
-      getPartyMember: (position: number) => {
-        const state = get();
-        return state.party.find((m) => m.position === position) || null;
-      },
-
-      // ==================== Inventory Actions ====================
+      // ==================== Multiple Party Actions ====================
 
       addItem: (itemId: string, quantity: number) => {
         const state = get();
@@ -813,7 +646,6 @@ export const useGameStore = create<GameState>()(
         };
 
         set({
-          party: [], // Legacy
           parties: [defaultParty],
           activePartyId: defaultParty.id,
           inventory: [],
@@ -831,11 +663,11 @@ export const useGameStore = create<GameState>()(
 
 // ==================== Helper Functions ====================
 
-export function getPartyLeader(party: PartyMember[]): PartyMember | null {
+export function getPartyLeader(party: any[]): any | null {
   return party.find((m) => m.isLeader) || null;
 }
 
-export function getPartyStats(party: PartyMember[]) {
+export function getPartyStats(party: any[]) {
   const totalHp = party.reduce((sum, m) => sum + m.character.stats.maxHp, 0);
   const totalMp = party.reduce((sum, m) => sum + m.character.stats.maxMp, 0);
   const avgLevel =
@@ -851,7 +683,7 @@ export function getPartyStats(party: PartyMember[]) {
   };
 }
 
-export function getPartySynergy(party: PartyMember[]): string[] {
+export function getPartySynergy(party: any[]): string[] {
   const synergies: string[] = [];
   
   // Check for elemental diversity

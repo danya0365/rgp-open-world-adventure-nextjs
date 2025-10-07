@@ -48,30 +48,13 @@ export function usePartyPresenter(
   initialViewModel: PartyViewModel | null = null
 ): PartyPresenterHook {
   const [viewModel, setViewModel] = useState<PartyViewModel | null>(
-    initialViewModel || null
+    initialViewModel !== null ? initialViewModel : null
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal states
-  const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
-
-  // Get party store
-  const {
-    party,
-    addToParty: storeAddToParty,
-    removeFromParty: storeRemoveFromParty,
-    swapPartyMembers: storeSwapPartyMembers,
-    setLeader: storeSetLeader,
-    clearParty: storeClearParty,
-    isInParty: storeIsInParty,
-    progress,
-  } = useGameStore();
-  
-  // Check if user has ever selected a character
-  // by checking game state (NOT mock data)
-  const hasEverSelectedCharacter = progress.selectedCharacters.length > 0;
+  // Get game store
+  const { progress } = useGameStore();
 
   /**
    * Load data from presenter
@@ -117,113 +100,6 @@ export function usePartyPresenter(
       loadData();
     }
   }, [progress.selectedCharacters.length, progress.recruitedCharacters.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  /**
-   * Add character to party
-   */
-  const addToParty = useCallback(
-    (character: Character, position?: number) => {
-      try {
-        storeAddToParty(character, position);
-        setIsSelectModalOpen(false);
-        setSelectedPosition(null);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error";
-        setError(errorMessage);
-        console.error("Error adding to party:", err);
-      }
-    },
-    [storeAddToParty]
-  );
-
-  /**
-   * Remove character from party
-   */
-  const removeFromParty = useCallback(
-    (characterId: string) => {
-      try {
-        storeRemoveFromParty(characterId);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error";
-        setError(errorMessage);
-        console.error("Error removing from party:", err);
-      }
-    },
-    [storeRemoveFromParty]
-  );
-
-  /**
-   * Swap party members
-   */
-  const swapPartyMembers = useCallback(
-    (pos1: number, pos2: number) => {
-      try {
-        storeSwapPartyMembers(pos1, pos2);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error";
-        setError(errorMessage);
-        console.error("Error swapping party members:", err);
-      }
-    },
-    [storeSwapPartyMembers]
-  );
-
-  /**
-   * Set party leader
-   */
-  const setLeader = useCallback(
-    (characterId: string) => {
-      try {
-        storeSetLeader(characterId);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Unknown error";
-        setError(errorMessage);
-        console.error("Error setting leader:", err);
-      }
-    },
-    [storeSetLeader]
-  );
-
-  /**
-   * Clear party
-   */
-  const clearParty = useCallback(() => {
-    try {
-      storeClearParty();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setError(errorMessage);
-      console.error("Error clearing party:", err);
-    }
-  }, [storeClearParty]);
-
-  /**
-   * Check if character is in party
-   */
-  const isInParty = useCallback(
-    (characterId: string) => {
-      return storeIsInParty(characterId);
-    },
-    [storeIsInParty]
-  );
-
-  /**
-   * Open character selection modal
-   */
-  const openSelectModal = useCallback((position: number) => {
-    setSelectedPosition(position);
-    setIsSelectModalOpen(true);
-    setError(null);
-  }, []);
-
-  /**
-   * Close character selection modal
-   */
-  const closeSelectModal = useCallback(() => {
-    setIsSelectModalOpen(false);
-    setSelectedPosition(null);
-    setError(null);
-  }, []);
 
   // Get multiple party state from store
   const {
