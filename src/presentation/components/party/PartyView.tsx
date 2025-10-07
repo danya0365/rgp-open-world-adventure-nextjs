@@ -235,24 +235,8 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Navigation */}
-        <div className="mb-6 flex gap-2">
-          <Link
-            href="/"
-            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
-          >
-            ← หน้าแรก
-          </Link>
-          <Link
-            href="/characters"
-            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
-          >
-            ← ตัวละคร
-          </Link>
-        </div>
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">

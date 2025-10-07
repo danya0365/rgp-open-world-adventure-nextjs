@@ -5,9 +5,8 @@ import { QuestViewModel } from "@/src/presentation/presenters/quest/QuestPresent
 import { useQuestPresenter } from "@/src/presentation/presenters/quest/useQuestPresenter";
 import { QuestCard } from "./QuestCard";
 import { QuestDetail } from "./QuestDetail";
-import { Quest, QuestType, QuestStatus } from "@/src/domain/types/quest.types";
+import { Quest } from "@/src/domain/types/quest.types";
 import { Scroll, Filter, Search, Award, Target, CheckCircle } from "lucide-react";
-import Link from "next/link";
 
 interface QuestViewProps {
   initialViewModel?: QuestViewModel;
@@ -78,36 +77,8 @@ export function QuestView({ initialViewModel }: QuestViewProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Navigation */}
-        <div className="mb-6 flex gap-2">
-          <Link
-            href="/"
-            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
-          >
-            ← Home
-          </Link>
-          <Link
-            href="/characters"
-            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
-          >
-            Characters
-          </Link>
-          <Link
-            href="/party"
-            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
-          >
-            Party
-          </Link>
-          <Link
-            href="/world"
-            className="px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
-          >
-            World
-          </Link>
-        </div>
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
