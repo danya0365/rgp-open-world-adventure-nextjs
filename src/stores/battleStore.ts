@@ -125,14 +125,15 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
 
   /**
    * Move Unit
+   * Note: Does NOT set hasActed to allow multiple moves within range
    */
   moveUnit: (unitId, x, y) => {
     set((state) => {
       const newAllyUnits = state.allyUnits.map((unit) =>
-        unit.id === unitId ? { ...unit, position: { x, y }, hasActed: true } : unit
+        unit.id === unitId ? { ...unit, position: { x, y } } : unit
       );
       const newEnemyUnits = state.enemyUnits.map((unit) =>
-        unit.id === unitId ? { ...unit, position: { x, y }, hasActed: true } : unit
+        unit.id === unitId ? { ...unit, position: { x, y } } : unit
       );
 
       return {
