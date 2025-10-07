@@ -1,0 +1,312 @@
+/* 🎮 RPG Fantasy Theme - Color Palette & Design Tokens */
+@theme {
+  /* ========================================
+     🎨 PRIMARY FANTASY COLORS
+     ======================================== */
+  
+  /* Magic Blue - Primary */
+  --color-magic-blue-50: #eff6ff;
+  --color-magic-blue-100: #dbeafe;
+  --color-magic-blue-200: #bfdbfe;
+  --color-magic-blue-300: #93c5fd;
+  --color-magic-blue-400: #60a5fa;
+  --color-magic-blue-500: #3b82f6;
+  --color-magic-blue-600: #2563eb;
+  --color-magic-blue-700: #1d4ed8;
+  --color-magic-blue-800: #1e40af;
+  --color-magic-blue-900: #1e3a8a;
+  --color-magic-blue-950: #172554;
+
+  /* Mystic Purple - Secondary */
+  --color-mystic-purple-50: #faf5ff;
+  --color-mystic-purple-100: #f3e8ff;
+  --color-mystic-purple-200: #e9d5ff;
+  --color-mystic-purple-300: #d8b4fe;
+  --color-mystic-purple-400: #c084fc;
+  --color-mystic-purple-500: #a855f7;
+  --color-mystic-purple-600: #9333ea;
+  --color-mystic-purple-700: #7e22ce;
+  --color-mystic-purple-800: #6b21a8;
+  --color-mystic-purple-900: #581c87;
+  --color-mystic-purple-950: #3b0764;
+
+  /* Royal Gold - Accent */
+  --color-royal-gold-50: #fefce8;
+  --color-royal-gold-100: #fef9c3;
+  --color-royal-gold-200: #fef08a;
+  --color-royal-gold-300: #fde047;
+  --color-royal-gold-400: #facc15;
+  --color-royal-gold-500: #eab308;
+  --color-royal-gold-600: #ca8a04;
+  --color-royal-gold-700: #a16207;
+  --color-royal-gold-800: #854d0e;
+  --color-royal-gold-900: #713f12;
+  --color-royal-gold-950: #422006;
+
+  /* Enchanted Pink - Highlight */
+  --color-enchanted-pink-50: #fdf2f8;
+  --color-enchanted-pink-100: #fce7f3;
+  --color-enchanted-pink-200: #fbcfe8;
+  --color-enchanted-pink-300: #f9a8d4;
+  --color-enchanted-pink-400: #f472b6;
+  --color-enchanted-pink-500: #ec4899;
+  --color-enchanted-pink-600: #db2777;
+  --color-enchanted-pink-700: #be185d;
+  --color-enchanted-pink-800: #9d174d;
+  --color-enchanted-pink-900: #831843;
+  --color-enchanted-pink-950: #500724;
+
+  /* ========================================
+     🔥 ELEMENTAL COLORS (6 Elements)
+     ======================================== */
+
+  /* Fire Element */
+  --color-element-fire-50: #fef2f2;
+  --color-element-fire-100: #fee2e2;
+  --color-element-fire-200: #fecaca;
+  --color-element-fire-300: #fca5a5;
+  --color-element-fire-400: #f87171;
+  --color-element-fire-500: #ef4444;
+  --color-element-fire-600: #dc2626;
+  --color-element-fire-700: #b91c1c;
+  --color-element-fire-800: #991b1b;
+  --color-element-fire-900: #7f1d1d;
+
+  /* Water Element */
+  --color-element-water-50: #ecfeff;
+  --color-element-water-100: #cffafe;
+  --color-element-water-200: #a5f3fc;
+  --color-element-water-300: #67e8f9;
+  --color-element-water-400: #22d3ee;
+  --color-element-water-500: #06b6d4;
+  --color-element-water-600: #0891b2;
+  --color-element-water-700: #0e7490;
+  --color-element-water-800: #155e75;
+  --color-element-water-900: #164e63;
+
+  /* Earth Element */
+  --color-element-earth-50: #f0fdf4;
+  --color-element-earth-100: #dcfce7;
+  --color-element-earth-200: #bbf7d0;
+  --color-element-earth-300: #86efac;
+  --color-element-earth-400: #4ade80;
+  --color-element-earth-500: #22c55e;
+  --color-element-earth-600: #16a34a;
+  --color-element-earth-700: #15803d;
+  --color-element-earth-800: #166534;
+  --color-element-earth-900: #14532d;
+
+  /* Wind Element */
+  --color-element-wind-50: #f0fdfa;
+  --color-element-wind-100: #ccfbf1;
+  --color-element-wind-200: #99f6e4;
+  --color-element-wind-300: #5eead4;
+  --color-element-wind-400: #2dd4bf;
+  --color-element-wind-500: #14b8a6;
+  --color-element-wind-600: #0d9488;
+  --color-element-wind-700: #0f766e;
+  --color-element-wind-800: #115e59;
+  --color-element-wind-900: #134e4a;
+
+  /* Light Element */
+  --color-element-light-50: #fffbeb;
+  --color-element-light-100: #fef3c7;
+  --color-element-light-200: #fde68a;
+  --color-element-light-300: #fcd34d;
+  --color-element-light-400: #fbbf24;
+  --color-element-light-500: #f59e0b;
+  --color-element-light-600: #d97706;
+  --color-element-light-700: #b45309;
+  --color-element-light-800: #92400e;
+  --color-element-light-900: #78350f;
+
+  /* Dark Element */
+  --color-element-dark-50: #f8fafc;
+  --color-element-dark-100: #f1f5f9;
+  --color-element-dark-200: #e2e8f0;
+  --color-element-dark-300: #cbd5e1;
+  --color-element-dark-400: #94a3b8;
+  --color-element-dark-500: #64748b;
+  --color-element-dark-600: #475569;
+  --color-element-dark-700: #334155;
+  --color-element-dark-800: #1e293b;
+  --color-element-dark-900: #0f172a;
+  --color-element-dark-950: #020617;
+
+  /* ========================================
+     💚 STATUS COLORS (HP, MP, Stamina)
+     ======================================== */
+
+  /* HP (Health Points) - Red/Crimson */
+  --color-hp-50: #fef2f2;
+  --color-hp-100: #fee2e2;
+  --color-hp-200: #fecaca;
+  --color-hp-300: #fca5a5;
+  --color-hp-400: #f87171;
+  --color-hp-500: #ef4444;
+  --color-hp-600: #dc2626;
+  --color-hp-700: #b91c1c;
+  --color-hp-800: #991b1b;
+  --color-hp-900: #7f1d1d;
+  --color-hp-critical: #dc2626; /* Below 25% */
+  --color-hp-low: #f59e0b; /* Below 50% */
+  --color-hp-normal: #22c55e; /* Above 50% */
+
+  /* MP (Mana Points) - Blue/Cyan */
+  --color-mp-50: #ecfeff;
+  --color-mp-100: #cffafe;
+  --color-mp-200: #a5f3fc;
+  --color-mp-300: #67e8f9;
+  --color-mp-400: #22d3ee;
+  --color-mp-500: #06b6d4;
+  --color-mp-600: #0891b2;
+  --color-mp-700: #0e7490;
+  --color-mp-800: #155e75;
+  --color-mp-900: #164e63;
+
+  /* Stamina - Yellow/Amber */
+  --color-stamina-50: #fffbeb;
+  --color-stamina-100: #fef3c7;
+  --color-stamina-200: #fde68a;
+  --color-stamina-300: #fcd34d;
+  --color-stamina-400: #fbbf24;
+  --color-stamina-500: #f59e0b;
+  --color-stamina-600: #d97706;
+  --color-stamina-700: #b45309;
+  --color-stamina-800: #92400e;
+  --color-stamina-900: #78350f;
+
+  /* EXP (Experience) - Purple/Violet */
+  --color-exp-50: #faf5ff;
+  --color-exp-100: #f3e8ff;
+  --color-exp-200: #e9d5ff;
+  --color-exp-300: #d8b4fe;
+  --color-exp-400: #c084fc;
+  --color-exp-500: #a855f7;
+  --color-exp-600: #9333ea;
+  --color-exp-700: #7e22ce;
+  --color-exp-800: #6b21a8;
+  --color-exp-900: #581c87;
+
+  /* ========================================
+     🌑 DARK FANTASY THEME (Default)
+     ======================================== */
+
+  /* Background Colors */
+  --color-bg-primary: #0f172a; /* Dark slate */
+  --color-bg-secondary: #1e293b; /* Slate 800 */
+  --color-bg-tertiary: #334155; /* Slate 700 */
+  --color-bg-surface: #1e293b;
+  --color-bg-elevated: #334155;
+
+  /* Text Colors */
+  --color-text-primary: #f1f5f9; /* Slate 100 */
+  --color-text-secondary: #cbd5e1; /* Slate 300 */
+  --color-text-tertiary: #94a3b8; /* Slate 400 */
+  --color-text-muted: #64748b; /* Slate 500 */
+
+  /* Border Colors */
+  --color-border-primary: #334155; /* Slate 700 */
+  --color-border-secondary: #475569; /* Slate 600 */
+  --color-border-accent: #9333ea; /* Purple 600 */
+
+  /* ========================================
+     🎯 GAME-SPECIFIC COLORS
+     ======================================== */
+
+  /* Rarity Colors */
+  --color-rarity-common: #9ca3af; /* Gray */
+  --color-rarity-uncommon: #22c55e; /* Green */
+  --color-rarity-rare: #3b82f6; /* Blue */
+  --color-rarity-epic: #a855f7; /* Purple */
+  --color-rarity-legendary: #f59e0b; /* Gold */
+  --color-rarity-mythic: #ec4899; /* Pink */
+
+  /* Buff/Debuff Colors */
+  --color-buff: #22c55e; /* Green */
+  --color-debuff: #ef4444; /* Red */
+  --color-neutral: #94a3b8; /* Gray */
+
+  /* Team/Faction Colors */
+  --color-team-ally: #3b82f6; /* Blue */
+  --color-team-enemy: #ef4444; /* Red */
+  --color-team-neutral: #94a3b8; /* Gray */
+
+  /* ========================================
+     🎨 GRADIENT PRESETS
+     ======================================== */
+
+  --gradient-magic: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+  --gradient-fire: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --gradient-water: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  --gradient-earth: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+  --gradient-wind: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+  --gradient-light: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --gradient-dark: linear-gradient(135deg, #475569 0%, #0f172a 100%);
+  --gradient-fantasy: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  --gradient-legendary: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #9333ea 100%);
+
+  /* ========================================
+     📏 SPACING & SIZING
+     ======================================== */
+
+  /* Game UI Spacing */
+  --space-xs: 0.25rem; /* 4px */
+  --space-sm: 0.5rem; /* 8px */
+  --space-md: 1rem; /* 16px */
+  --space-lg: 1.5rem; /* 24px */
+  --space-xl: 2rem; /* 32px */
+  --space-2xl: 3rem; /* 48px */
+  --space-3xl: 4rem; /* 64px */
+
+  /* Border Radius */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.5rem; /* 24px */
+  --radius-full: 9999px;
+
+  /* ========================================
+     🎭 EFFECTS & SHADOWS
+     ======================================== */
+
+  /* Box Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-glow-purple: 0 0 20px rgba(147, 51, 234, 0.5);
+  --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.5);
+  --shadow-glow-gold: 0 0 20px rgba(234, 179, 8, 0.5);
+
+  /* Text Shadows */
+  --text-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --text-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --text-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --text-shadow-glow: 0 0 10px rgba(147, 51, 234, 0.8);
+
+  /* ========================================
+     ⚡ ANIMATION DURATIONS
+     ======================================== */
+
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 1000ms;
+
+  /* ========================================
+     🎮 Z-INDEX LAYERS
+     ======================================== */
+
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-notification: 1080;
+}
