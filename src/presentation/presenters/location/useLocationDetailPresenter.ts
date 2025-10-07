@@ -11,7 +11,7 @@ import {
  * Manages state and business logic for Location Detail UI
  */
 export function useLocationDetailPresenter(
-  locationId: string,
+  locationId?: string,
   initialViewModel?: LocationDetailViewModel
 ) {
   const [viewModel, setViewModel] = useState<LocationDetailViewModel | null>(
@@ -27,10 +27,14 @@ export function useLocationDetailPresenter(
       return;
     }
 
-    loadLocationDetail();
+    if (locationId) {
+      loadLocationDetail();
+    }
   }, [locationId]);
 
   const loadLocationDetail = async () => {
+    if (!locationId) return;
+    
     try {
       setLoading(true);
       setError(null);

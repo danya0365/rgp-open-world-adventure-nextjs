@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Breadcrumb } from "./Breadcrumb";
 import { LocationCard } from "./LocationCard";
+import { LocationDetailView } from "../location/LocationDetailView";
 
 interface WorldViewProps {
   initialViewModel?: WorldViewModel;
@@ -147,6 +148,9 @@ export function WorldView({
     ? viewModel.locations.filter((loc) => loc.parentId === currentLocation.id)
     : viewModel.rootLocations;
 
+  // Check if current location has children
+  const hasChildren = locationsToShow.length > 0;
+
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
@@ -247,13 +251,23 @@ export function WorldView({
           </div>
         </div>
 
-        {/* Locations Grid */}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-4">
-            {currentLocation ? "สถานที่ภายใน" : "ทวีปหลัก"}
-          </h2>
+        {/* Location Detail - แสดงเสมอถ้ามี currentLocation */}
+        {currentLocation && currentLocationId && (
+          <LocationDetailView 
+            locationId={currentLocationId}
+            hideBackButton={true}
+            hideHeader={true}
+            hideStats={true}
+            compact={true}
+          />
+        )}
 
-          {locationsToShow.length > 0 ? (
+        {/* Child Locations Grid - แสดงถ้ามี children */}
+        {hasChildren && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-white mb-4">
+              สถานที่ภายใน
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {locationsToShow.map((location) => (
                 <LocationCard
@@ -266,19 +280,25 @@ export function WorldView({
                 />
               ))}
             </div>
-          ) : (
-            <div className="text-center py-16">
-              <MapPin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">ไม่มีสถานที่ภายใน</p>
-              <Link
-                href="/world"
-                className="mt-4 text-purple-400 hover:text-purple-300 transition-colors inline-block"
-              >
-                ← กลับไปแผนที่หลัก
-              </Link>
+          </div>
+        )}
+
+        {/* Root Locations Grid - แสดงถ้าไม่มี currentLocation */}
+        {!currentLocation && (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-4">ทวีปหลัก</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {locationsToShow.map((location) => (
+                <LocationCard
+                  key={location.id}
+                  location={location}
+                  currentPath="/world"
+                  isDiscovered={location.isDiscoverable}
+                />
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Error Toast */}
         {error && viewModel && (
