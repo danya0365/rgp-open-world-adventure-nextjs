@@ -45,7 +45,7 @@ export function LandingView() {
 
           {/* Subtitle */}
           <p className="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            ผจญภัยในโลกแฟนตาซีกว้างใหญ่ พร้อมระบบต่อสู้แบบ Tactical Grid
+            ผจญภัยในโลกแฟนตาซีกว้างใหญ่ พร้อมระบบต่อสู้แบบ Dynamic Tactical Grid
             <br />
             เนื้อเรื่องหลายจบ และโหมด Co-op Multiplayer
           </p>
@@ -75,8 +75,8 @@ export function LandingView() {
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
-              <div className="text-3xl font-bold text-purple-400 mb-1">6x6</div>
-              <div className="text-sm text-gray-400">Tactical Grid</div>
+              <div className="text-3xl font-bold text-purple-400 mb-1">Dynamic</div>
+              <div className="text-sm text-gray-400">Grid Combat</div>
             </div>
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-4">
               <div className="text-3xl font-bold text-pink-400 mb-1">100+</div>
@@ -122,11 +122,11 @@ export function LandingView() {
                   <Sword className="w-8 h-8 text-purple-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3">
-                  Tactical Grid Combat
+                  Dynamic Tactical Grid
                 </h3>
                 <p className="text-gray-400">
-                  ระบบต่อสู้แบบ 6x6 Grid พร้อมกลยุทธ์การวางตำแหน่ง การโจมตีแบบ Flanking
-                  และระบบธาตุ 6 ธาตุ
+                  ระบบต่อสู้แบบ Dynamic Grid (5x5 ถึง 10x10+) เหมือน Dragon Quest Tact
+                  พร้อมกลยุทธ์การวางตำแหน่ง การโจมตีแบบ Flanking และระบบธาตุ 6 ธาตุ
                 </p>
               </div>
             </div>

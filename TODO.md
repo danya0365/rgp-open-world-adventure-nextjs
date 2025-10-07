@@ -1,7 +1,7 @@
 # RPG Open World Adventure - TODO List
 
 ## 📋 Project Overview
-เกม RPG โลกเปิดกว้างแฟนตาซี พร้อมระบบต่อสู้แบบ Tactical Grid (Dragon Quest Tact), เนื้อเรื่องหลัก Multiple Endings, เควสนับร้อย, และ Co-op Multiplayer
+เกม RPG โลกเปิดกว้างแฟนตาซี พร้อมระบบต่อสู้แบบ Dynamic Tactical Grid (Dragon Quest Tact Style), เนื้อเรื่องหลัก Multiple Endings, เควสนับร้อย, และ Co-op Multiplayer
 
 ---
 
@@ -150,9 +150,11 @@
   - [ ] Shop/Inn/Guild access
   - [ ] Entry to dungeons/battles
 
-### 2.2 Tactical Grid Combat System ⚔️
+### 2.2 Tactical Grid Combat System ⚔️ (Dragon Quest Tact Style)
 - [ ] **Combat Arena** (`/game/battle/[id]`)
-  - [ ] 6x6 Tactical Grid (Canvas/Phaser 3)
+  - [ ] Dynamic Tactical Grid (Canvas/Phaser 3) - แต่ละ map มีขนาด grid ต่างกัน
+  - [ ] Battle map configurations (small: 5x5, medium: 7x7, large: 9x9, boss: 10x10+)
+  - [ ] Custom map shapes (rectangular, irregular, multi-level)
   - [ ] Unit positioning & placement
   - [ ] Movement range visualization
   - [ ] Attack range indicators
@@ -163,8 +165,10 @@
   - [ ] Attack direction (front/back/side)
   - [ ] Flanking bonus system
   - [ ] High ground advantage
-  - [ ] Terrain effects (water, fire, ice)
+  - [ ] Terrain effects (water, fire, ice, lava, poison)
+  - [ ] Terrain obstacles (rocks, walls, barriers)
   - [ ] Line of sight system
+  - [ ] Push/Pull mechanics
 - [ ] **Skills & Abilities**
   - [ ] Skill selection UI
   - [ ] AOE targeting (shapes: line, cone, circle)
@@ -645,7 +649,9 @@
 
 ## 📝 Notes
 
-- Focus on **Tactical Grid Combat** first - it's the core differentiator
+- Focus on **Dynamic Tactical Grid Combat** first - it's the core differentiator
+- Each battle map has unique grid size and shape (like Dragon Quest Tact)
+- Grid sizes vary: 5x5 (small), 7x7 (medium), 9x9 (large), 10x10+ (boss battles)
 - Use **mock data** extensively during Phase 2-4
 - **Mobile-first** approach for UI
 - **Performance** is critical for combat animations
