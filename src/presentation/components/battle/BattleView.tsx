@@ -697,15 +697,17 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                   </div>
 
                   {/* Actions */}
-                  {currentUnit.isAlly && !currentUnit.hasActed && (
+                  {currentUnit.isAlly && (
                     <div className="space-y-2 pt-2 border-t border-slate-700">
-                      <div className="text-xs text-gray-400 mb-2">
-                        💡 คลิกช่องสีน้ำเงินเพื่อเคลื่อนที่<br/>
-                        💡 คลิกศัตรูในช่องสีแดงเพื่อโจมตี
-                      </div>
+                      {!currentUnit.hasActed && (
+                        <div className="text-xs text-gray-400 mb-2">
+                          💡 คลิกช่องสีน้ำเงินเพื่อเคลื่อนที่<br/>
+                          💡 คลิกศัตรูในช่องสีแดงเพื่อโจมตี
+                        </div>
+                      )}
                       <button
                         onClick={storeEndTurn}
-                        className="w-full px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm"
+                        className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
                       >
                         End Turn
                       </button>
