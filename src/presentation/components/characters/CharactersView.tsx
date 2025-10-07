@@ -16,7 +16,7 @@ interface CharactersViewProps {
 
 export function CharactersView({ initialViewModel }: CharactersViewProps) {
   const router = useRouter();
-  const { addToParty, isInParty, party } = useGameStore();
+  const { addToParty, isInParty, party, unlockCharacter, isCharacterUnlocked, progress } = useGameStore();
   
   const {
     viewModel,
@@ -30,6 +30,11 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
     setFilterClass,
     setShowOnlyPlayable,
   } = useCharactersPresenter(initialViewModel);
+
+  const handleUnlockCharacter = (character: Character) => {
+    unlockCharacter(character.id);
+    // Don't close modal, let user decide what to do next
+  };
 
   const handleAddToParty = (character: Character) => {
     // Check if party is full
@@ -115,24 +120,30 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
         </div>
 
         {/* Selected Characters Summary */}
-        {party.length > 0 && (
+        {(progress.unlockedCharacters.length > 0 || party.length > 0) && (
           <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-purple-400" />
                 <div>
-                  <h3 className="text-white font-semibold">ตัวละครที่เลือก: {party.length}/4</h3>
-                  <p className="text-gray-400 text-sm">
-                    {party.map((m) => m.character.name).join(", ")}
-                  </p>
+                  <h3 className="text-white font-semibold">
+                    ปลดล็อค: {progress.unlockedCharacters.length} คน | ทีม: {party.length}/4
+                  </h3>
+                  {party.length > 0 && (
+                    <p className="text-gray-400 text-sm">
+                      ทีม: {party.map((m) => m.character.name).join(", ")}
+                    </p>
+                  )}
                 </div>
               </div>
-              <button
-                onClick={handleGoToParty}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all font-semibold shadow-lg shadow-purple-500/50"
-              >
-                ยืนยันและไปจัดทีม →
-              </button>
+              {party.length > 0 && (
+                <button
+                  onClick={handleGoToParty}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all font-semibold shadow-lg shadow-purple-500/50"
+                >
+                  ยืนยันและไปจัดทีม →
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -252,7 +263,9 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             <CharacterDetailContent 
               character={selectedCharacter}
               onAddToParty={handleAddToParty}
+              onUnlock={handleUnlockCharacter}
               isInParty={isInParty(selectedCharacter.id)}
+              isUnlocked={isCharacterUnlocked(selectedCharacter.id)}
             />
           </Modal>
         )}
@@ -274,13 +287,17 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
 interface CharacterDetailContentProps {
   character: Character;
   onAddToParty: (character: Character) => void;
+  onUnlock: (character: Character) => void;
   isInParty: boolean;
+  isUnlocked: boolean;
 }
 
 function CharacterDetailContent({ 
   character, 
   onAddToParty,
-  isInParty 
+  onUnlock,
+  isInParty,
+  isUnlocked
 }: CharacterDetailContentProps) {
   return (
     <div className="space-y-6">
@@ -422,29 +439,42 @@ function CharacterDetailContent({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4 pt-4">
-        {character.isPlayable ? (
-          isInParty ? (
-            <Button variant="ghost" className="flex-1" disabled>
-              ✓ อยู่ในทีมแล้ว
-            </Button>
-          ) : (
-            <Button 
-              variant="primary" 
-              className="flex-1"
-              onClick={() => onAddToParty(character)}
-            >
-              เลือกเข้าทีม
-            </Button>
-          )
-        ) : character.isRecruitable ? (
-          <Button variant="action" className="flex-1" disabled>
-            ต้องทำเควสต์ก่อน
+      <div className="flex flex-col gap-3 pt-4">
+        {/* Unlock Button */}
+        {!isUnlocked && (
+          <Button 
+            variant="action" 
+            className="w-full"
+            onClick={() => onUnlock(character)}
+          >
+            🔓 ปลดล็อคตัวละคร
           </Button>
-        ) : (
-          <Button variant="ghost" className="flex-1" disabled>
-            ไม่สามารถใช้ได้
-          </Button>
+        )}
+        
+        {/* Add to Party Button */}
+        {isUnlocked && (
+          <>
+            {isInParty ? (
+              <Button variant="ghost" className="w-full" disabled>
+                ✓ อยู่ในทีมแล้ว
+              </Button>
+            ) : (
+              <Button 
+                variant="primary" 
+                className="w-full"
+                onClick={() => onAddToParty(character)}
+              >
+                เพิ่มเข้าทีม (Party)
+              </Button>
+            )}
+          </>
+        )}
+        
+        {/* Status Messages */}
+        {!isUnlocked && (
+          <p className="text-sm text-gray-400 text-center">
+            ปลดล็อคตัวละครก่อนเพื่อเพิ่มเข้าทีม
+          </p>
         )}
       </div>
     </div>

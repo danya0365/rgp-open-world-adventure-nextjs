@@ -72,24 +72,25 @@ interface GameState {
   
   addItem: (itemId: string, quantity: number) => void;
   removeItem: (itemId: string, quantity: number) => void;
-  equipItem: (itemId: string, characterId: string) => void;
   unequipItem: (itemId: string) => void;
   addGold: (amount: number) => void;
   removeGold: (amount: number) => boolean;
   
   // ==================== Progress Actions ====================
-  
+
   setCurrentLocation: (locationId: string) => void;
   discoverLocation: (locationId: string) => void;
   isLocationDiscovered: (locationId: string) => boolean;
   completeQuest: (questId: string) => void;
   startQuest: (questId: string) => void;
   unlockCharacter: (characterId: string) => void;
+  isCharacterUnlocked: (characterId: string) => boolean;
   startGame: () => void;
   
   // ==================== Event Actions ====================
   
   addEvent: (event: Omit<GameEvent, "id" | "timestamp">) => void;
+  getEvents: () => GameEvent[];
   clearEvents: () => void;
   
   // ==================== Validation ====================
@@ -480,6 +481,11 @@ export const useGameStore = create<GameState>()(
           });
         }
       },
+      
+      isCharacterUnlocked: (characterId: string) => {
+        const state = get();
+        return state.progress.unlockedCharacters.includes(characterId);
+      },
 
       startGame: () => {
         set((state) => ({
@@ -503,6 +509,11 @@ export const useGameStore = create<GameState>()(
         set((state) => ({
           events: [...state.events, newEvent].slice(-100), // Keep last 100 events
         }));
+      },
+      
+      getEvents: () => {
+        const state = get();
+        return state.events;
       },
 
       clearEvents: () => {
