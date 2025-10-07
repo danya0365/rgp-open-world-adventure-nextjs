@@ -9,10 +9,27 @@ import { Character } from "@/src/domain/types/character.types";
 
 // ==================== Types ====================
 
+// Legacy PartyMember (keep for backward compatibility)
 export interface PartyMember {
   character: Character;
   position: number; // 0-3 (party slot position)
   isLeader: boolean;
+}
+
+// New Party System (Dragon Quest Tact Style)
+export interface PartyMemberV2 {
+  characterId: string; // Reference to recruited character
+  position: number; // 0-3 (party slot position)
+  isLeader: boolean;
+}
+
+export interface Party {
+  id: string; // UUID
+  name: string; // "Main Team", "Boss Team", etc.
+  members: PartyMemberV2[]; // max 4
+  formation: string; // "offensive", "defensive", "balanced"
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface InventoryItem {
@@ -78,8 +95,10 @@ export interface GameEvent {
 // ==================== State Interface ====================
 
 interface GameState {
-  // Party Management
-  party: PartyMember[];
+  // Party Management (Multiple Parties - Dragon Quest Tact Style)
+  parties: Party[]; // Multiple parties (unlimited)
+  activePartyId: string | null; // Currently active party
+  party: PartyMember[]; // Legacy: Keep for backward compatibility (will be deprecated)
   
   // Inventory
   inventory: InventoryItem[];
@@ -94,7 +113,7 @@ interface GameState {
   // UI State
   isLoading: boolean;
   
-  // ==================== Party Actions ====================
+  // ==================== Party Actions (Legacy) ====================
   
   addToParty: (character: Character, position?: number) => boolean;
   removeFromParty: (characterId: string) => void;
@@ -103,6 +122,19 @@ interface GameState {
   clearParty: () => void;
   isInParty: (characterId: string) => boolean;
   getPartyMember: (position: number) => PartyMember | null;
+  
+  // ==================== Multiple Party Actions (New) ====================
+  
+  createParty: (name: string) => Party;
+  deleteParty: (partyId: string) => void;
+  renameParty: (partyId: string, newName: string) => void;
+  copyParty: (partyId: string, newName: string) => Party;
+  setActiveParty: (partyId: string) => void;
+  getActiveParty: () => Party | null;
+  getParty: (partyId: string) => Party | undefined;
+  addToPartyV2: (partyId: string, characterId: string, position?: number) => boolean;
+  removeFromPartyV2: (partyId: string, characterId: string) => void;
+  isInPartyV2: (partyId: string, characterId: string) => boolean;
   
   // ==================== Inventory Actions ====================
   
@@ -156,11 +188,16 @@ const initialProgress: GameProgress = {
 
 // ==================== Store ====================
 
+// Helper function to generate UUID
+const generateId = () => `party_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       // Initial State
       party: [],
+      parties: [], // Will be initialized on first load
+      activePartyId: null,
       inventory: [],
       gold: 1000,
       progress: initialProgress,
@@ -607,31 +644,187 @@ export const useGameStore = create<GameState>()(
       canEnterWorldMap: () => {
         const state = get();
         // Must have at least 1 party member
-        return state.party.length > 0;
+        return state.parties.some((p) => p.members.length > 0);
+      },
+
+      // ==================== Multiple Party Actions ====================
+
+      createParty: (name: string) => {
+        const newParty: Party = {
+          id: generateId(),
+          name,
+          members: [],
+          formation: "balanced",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        set((state) => ({
+          parties: [...state.parties, newParty],
+          // Set as active if it's the first party
+          activePartyId: state.parties.length === 0 ? newParty.id : state.activePartyId,
+        }));
+
+        return newParty;
+      },
+
+      deleteParty: (partyId: string) => {
+        const state = get();
+        
+        // Cannot delete if it's the last party
+        if (state.parties.length <= 1) {
+          console.warn("Cannot delete the last party");
+          return;
+        }
+
+        const newParties = state.parties.filter((p) => p.id !== partyId);
+        
+        set({
+          parties: newParties,
+          // If deleted party was active, set first party as active
+          activePartyId: state.activePartyId === partyId ? newParties[0].id : state.activePartyId,
+        });
+      },
+
+      renameParty: (partyId: string, newName: string) => {
+        set((state) => ({
+          parties: state.parties.map((p) =>
+            p.id === partyId
+              ? { ...p, name: newName, updatedAt: new Date().toISOString() }
+              : p
+          ),
+        }));
+      },
+
+      copyParty: (partyId: string, newName: string) => {
+        const state = get();
+        const sourceParty = state.parties.find((p) => p.id === partyId);
+        
+        if (!sourceParty) {
+          console.warn(`Party ${partyId} not found`);
+          return {} as Party;
+        }
+
+        const newParty: Party = {
+          ...sourceParty,
+          id: generateId(),
+          name: newName,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        set((state) => ({
+          parties: [...state.parties, newParty],
+        }));
+
+        return newParty;
+      },
+
+      setActiveParty: (partyId: string) => {
+        set({ activePartyId: partyId });
+      },
+
+      getActiveParty: () => {
+        const state = get();
+        return state.parties.find((p) => p.id === state.activePartyId) || null;
+      },
+
+      getParty: (partyId: string) => {
+        const state = get();
+        return state.parties.find((p) => p.id === partyId);
+      },
+
+      addToPartyV2: (partyId: string, characterId: string, position?: number) => {
+        const state = get();
+        const party = state.parties.find((p) => p.id === partyId);
+        
+        if (!party) {
+          console.warn(`Party ${partyId} not found`);
+          return false;
+        }
+
+        // Check if party is full
+        if (party.members.length >= 4) {
+          console.warn("Party is full (max 4 members)");
+          return false;
+        }
+
+        // Check if character already in this party
+        if (party.members.some((m) => m.characterId === characterId)) {
+          console.warn("Character already in this party");
+          return false;
+        }
+
+        // Determine position
+        const targetPosition = position ?? party.members.length;
+
+        const newMember: PartyMemberV2 = {
+          characterId,
+          position: targetPosition,
+          isLeader: party.members.length === 0, // First member is leader
+        };
+
+        set((state) => ({
+          parties: state.parties.map((p) =>
+            p.id === partyId
+              ? {
+                  ...p,
+                  members: [...p.members, newMember],
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+        }));
+
+        return true;
+      },
+
+      removeFromPartyV2: (partyId: string, characterId: string) => {
+        set((state) => ({
+          parties: state.parties.map((p) =>
+            p.id === partyId
+              ? {
+                  ...p,
+                  members: p.members.filter((m) => m.characterId !== characterId),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+        }));
+      },
+
+      isInPartyV2: (partyId: string, characterId: string) => {
+        const state = get();
+        const party = state.parties.find((p) => p.id === partyId);
+        return party ? party.members.some((m) => m.characterId === characterId) : false;
       },
 
       // ==================== Reset ====================
 
       resetGame: () => {
+        // Create default party
+        const defaultParty: Party = {
+          id: generateId(),
+          name: "Main Team",
+          members: [],
+          formation: "balanced",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
         set({
-          party: [],
+          party: [], // Legacy
+          parties: [defaultParty],
+          activePartyId: defaultParty.id,
           inventory: [],
           gold: 1000,
           progress: initialProgress,
           events: [],
-          isLoading: false,
         });
       },
     }),
     {
       name: "game-storage",
-      partialize: (state) => ({
-        party: state.party,
-        inventory: state.inventory,
-        gold: state.gold,
-        progress: state.progress,
-        // Don't persist events (too large)
-      }),
     }
   )
 );
