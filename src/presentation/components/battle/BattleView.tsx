@@ -112,6 +112,22 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
           moveRange.push({ x, y });
         }
 
+        // Show original position (start point) as moveable
+        if (originalPosition && x === originalPosition.x && y === originalPosition.y) {
+          const alreadyExists = moveRange.some(pos => pos.x === x && pos.y === y);
+          if (!alreadyExists) {
+            moveRange.push({ x, y });
+          }
+        }
+
+        // Also show current position as moveable (where unit moved to)
+        if (originalPosition && x === currentUnit.position.x && y === currentUnit.position.y) {
+          const alreadyExists = moveRange.some(pos => pos.x === x && pos.y === y);
+          if (!alreadyExists) {
+            moveRange.push({ x, y });
+          }
+        }
+
         // Attack range from CURRENT position - only if enemies exist
         if (hasEnemies) {
           const attackDistance = Math.abs(x - currentUnit.position.x) + Math.abs(y - currentUnit.position.y);
