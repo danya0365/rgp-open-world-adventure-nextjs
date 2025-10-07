@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
+import { LocationDetailView } from "../location/LocationDetailView";
 import { Breadcrumb } from "./Breadcrumb";
 import { LocationCard } from "./LocationCard";
-import { LocationDetailView } from "../location/LocationDetailView";
 
 interface WorldViewProps {
   initialViewModel?: WorldViewModel;
@@ -251,23 +251,10 @@ export function WorldView({
           </div>
         </div>
 
-        {/* Location Detail - แสดงเสมอถ้ามี currentLocation */}
-        {currentLocation && currentLocationId && (
-          <LocationDetailView 
-            locationId={currentLocationId}
-            hideBackButton={true}
-            hideHeader={true}
-            hideStats={true}
-            compact={true}
-          />
-        )}
-
         {/* Child Locations Grid - แสดงถ้ามี children */}
         {hasChildren && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              สถานที่ภายใน
-            </h2>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white mb-4">สถานที่ภายใน</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {locationsToShow.map((location) => (
                 <LocationCard
@@ -283,21 +270,15 @@ export function WorldView({
           </div>
         )}
 
-        {/* Root Locations Grid - แสดงถ้าไม่มี currentLocation */}
-        {!currentLocation && (
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-4">ทวีปหลัก</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {locationsToShow.map((location) => (
-                <LocationCard
-                  key={location.id}
-                  location={location}
-                  currentPath="/world"
-                  isDiscovered={location.isDiscoverable}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Location Detail - แสดงเสมอถ้ามี currentLocation */}
+        {currentLocation && currentLocationId && (
+          <LocationDetailView
+            locationId={currentLocationId}
+            hideBackButton={true}
+            hideHeader={true}
+            hideStats={true}
+            compact={true}
+          />
         )}
 
         {/* Error Toast */}

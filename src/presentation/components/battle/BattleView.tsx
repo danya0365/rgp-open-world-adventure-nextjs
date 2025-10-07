@@ -265,6 +265,56 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
   const { battleMap } = presenterViewModel;
 
+  // Validate: Check if there are enemies
+  if (presenterViewModel.enemyUnits.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-yellow-700 rounded-xl p-8 text-center">
+          <div className="text-yellow-400 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-white mb-2">ไม่มีศัตรู</h1>
+          <p className="text-gray-400 mb-6">
+            สนามรบนี้ไม่มีศัตรูให้ต่อสู้ กรุณาเลือกสนามรบอื่น
+          </p>
+          <div className="space-y-3">
+            <Link
+              href="/world"
+              className="block w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+            >
+              กลับแผนที่โลก
+            </Link>
+            <button
+              onClick={() => window.location.reload()}
+              className="block w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+            >
+              โหลดใหม่
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Validate: Check if there are allies
+  if (presenterViewModel.allyUnits.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-red-700 rounded-xl p-8 text-center">
+          <div className="text-red-400 text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold text-white mb-2">ไม่มีพันธมิตร</h1>
+          <p className="text-gray-400 mb-6">
+            คุณต้องมีพันธมิตรในทีมก่อนเข้าสู่การต่อสู้
+          </p>
+          <Link
+            href="/party"
+            className="block w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold"
+          >
+            จัดการทีม
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // Helper: Check if tile is in range
   const isTileInMovementRange = (x: number, y: number) => {
     const inRange = movementRange.some(pos => pos.x === x && pos.y === y);

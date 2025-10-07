@@ -231,16 +231,23 @@ export function LocationDetailView({
                         <div className="text-sm text-gray-400">
                           Grid: {map.width}x{map.height}
                         </div>
-                        <button
-                          onClick={() => {
-                            enterBattle(map.id);
-                            router.push(`/battle/${map.id}`);
-                          }}
-                          className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg transition-all font-semibold flex items-center gap-2"
-                        >
-                          <Swords className="w-4 h-4" />
-                          Enter Battle
-                        </button>
+                        {enemies.length > 0 ? (
+                          <button
+                            onClick={() => {
+                              enterBattle(map.id);
+                              router.push(`/battle/${map.id}`);
+                            }}
+                            className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg transition-all font-semibold flex items-center gap-2"
+                          >
+                            <Swords className="w-4 h-4" />
+                            Enter Battle
+                          </button>
+                        ) : (
+                          <div className="px-4 py-2 bg-slate-700/50 text-gray-500 rounded-lg flex items-center gap-2 cursor-not-allowed" title="ไม่มีศัตรูในพื้นที่นี้">
+                            <AlertTriangle className="w-4 h-4" />
+                            <span className="text-sm">No Enemies</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
