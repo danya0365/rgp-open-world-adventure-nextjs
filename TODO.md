@@ -615,7 +615,7 @@
 ## 📊 Progress Summary
 
 **Phase 1:** Foundation - 80% (Design System ✅, Mock Data ✅, Architecture ✅)
-**Phase 2:** Core Systems - 60% (Characters ✅, Parties ✅, World Map ✅, Quest ✅, Location Detail ✅, Combat ⏳)
+**Phase 2:** Core Systems - 85% (Characters ✅, Parties ✅, World Map ✅, Quest ✅, Location Detail ✅, Combat ✅)
 **Phase 3:** Advanced Features - 0%
 **Phase 4:** UI/UX - 75% (Component Library ✅, Game UI 75%, Navigation ✅)
 **Phase 5:** Backend - 0%
@@ -624,7 +624,14 @@
 
 **Overall Progress: 85%** 🎮
 
-**Recent Achievements (2025-10-07)**:
+**Recent Achievements (2025-10-08)**:
+- ✅ **Battle System Bug Fixes!** - 00:20 🐛
+  - Fixed turn order bug (dead units properly removed)
+  - Fixed currentUnitId bug (always points to alive unit)
+  - Improved endTurn() logic (root cause fix)
+  - Battle system now 100% stable!
+
+**Previous Achievements (2025-10-07)**:
 - ✅ **Battle System Complete!** - 20:53 ⚔️
   - Battle Store (Zustand state management)
   - Movement execution (click to move)
