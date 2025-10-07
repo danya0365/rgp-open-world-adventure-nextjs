@@ -219,21 +219,52 @@ Visit: `http://localhost:3000/party`
 
 ---
 
-## 📝 Code Structure
+## 📝 Code Structure (Clean Architecture)
 
 ```
 /app/party/
-  └── page.tsx                    # Party management page
+  └── page.tsx                              # Server Component (SEO)
 
-/src/stores/
-  └── partyStore.ts              # Zustand party store
+/src/presentation/presenters/party/
+  ├── PartyPresenter.ts                     # Business logic layer
+  └── usePartyPresenter.ts                  # Custom hook for state
 
 /src/presentation/components/party/
-  └── PartySlot.tsx              # Party slot component
+  ├── PartyView.tsx                         # Client Component (UI)
+  └── PartySlot.tsx                         # Party slot component
+
+/src/stores/
+  └── partyStore.ts                         # Zustand party store
 
 /src/domain/types/
-  └── character.types.ts         # Character types (existing)
+  └── character.types.ts                    # Character types
 ```
+
+### Architecture Layers:
+
+1. **Server Component** (`page.tsx`)
+   - SEO optimization
+   - Metadata generation
+   - Initial data fetching
+   - Error handling
+
+2. **Presenter** (`PartyPresenter.ts`)
+   - Business logic
+   - Data transformation
+   - Mock data integration
+   - Factory pattern
+
+3. **Custom Hook** (`usePartyPresenter.ts`)
+   - State management
+   - Actions orchestration
+   - Modal state
+   - Error handling
+
+4. **View Component** (`PartyView.tsx`)
+   - UI rendering
+   - User interactions
+   - Loading/error states
+   - Client-side interactivity
 
 ---
 
