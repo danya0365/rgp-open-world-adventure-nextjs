@@ -205,6 +205,7 @@ interface BattleActions {
   // Reset
   resetBattle: () => void;
   playEnemyTurn: () => Promise<void>;
+  observeEnemyTurn: () => void;
 
   // Battle Logs
   addBattleLog: (log: Omit<BattleLogEntry, "id" | "timestamp" | "turn">) => void;
@@ -372,6 +373,9 @@ export const useBattleStore = create<BattleStore>()(
             isAlly: firstUnit.isAlly,
           });
         }
+
+        // Observe and trigger enemy turn if the first unit is an enemy
+        get().observeEnemyTurn();
       },
 
       /**
@@ -656,6 +660,9 @@ export const useBattleStore = create<BattleStore>()(
             isAlly: unitStartingTurn.isAlly,
           });
         }
+
+        // Observe and trigger enemy turn if needed
+        get().observeEnemyTurn();
       },
 
       /**
@@ -835,6 +842,28 @@ export const useBattleStore = create<BattleStore>()(
         });
         set(initialState);
       },
+      /**
+       * Observer function to automatically trigger enemy turns
+       * Call this after any action that might change the current unit
+       */
+      observeEnemyTurn: () => {
+        const state = get();
+        const currentUnit = state.getCurrentUnit();
+
+        // Check if it's enemy's turn and battle is still ongoing
+        if (
+          currentUnit &&
+          !currentUnit.isAlly &&
+          state.phase === "battle" &&
+          !currentUnit.hasActed
+        ) {
+          // Delay enemy action by 0.5 seconds for better UX
+          setTimeout(() => {
+            get().playEnemyTurn();
+          }, 500);
+        }
+      },
+
       /**
        * Play enemy turn - AI logic for enemy turns
        */

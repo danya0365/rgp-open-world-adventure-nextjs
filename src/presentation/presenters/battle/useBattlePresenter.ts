@@ -314,20 +314,6 @@ export function useBattlePresenter(
     setAttackRange,
   ]);
 
-  // Enemy AI - Auto play enemy turn
-  useEffect(() => {
-    if (
-      !currentUnit ||
-      currentUnit.isAlly ||
-      currentUnit.hasActed ||
-      !store.battleMap
-    )
-      return;
-
-    // Use the playEnemyTurn method from the store
-    //store.playEnemyTurn();
-  }, [currentUnit, store, store.playEnemyTurn]);
-
   // Action handlers - delegate to store
   const handleTileClick = useCallback(
     (x: number, y: number) => {
