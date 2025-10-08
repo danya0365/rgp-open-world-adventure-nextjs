@@ -44,20 +44,6 @@ export interface TileEffect {
   value: number;
 }
 
-export interface BattleUnit {
-  id: string;
-  characterId?: string;
-  enemyId?: string;
-  position: GridPosition;
-  hp: number;
-  maxHp: number;
-  mp: number;
-  maxMp: number;
-  turnOrder: number;
-  buffs: StatusEffect[];
-  debuffs: StatusEffect[];
-}
-
 export interface StatusEffect {
   id: string;
   name: string;
@@ -73,20 +59,4 @@ export interface BattleAction {
   targetUnitId?: string;
   skillId?: string;
   itemId?: string;
-}
-
-export interface Battle {
-  id: string;
-  mapConfigId: string;
-  locationId: string;
-  allies: BattleUnit[];
-  enemies: BattleUnit[];
-  currentTurn: number;
-  turnOrder: string[]; // Unit IDs in turn order
-  status: "preparing" | "active" | "victory" | "defeat";
-  rewards?: {
-    exp: number;
-    gold: number;
-    items: { itemId: string; quantity: number }[];
-  };
 }

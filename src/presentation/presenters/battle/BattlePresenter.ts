@@ -1,7 +1,11 @@
 import { BATTLE_MAPS_MASTER } from "@/src/data/master/battleMaps.master";
 import { CHARACTERS_MASTER } from "@/src/data/master/characters.master";
 import { ENEMIES_MASTER } from "@/src/data/master/enemies.master";
-import { BattleMapConfig } from "@/src/domain/types/battle.types";
+import {
+  BattleMapConfig,
+  GridPosition,
+  StatusEffect,
+} from "@/src/domain/types/battle.types";
 import { Character, Enemy } from "@/src/domain/types/character.types";
 
 /**
@@ -10,13 +14,16 @@ import { Character, Enemy } from "@/src/domain/types/character.types";
 export interface BattleUnit {
   id: string;
   character: Character | Enemy;
-  position: { x: number; y: number };
+  position: GridPosition;
   currentHp: number;
+  maxHp: number;
   currentMp: number;
+  maxMp: number;
   isAlly: boolean;
   hasActed: boolean;
+  buffs: StatusEffect[];
+  debuffs: StatusEffect[];
 }
-
 /**
  * Battle State
  */
@@ -68,9 +75,13 @@ export class BattlePresenter {
             character,
             position: pos,
             currentHp: character.stats.maxHp,
+            maxHp: character.stats.maxHp,
             currentMp: character.stats.maxMp,
+            maxMp: character.stats.maxMp,
             isAlly: true,
             hasActed: false,
+            buffs: [],
+            debuffs: [],
           };
         })
         .filter(Boolean) as BattleUnit[];
