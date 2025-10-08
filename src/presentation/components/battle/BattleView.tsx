@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { BattleLog } from "./BattleLog";
 import BattleTileView from "./BattleTileView";
 
 interface BattleViewProps {
@@ -34,6 +35,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     turn,
     phase,
     rewards,
+    battleLogs,
     currentUnit,
     aliveTurnOrder,
     handleTileClick,
@@ -41,6 +43,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     handleEndTurn,
     handleResetBattle,
     handleRestartBattle,
+    handleClearLogs,
     getUnitAtPosition,
     isTileInMovementRange,
     isTileInAttackRange,
@@ -171,7 +174,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Battle Grid */}
           <div className="lg:col-span-3">
             {/* Battle Status Message */}
@@ -315,9 +318,14 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Current Unit */}
+          {/* Sidebar - Right Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Battle Log */}
+            <div className="lg:row-span-2">
+              <BattleLog logs={battleLogs} onClear={handleClearLogs} />
+            </div>
+
+            {/* Current Unit & Actions */}
             {currentUnit && (
               <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
                 <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
@@ -437,9 +445,12 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                 </div>
               </div>
             )}
+          </div>
 
+          {/* Bottom Sidebar - Info Panels */}
+          <div className="lg:col-span-5 grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Turn Order */}
-            <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
+            <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4 md:col-span-1">
               <h2 className="text-lg font-bold text-white mb-3">Turn Order</h2>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {aliveTurnOrder.map((unit, index) => (
@@ -470,7 +481,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             </div>
 
             {/* Allies */}
-            <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
+            <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4 md:col-span-1">
               <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-blue-400" />
                 Allies
@@ -500,7 +511,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
             </div>
 
             {/* Enemies */}
-            <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
+            <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4 md:col-span-1">
               <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Swords className="w-5 h-5 text-red-400" />
                 Enemies

@@ -1,7 +1,7 @@
 "use client";
 
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
-import { BattleUnitState, useBattleStore } from "@/src/stores/battleStore";
+import { BattleLogEntry, BattleUnitState, useBattleStore } from "@/src/stores/battleStore";
 import { useGameStore } from "@/src/stores/gameStore";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -29,6 +29,9 @@ export interface BattlePresenterHook {
     items: { itemId: string; quantity: number }[];
   } | null;
 
+  // Battle Logs
+  battleLogs: BattleLogEntry[];
+
   // Computed state
   currentUnit: BattleUnitState | null;
   aliveTurnOrder: BattleUnitState[];
@@ -39,6 +42,7 @@ export interface BattlePresenterHook {
   handleEndTurn: () => void;
   handleRestartBattle: () => void;
   handleResetBattle: () => void;
+  handleClearLogs: () => void;
   getUnitAtPosition: (x: number, y: number) => BattleUnitState | undefined;
   isTileInMovementRange: (x: number, y: number) => boolean;
   isTileInAttackRange: (x: number, y: number) => boolean;
@@ -87,9 +91,11 @@ export function useBattlePresenter(
     currentUnitId,
     rewards,
     originalPosition,
+    battleLogs,
     initBattle,
     endTurn: storeEndTurn,
     resetBattle,
+    clearBattleLogs,
     setMovementRange,
     setAttackRange,
     setOriginalPosition,
@@ -352,6 +358,10 @@ export function useBattlePresenter(
     );
   }, [resetBattle, viewModel]);
 
+  const handleClearLogs = useCallback(() => {
+    clearBattleLogs();
+  }, [clearBattleLogs]);
+
   return {
     battleStateId: store.battleStateId,
     battleMap: store.battleMap,
@@ -367,6 +377,9 @@ export function useBattlePresenter(
     currentUnitId,
     rewards,
 
+    // Battle Logs
+    battleLogs,
+
     // Computed state
     currentUnit: currentUnit || null,
     aliveTurnOrder,
@@ -377,6 +390,7 @@ export function useBattlePresenter(
     handleEndTurn,
     handleRestartBattle,
     handleResetBattle,
+    handleClearLogs,
     getUnitAtPosition: store.getUnitAtPosition,
     isTileInMovementRange: store.isTileInMovementRange,
     isTileInAttackRange: store.isTileInAttackRange,

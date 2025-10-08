@@ -42,6 +42,23 @@ const createBrowserStorage = () => {
 };
 
 /**
+ * Battle Log Entry
+ */
+export interface BattleLogEntry {
+  id: string;
+  timestamp: number;
+  turn: number;
+  type: "init" | "move" | "attack" | "skill" | "damage" | "heal" | "buff" | "debuff" | "death" | "turn_start" | "turn_end" | "victory" | "defeat" | "info";
+  message: string;
+  unitId?: string;
+  unitName?: string;
+  targetId?: string;
+  targetName?: string;
+  value?: number;
+  isAlly?: boolean;
+}
+
+/**
  * Status Effect
  */
 export interface StatusEffect {
@@ -135,6 +152,10 @@ interface BattleState {
     gold: number;
     items: { itemId: string; quantity: number }[];
   } | null;
+
+  // Battle Logs
+  battleLogs: BattleLogEntry[];
+  maxLogs: number;
 }
 
 /**
@@ -184,6 +205,10 @@ interface BattleActions {
   // Reset
   resetBattle: () => void;
   playEnemyTurn: () => Promise<void>;
+
+  // Battle Logs
+  addBattleLog: (log: Omit<BattleLogEntry, "id" | "timestamp" | "turn">) => void;
+  clearBattleLogs: () => void;
 }
 
 /**
@@ -209,12 +234,44 @@ const initialState: BattleState = {
   attackRange: [],
   originalPosition: null,
   rewards: null,
+  battleLogs: [],
+  maxLogs: 100,
 };
 
 export const useBattleStore = create<BattleStore>()(
   persist(
     (set, get) => ({
       ...initialState,
+
+      /**
+       * Add Battle Log
+       */
+      addBattleLog: (log) => {
+        set((state) => {
+          const newLog: BattleLogEntry = {
+            ...log,
+            id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: Date.now(),
+            turn: state.turn,
+          };
+
+          const newLogs = [...state.battleLogs, newLog];
+          
+          // Keep only the last maxLogs entries
+          if (newLogs.length > state.maxLogs) {
+            newLogs.splice(0, newLogs.length - state.maxLogs);
+          }
+
+          return { battleLogs: newLogs };
+        });
+      },
+
+      /**
+       * Clear Battle Logs
+       */
+      clearBattleLogs: () => {
+        set({ battleLogs: [] });
+      },
 
       /**
        * Initialize Battle
@@ -295,7 +352,26 @@ export const useBattleStore = create<BattleStore>()(
           selectedUnitId: null,
           selectedSkillId: null,
           rewards: null,
+          battleLogs: [],
         });
+
+        // Add init log
+        get().addBattleLog({
+          type: "init",
+          message: `⚔️ การต่อสู้เริ่มต้น! ${battleMap.name}`,
+        });
+
+        // Add first turn log
+        const firstUnit = turnOrder[0];
+        if (firstUnit) {
+          get().addBattleLog({
+            type: "turn_start",
+            message: `🎯 เทิร์นของ ${firstUnit.character.name} (${firstUnit.isAlly ? "พันธมิตร" : "ศัตรู"})`,
+            unitId: firstUnit.id,
+            unitName: firstUnit.character.name,
+            isAlly: firstUnit.isAlly,
+          });
+        }
       },
 
       /**
@@ -303,6 +379,9 @@ export const useBattleStore = create<BattleStore>()(
        * Note: Does NOT set hasActed to allow multiple moves within range
        */
       moveUnit: (unitId, x, y) => {
+        const state = get();
+        const unit = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === unitId);
+        
         set((state) => {
           const newAllyUnits = state.allyUnits.map((unit) =>
             unit.id === unitId ? { ...unit, position: { x, y } } : unit
@@ -318,12 +397,27 @@ export const useBattleStore = create<BattleStore>()(
             selectedUnitId: null,
           };
         });
+
+        // Add move log
+        if (unit) {
+          get().addBattleLog({
+            type: "move",
+            message: `🚶 ${unit.character.name} เคลื่อนที่ไปยัง (${x}, ${y})`,
+            unitId: unit.id,
+            unitName: unit.character.name,
+            isAlly: unit.isAlly,
+          });
+        }
       },
 
       /**
        * Attack Unit
        */
       attackUnit: (attackerId, targetId, damage) => {
+        const state = get();
+        const attacker = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === attackerId);
+        const target = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === targetId);
+        
         set((state) => {
           const newAllyUnits = state.allyUnits.map((unit) => {
             if (unit.id === targetId) {
@@ -367,6 +461,40 @@ export const useBattleStore = create<BattleStore>()(
           };
         });
 
+        // Add attack log
+        if (attacker && target) {
+          get().addBattleLog({
+            type: "attack",
+            message: `⚔️ ${attacker.character.name} โจมตี ${target.character.name}`,
+            unitId: attacker.id,
+            unitName: attacker.character.name,
+            targetId: target.id,
+            targetName: target.character.name,
+            isAlly: attacker.isAlly,
+          });
+
+          get().addBattleLog({
+            type: "damage",
+            message: `💥 ${target.character.name} ได้รับความเสียหาย ${damage} HP`,
+            unitId: target.id,
+            unitName: target.character.name,
+            value: damage,
+            isAlly: target.isAlly,
+          });
+
+          // Check if target died
+          const newTarget = [...get().allyUnits, ...get().enemyUnits].find(u => u.id === targetId);
+          if (!newTarget || newTarget.currentHp <= 0) {
+            get().addBattleLog({
+              type: "death",
+              message: `💀 ${target.character.name} ถูกปราบแล้ว!`,
+              unitId: target.id,
+              unitName: target.character.name,
+              isAlly: target.isAlly,
+            });
+          }
+        }
+
         // Check victory/defeat after attack
         setTimeout(() => {
           const { checkVictory, checkDefeat } = get();
@@ -386,6 +514,10 @@ export const useBattleStore = create<BattleStore>()(
        * Use Skill
        */
       useSkill: (casterId, targetId, skillId) => {
+        const state = get();
+        const caster = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === casterId);
+        const target = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === targetId);
+        
         // TODO: Implement skill effects
         set((state) => ({
           allyUnits: state.allyUnits.map((unit) =>
@@ -398,6 +530,19 @@ export const useBattleStore = create<BattleStore>()(
           selectedUnitId: null,
           selectedSkillId: null,
         }));
+
+        // Add skill log
+        if (caster && target) {
+          get().addBattleLog({
+            type: "skill",
+            message: `✨ ${caster.character.name} ใช้สกิล ${skillId} กับ ${target.character.name}`,
+            unitId: caster.id,
+            unitName: caster.character.name,
+            targetId: target.id,
+            targetName: target.character.name,
+            isAlly: caster.isAlly,
+          });
+        }
       },
 
       /**
@@ -478,6 +623,33 @@ export const useBattleStore = create<BattleStore>()(
             selectedUnitId: null,
           };
         });
+
+        // Add turn logs
+        const state = get();
+        const currentUnit = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === state.currentUnitId);
+        
+        if (currentUnit) {
+          get().addBattleLog({
+            type: "turn_end",
+            message: `⏹️ ${currentUnit.character.name} จบเทิร์น`,
+            unitId: currentUnit.id,
+            unitName: currentUnit.character.name,
+            isAlly: currentUnit.isAlly,
+          });
+        }
+
+        const nextUnitState = get();
+        const nextUnitData = [...nextUnitState.allyUnits, ...nextUnitState.enemyUnits].find(u => u.id === nextUnitState.currentUnitId);
+        
+        if (nextUnitData) {
+          get().addBattleLog({
+            type: "turn_start",
+            message: `🎯 เทิร์นของ ${nextUnitData.character.name} (${nextUnitData.isAlly ? "พันธมิตร" : "ศัตรู"})`,
+            unitId: nextUnitData.id,
+            unitName: nextUnitData.character.name,
+            isAlly: nextUnitData.isAlly,
+          });
+        }
       },
 
       /**
@@ -640,11 +812,21 @@ export const useBattleStore = create<BattleStore>()(
           phase: victory ? "victory" : "defeat",
           rewards: rewards || null,
         });
+
+        // Add end battle log
+        get().addBattleLog({
+          type: victory ? "victory" : "defeat",
+          message: victory ? "🎉 ชัยชนะ! คุณชนะการต่อสู้!" : "💀 พ่ายแพ้... คุณแพ้การต่อสู้",
+        });
       },
       /**
        * Reset Battle
        */
       resetBattle: () => {
+        get().addBattleLog({
+          type: "info",
+          message: "🔄 รีเซ็ตการต่อสู้",
+        });
         set(initialState);
       },
       /**
