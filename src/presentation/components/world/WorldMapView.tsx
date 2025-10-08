@@ -11,6 +11,9 @@ import {
   Zap,
   X,
   Map as MapIcon,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -40,6 +43,24 @@ export function WorldMapView({
   const [showPartyPanel, setShowPartyPanel] = useState(true);
   const [showStatsPanel, setShowStatsPanel] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  
+  // Pan & Zoom state - restored from localStorage
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('worldMapZoom');
+      return saved ? parseFloat(saved) : 1;
+    }
+    return 1;
+  });
+  const [pan, setPan] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('worldMapPan');
+      return saved ? JSON.parse(saved) : { x: 0, y: 0 };
+    }
+    return { x: 0, y: 0 };
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const {
     parties,
@@ -84,6 +105,59 @@ export function WorldMapView({
       saveCurrentLocation(currentLocation.id);
     }
   }, [currentLocation?.id, saveCurrentLocation]);
+
+  // Save zoom/pan to localStorage when they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('worldMapZoom', zoom.toString());
+    }
+  }, [zoom]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('worldMapPan', JSON.stringify(pan));
+    }
+  }, [pan]);
+
+  // Pan & Zoom handlers
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom((prev) => Math.max(0.5, Math.min(3, prev + delta)));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // ไม่ drag ถ้ากำลังคลิก location marker
+    if ((e.target as HTMLElement).closest('button')) return;
+    
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPan({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(3, prev + 0.2));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(0.5, prev - 0.2));
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
 
   // Show loading state
   if (loading && !viewModel) {
@@ -191,7 +265,15 @@ export function WorldMapView({
   return (
     <GameLayout>
       {/* Full Screen Map Container */}
-      <div className="absolute inset-0">
+      <div 
+        className="absolute inset-0 overflow-hidden"
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
         {/* Map Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
           {/* Grid Pattern Overlay */}
@@ -210,8 +292,14 @@ export function WorldMapView({
           <div className="absolute inset-0 bg-gradient-radial from-purple-600/10 via-transparent to-transparent" />
         </div>
 
-        {/* Location Markers */}
-        <div className="absolute inset-0">
+        {/* Location Markers - with Pan & Zoom transform */}
+        <div 
+          className="absolute inset-0 transition-transform"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+          }}
+        >
           {locationsWithPositions.map((location) => {
             const isCurrentLocation = location.id === currentLocationId;
             const isCityOrTown = location.type === 'city' || location.type === 'town';
@@ -301,31 +389,84 @@ export function WorldMapView({
                 </h1>
                 <p className="text-gray-400 text-xs">
                   สถานที่: {discoveredLocations.length}/{viewModel.totalLocations} | 
-                  คลิกที่ไอคอนเพื่อเดินทาง
+                  🖱️ ลาก: Pan | 🎡 Scroll: Zoom | 👆 คลิก: เดินทาง
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Minimap - Bottom Left (optional) */}
+        {/* Minimap - Bottom Left */}
         <div className="absolute bottom-4 left-4 z-10">
           <div className="w-48 h-48 bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-xl p-3">
-            <div className="text-xs text-gray-400 mb-2">Minimap</div>
-            <div className="relative w-full h-full bg-slate-800/50 rounded">
-              {/* Simplified minimap dots */}
+            <div className="text-xs text-gray-400 mb-2 flex items-center justify-between">
+              <span>Minimap</span>
+              <span className="text-purple-400">{Math.round(zoom * 100)}%</span>
+            </div>
+            <div className="relative w-full h-full bg-slate-800/50 rounded overflow-hidden">
+              {/* Viewport indicator */}
+              <div 
+                className="absolute border-2 border-green-400/60 bg-green-400/10 pointer-events-none"
+                style={{
+                  width: `${100 / zoom}%`,
+                  height: `${100 / zoom}%`,
+                  left: `${50 - (pan.x / (zoom * 2))}%`,
+                  top: `${50 - (pan.y / (zoom * 2))}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+              
+              {/* Location dots */}
               {locationsWithPositions.slice(0, 15).map((loc) => (
                 <div
                   key={loc.id}
                   className={`absolute w-2 h-2 rounded-full ${
-                    loc.id === currentLocationId ? 'bg-amber-400' : 'bg-purple-400'
+                    loc.id === currentLocationId ? 'bg-amber-400 ring-2 ring-amber-300' : 'bg-purple-400'
                   }`}
                   style={{
                     left: `${loc.x}%`,
                     top: `${loc.y}%`,
+                    transform: 'translate(-50%, -50%)',
                   }}
                 />
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Zoom Controls - Bottom Right */}
+        <div className="absolute bottom-4 right-4 z-10">
+          <div className="flex flex-col gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-xl p-2">
+            {/* Zoom In */}
+            <button
+              onClick={handleZoomIn}
+              className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg transition-colors group"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+            </button>
+
+            {/* Reset Zoom */}
+            <button
+              onClick={handleResetZoom}
+              className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg transition-colors group"
+              title="Reset View"
+            >
+              <Maximize2 className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+            </button>
+
+            {/* Zoom Out */}
+            <button
+              onClick={handleZoomOut}
+              className="p-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg transition-colors group"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+            </button>
+
+            {/* Zoom Level Indicator */}
+            <div className="px-2 py-1 bg-slate-800/50 rounded text-center">
+              <span className="text-xs text-gray-400">{Math.round(zoom * 100)}%</span>
             </div>
           </div>
         </div>
