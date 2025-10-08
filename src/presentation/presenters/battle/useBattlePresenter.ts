@@ -149,7 +149,6 @@ export function useBattlePresenter(
   useEffect(() => {
     if (currentUnit && !currentUnit.hasActed) {
       setOriginalPosition({ ...currentUnit.position });
-      console.log("💾 Saved original position:", currentUnit.position);
     }
   }, [currentUnitId]); // ✅ เฉพาะเมื่อเปลี่ยนเทิร์น - ห้ามใส่ currentUnit!
 

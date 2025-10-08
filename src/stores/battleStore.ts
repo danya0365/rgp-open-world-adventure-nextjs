@@ -367,7 +367,11 @@ export const useBattleStore = create<BattleStore>()(
           };
         });
 
-        //get().endTurn();
+        const { allyUnits, enemyUnits } = get();
+        const totalActCount =
+          allyUnits.filter((unit) => unit.hasActed).length +
+          enemyUnits.filter((unit) => unit.hasActed).length;
+        console.log("totalActCount after attack", totalActCount);
 
         // Check victory/defeat after attack
         setTimeout(() => {
@@ -407,15 +411,19 @@ export const useBattleStore = create<BattleStore>()(
        */
       endTurn: () => {
         set((state) => {
-          // Reset hasActed for all units
-          const newAllyUnits = state.allyUnits.map((unit) => ({
-            ...unit,
-            hasActed: false,
-          }));
-          const newEnemyUnits = state.enemyUnits.map((unit) => ({
-            ...unit,
-            hasActed: false,
-          }));
+          const currentUnitId = state.currentUnitId;
+          const newAllyUnits = state.allyUnits.map((unit) => {
+            return {
+              ...unit,
+              hasActed: unit.id === currentUnitId ? true : unit.hasActed,
+            };
+          });
+          const newEnemyUnits = state.enemyUnits.map((unit) => {
+            return {
+              ...unit,
+              hasActed: unit.id === currentUnitId ? true : unit.hasActed,
+            };
+          });
 
           // Get all alive units
           const aliveUnitIds = new Set([
@@ -455,6 +463,17 @@ export const useBattleStore = create<BattleStore>()(
 
           // Get the next alive unit
           const nextUnit = aliveTurnOrder[nextIndex];
+
+          if (isNewTurn) {
+            console.log("isNewTurn", state.turn + 1);
+            // Reset hasActed for all units
+            newAllyUnits.forEach((unit) => {
+              unit.hasActed = false;
+            });
+            newEnemyUnits.forEach((unit) => {
+              unit.hasActed = false;
+            });
+          }
 
           return {
             allyUnits: newAllyUnits,
@@ -536,7 +555,7 @@ export const useBattleStore = create<BattleStore>()(
           const actualUnit = [...allyUnits, ...enemyUnits].find(
             (u) => u.id === unit.id
           );
-          return actualUnit && actualUnit.currentHp > 0;
+          return actualUnit && actualUnit.currentHp > 0 && !actualUnit.hasActed;
         });
       },
 

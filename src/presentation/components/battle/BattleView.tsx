@@ -331,7 +331,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         currentUnit.isAlly ? "bg-blue-600" : "bg-red-600"
                       }`}
                     >
-                      {currentUnit.isAlly ? "🛡️" : "👹"}
+                      {currentUnit.isAlly ? "🦸" : "👹"}
                     </div>
                     <div className="flex-1">
                       <p className="text-white font-semibold">
@@ -457,7 +457,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         unit.isAlly ? "bg-blue-600" : "bg-red-600"
                       }`}
                     >
-                      {unit.isAlly ? "🛡️" : "👹"}
+                      {unit.isAlly ? "🦸" : "👹"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm truncate">
@@ -482,7 +482,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                     className="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg"
                   >
                     <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm">
-                      🛡️
+                      🦸
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm truncate">
