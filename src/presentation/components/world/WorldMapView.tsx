@@ -418,20 +418,41 @@ export function WorldMapView({
   }
 
   // Create virtual locations for connections (exits/entrances)
-  const virtualConnectionLocations = connectionPins.map((connPin) => ({
-    id: `connection-${connPin.id}`,
-    name: connPin.targetLocation?.name || 'Connection',
-    type: connPin.connectionType,
-    isService: true,
-    serviceType: 'connection',
-    connectionType: connPin.connectionType,
-    isLocked: connPin.isLocked,
-    targetLocation: connPin.targetLocation,
-    metadata: { connectionId: connPin.id },
-  }));
+  const virtualConnectionLocations = connectionPins.map((connPin) => {
+    // กำหนดทิศทางของ connection โดยเปรียบเทียบ level
+    let direction: 'up' | 'down' | 'same' = 'same';
+    if (currentLocation && connPin.targetLocation) {
+      const currentLevel = currentLocation.level;
+      const targetLevel = connPin.targetLocation.level;
+      
+      if (targetLevel < currentLevel) {
+        direction = 'up'; // ไปพาเรนต์ (ระดับบน)
+      } else if (targetLevel > currentLevel) {
+        direction = 'down'; // ไปไชลด์ (ระดับล่าง)
+      } else {
+        direction = 'same'; // ระดับเดียวกัน (พี่น้อง)
+      }
+    }
+    
+    return {
+      id: `connection-${connPin.id}`,
+      name: connPin.targetLocation?.name || 'Connection',
+      type: connPin.connectionType,
+      isService: true,
+      serviceType: 'connection',
+      connectionType: connPin.connectionType,
+      isLocked: connPin.isLocked,
+      targetLocation: connPin.targetLocation,
+      direction,
+      metadata: { connectionId: connPin.id },
+    };
+  });
 
-  // Combine virtual service locations and connections (ไม่แสดง child locations เพราะมี connections แล้ว)
-  const allDisplayLocations = [...virtualServiceLocations, ...virtualConnectionLocations];
+  // Combine virtual service locations and connections
+  // ถ้าไม่มี currentLocation (หน้าแรก) ให้แสดง childLocations แทน
+  const allDisplayLocations = currentLocation 
+    ? [...virtualServiceLocations, ...virtualConnectionLocations]
+    : childLocations; // หน้าแรก: แสดง root locations (continents)
 
   // Generate positions for locations (simple grid layout for now)
   const locationsWithPositions = allDisplayLocations.map((loc, index) => {
@@ -601,7 +622,11 @@ export function WorldMapView({
                       : location.serviceType === 'connection'
                       ? location.isLocked
                         ? 'bg-red-700 border-red-500 group-hover:scale-110 group-hover:bg-red-600'
-                        : 'bg-lime-600 border-lime-400 group-hover:scale-110 group-hover:bg-lime-500'
+                        : location.direction === 'up'
+                        ? 'bg-blue-600 border-blue-400 group-hover:scale-110 group-hover:bg-blue-500' // ขึ้นบน (parent)
+                        : location.direction === 'down'
+                        ? 'bg-green-600 border-green-400 group-hover:scale-110 group-hover:bg-green-500' // ลงล่าง (child)
+                        : 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500' // เดียวกัน (sibling)
                       : 'bg-slate-600 border-slate-400 group-hover:scale-110 group-hover:bg-slate-500'
                     : isCurrentLocation
                     ? 'bg-amber-500 border-amber-300 scale-125'
@@ -630,17 +655,15 @@ export function WorldMapView({
                         : location.serviceType === 'connection'
                         ? location.isLocked
                           ? '🔒'
+                          : location.direction === 'up'
+                          ? '⬆️' // ขึ้นบน (parent)
+                          : location.direction === 'down'
+                          ? '⬇️' // ลงล่าง (child)
+                          : location.connectionType === 'bridge'
+                          ? '🌉' // sibling (bridge/portal)
                           : location.connectionType === 'portal'
                           ? '🌀'
-                          : location.connectionType === 'gate'
-                          ? '🚧'
-                          : location.connectionType === 'entrance'
-                          ? '🚪'
-                          : location.connectionType === 'stairs'
-                          ? '🪜'
-                          : location.connectionType === 'bridge'
-                          ? '🌉'
-                          : '🔗'
+                          : '↔️' // sibling
                         : '❓'
                       : isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'
                     }
@@ -736,7 +759,11 @@ export function WorldMapView({
                           <>
                             {location.isLocked 
                               ? '🔒 ทางเชื่อม - ถูกล็อค' 
-                              : `🔗 ทางเชื่อม → ${location.name}`
+                              : location.direction === 'up'
+                              ? `⬆️ ขึ้นบน → ${location.name} (Parent)`
+                              : location.direction === 'down'
+                              ? `⬇️ ลงล่าง → ${location.name} (Child)`
+                              : `↔️ เดียวกัน → ${location.name} (Sibling)`
                             }
                           </>
                         )}
