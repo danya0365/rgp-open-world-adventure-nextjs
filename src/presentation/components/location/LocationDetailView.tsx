@@ -3,7 +3,6 @@
 import { LocationDetailViewModel } from "@/src/presentation/presenters/location/LocationDetailPresenter";
 import { useLocationDetailPresenter } from "@/src/presentation/presenters/location/useLocationDetailPresenter";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   MapPin,
   ArrowLeft,
@@ -19,6 +18,7 @@ import {
   Building,
   AlertTriangle,
 } from "lucide-react";
+import { BattleFullView } from "@/src/presentation/components/battle/BattleFullView";
 
 interface LocationDetailViewProps {
   initialViewModel?: LocationDetailViewModel;
@@ -37,12 +37,14 @@ export function LocationDetailView({
   hideStats = false,
   compact = false,
 }: LocationDetailViewProps) {
-  const router = useRouter();
   const {
     viewModel,
     loading,
     error,
+    battleMapId,
+    isBattleActive,
     enterBattle,
+    exitBattle,
     startQuest,
     talkToNPC,
     accessService,
@@ -112,7 +114,16 @@ export function LocationDetailView({
   };
 
   return (
-    <div className={compact ? "" : "min-h-screen p-8"}>
+    <>
+      {/* Battle Overlay */}
+      {isBattleActive && battleMapId && (
+        <div className="fixed inset-0 z-50">
+          <BattleFullView mapId={battleMapId} onExit={exitBattle} />
+        </div>
+      )}
+
+      {/* Location Detail Content */}
+      <div className={compact ? "" : "min-h-screen p-8"}>
       <div className={compact ? "" : "max-w-7xl mx-auto"}>
         {/* Back Button */}
         {!hideBackButton && (
@@ -235,7 +246,6 @@ export function LocationDetailView({
                           <button
                             onClick={() => {
                               enterBattle(map.id);
-                              router.push(`/battle/${map.id}`);
                             }}
                             className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg transition-all font-semibold flex items-center gap-2"
                           >
@@ -412,5 +422,6 @@ export function LocationDetailView({
         </div>
       </div>
     </div>
+    </>
   );
 }

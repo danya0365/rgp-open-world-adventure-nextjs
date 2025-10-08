@@ -21,6 +21,8 @@ export function useLocationDetailPresenter(
   );
   const [loading, setLoading] = useState(!initialViewModel);
   const [error, setError] = useState<string | null>(null);
+  const [battleMapId, setBattleMapId] = useState<string | null>(null);
+  const [isBattleActive, setIsBattleActive] = useState(false);
 
   useEffect(() => {
     if (initialViewModel) {
@@ -56,8 +58,17 @@ export function useLocationDetailPresenter(
    * Enter battle with selected map
    */
   const enterBattle = (mapId: string) => {
-    // This will be handled by navigation
     console.log("Entering battle with map:", mapId);
+    setBattleMapId(mapId);
+    setIsBattleActive(true);
+  };
+
+  /**
+   * Exit battle and return to location
+   */
+  const exitBattle = () => {
+    setIsBattleActive(false);
+    setBattleMapId(null);
   };
 
   /**
@@ -88,7 +99,10 @@ export function useLocationDetailPresenter(
     viewModel,
     loading,
     error,
+    battleMapId,
+    isBattleActive,
     enterBattle,
+    exitBattle,
     startQuest,
     talkToNPC,
     accessService,
