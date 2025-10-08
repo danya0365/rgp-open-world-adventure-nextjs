@@ -177,7 +177,7 @@ export class LocationDetailPresenterFactory {
   /**
    * Create presenter for client-side (uses master data)
    */
-  static async createClient(): Promise<LocationDetailPresenter> {
+  static createClient(): LocationDetailPresenter {
     return new LocationDetailPresenter(
       LOCATIONS_MASTER,
       CHARACTERS_MASTER,

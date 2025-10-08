@@ -1,10 +1,10 @@
+import { Character } from "@/src/domain/types/character.types";
 import { useCallback, useEffect, useState } from "react";
 import {
-  CharactersViewModel,
   CharactersPresenter,
   CharactersPresenterFactory,
+  CharactersViewModel,
 } from "./CharactersPresenter";
-import { Character } from "@/src/domain/types/character.types";
 
 export interface CharactersPresenterHook {
   // State
@@ -30,9 +30,9 @@ let presenterInstance: CharactersPresenter | null = null;
 /**
  * Get or create presenter instance
  */
-async function getPresenter(): Promise<CharactersPresenter> {
+function getPresenter(): CharactersPresenter {
   if (!presenterInstance) {
-    presenterInstance = await CharactersPresenterFactory.createClient();
+    presenterInstance = CharactersPresenterFactory.createClient();
   }
   return presenterInstance;
 }
@@ -51,7 +51,9 @@ export function useCharactersPresenter(
   const [error, setError] = useState<string | null>(null);
 
   // Filter states
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null
+  );
   const [filterClass, setFilterClass] = useState<string>("all");
   const [showOnlyPlayable, setShowOnlyPlayable] = useState(false);
 
@@ -63,7 +65,7 @@ export function useCharactersPresenter(
     setError(null);
 
     try {
-      const presenter = await getPresenter();
+      const presenter = getPresenter();
       const newViewModel = await presenter.getViewModel();
       setViewModel(newViewModel);
     } catch (err) {

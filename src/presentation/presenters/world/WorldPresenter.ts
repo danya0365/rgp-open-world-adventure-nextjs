@@ -198,7 +198,7 @@ export class WorldPresenterFactory {
   /**
    * Create presenter for client-side
    */
-  static async createClient(): Promise<WorldPresenter> {
+  static createClient(): WorldPresenter {
     return new WorldPresenter();
   }
 }

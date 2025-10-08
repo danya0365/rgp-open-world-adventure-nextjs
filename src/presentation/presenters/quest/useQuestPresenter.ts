@@ -1,11 +1,11 @@
+import { QuestStatus, QuestType } from "@/src/domain/types/quest.types";
+import { useGameStore } from "@/src/stores/gameStore";
 import { useCallback, useEffect, useState } from "react";
 import {
-  QuestViewModel,
   QuestPresenter,
   QuestPresenterFactory,
+  QuestViewModel,
 } from "./QuestPresenter";
-import { Quest, QuestType, QuestStatus } from "@/src/domain/types/quest.types";
-import { useGameStore } from "@/src/stores/gameStore";
 
 export interface QuestPresenterHook {
   // State
@@ -31,9 +31,9 @@ let presenterInstance: QuestPresenter | null = null;
 /**
  * Get or create presenter instance
  */
-async function getPresenter(): Promise<QuestPresenter> {
+function getPresenter(): QuestPresenter {
   if (!presenterInstance) {
-    presenterInstance = await QuestPresenterFactory.createClient();
+    presenterInstance = QuestPresenterFactory.createClient();
   }
   return presenterInstance;
 }
@@ -51,7 +51,9 @@ export function useQuestPresenter(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<QuestType | "all">("all");
-  const [selectedStatus, setSelectedStatus] = useState<QuestStatus | "all">("all");
+  const [selectedStatus, setSelectedStatus] = useState<QuestStatus | "all">(
+    "all"
+  );
 
   // Get quest progress from game store
   const { progress } = useGameStore();
@@ -64,7 +66,7 @@ export function useQuestPresenter(
     setError(null);
 
     try {
-      const presenter = await getPresenter();
+      const presenter = getPresenter();
       const newViewModel = await presenter.getViewModel(
         progress.activeQuests,
         progress.completedQuests
@@ -127,15 +129,17 @@ export function useQuestPresenter(
   const abandonQuest = useCallback(
     (questId: string) => {
       const { progress } = useGameStore.getState();
-      const updatedActiveQuests = progress.activeQuests.filter((id) => id !== questId);
-      
+      const updatedActiveQuests = progress.activeQuests.filter(
+        (id) => id !== questId
+      );
+
       useGameStore.setState({
         progress: {
           ...progress,
           activeQuests: updatedActiveQuests,
         },
       });
-      
+
       loadData();
     },
     [loadData]

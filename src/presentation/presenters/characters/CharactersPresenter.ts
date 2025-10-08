@@ -28,7 +28,9 @@ export class CharactersPresenter {
       const legendaryChars = CHARACTERS_MASTER.filter(
         (c) => c.rarity === "legendary" || c.rarity === "mythic"
       );
-      const classes = Array.from(new Set(CHARACTERS_MASTER.map((c) => c.class)));
+      const classes = Array.from(
+        new Set(CHARACTERS_MASTER.map((c) => c.class))
+      );
 
       return {
         characters: CHARACTERS_MASTER,
@@ -109,7 +111,7 @@ export class CharactersPresenterFactory {
   /**
    * Create presenter for client-side
    */
-  static async createClient(): Promise<CharactersPresenter> {
+  static createClient(): CharactersPresenter {
     return new CharactersPresenter();
   }
 }

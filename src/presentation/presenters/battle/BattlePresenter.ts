@@ -55,47 +55,55 @@ export class BattlePresenter {
       }
 
       // Get ally units (from active party - master data)
-      const allyCharacters = CHARACTERS_MASTER.filter((c) => c.isPlayable).slice(0, 4);
-      const allyUnits: BattleUnit[] = battleMap.startPositions.ally.map((pos, index) => {
-        const character = allyCharacters[index];
-        if (!character) return null;
-        
-        return {
-          id: `ally-${character.id}`,
-          character,
-          position: pos,
-          currentHp: character.stats.maxHp,
-          currentMp: character.stats.maxMp,
-          isAlly: true,
-          hasActed: false,
-        };
-      }).filter(Boolean) as BattleUnit[];
+      const allyCharacters = CHARACTERS_MASTER.filter(
+        (c) => c.isPlayable
+      ).slice(0, 4);
+      const allyUnits: BattleUnit[] = battleMap.startPositions.ally
+        .map((pos, index) => {
+          const character = allyCharacters[index];
+          if (!character) return null;
+
+          return {
+            id: `ally-${character.id}`,
+            character,
+            position: pos,
+            currentHp: character.stats.maxHp,
+            currentMp: character.stats.maxMp,
+            isAlly: true,
+            hasActed: false,
+          };
+        })
+        .filter(Boolean) as BattleUnit[];
 
       // Get enemy units from battleMap.enemies
       const enemyIds = battleMap.enemies || [];
-      const enemies = ENEMIES_MASTER.filter((enemy) => enemyIds.includes(enemy.id));
-      
+      const enemies = ENEMIES_MASTER.filter((enemy) =>
+        enemyIds.includes(enemy.id)
+      );
+
       console.log("🎮 Battle Setup:", {
         mapId,
         enemyIds,
         foundEnemies: enemies.length,
         enemyPositions: battleMap.startPositions.enemy.length,
       });
-      
-      const enemyUnits: BattleUnit[] = battleMap.startPositions.enemy.map((pos, index) => {
-        const enemy = enemies[index];
-        if (!enemy) return null;
-        
-        return {
-          id: `enemy-${enemy.id}`,
-          character: enemy,
-          position: pos,
-          currentHp: enemy.stats.maxHp,
-          currentMp: enemy.stats.maxMp,
-          isAlly: false,
-          hasActed: false,
-        };
-      }).filter(Boolean) as BattleUnit[];
+
+      const enemyUnits: BattleUnit[] = battleMap.startPositions.enemy
+        .map((pos, index) => {
+          const enemy = enemies[index];
+          if (!enemy) return null;
+
+          return {
+            id: `enemy-${enemy.id}`,
+            character: enemy,
+            position: pos,
+            currentHp: enemy.stats.maxHp,
+            currentMp: enemy.stats.maxMp,
+            isAlly: false,
+            hasActed: false,
+          };
+        })
+        .filter(Boolean) as BattleUnit[];
 
       console.log("⚔️ Units created:", {
         allyUnits: allyUnits.length,
@@ -105,9 +113,17 @@ export class BattlePresenter {
 
       // Calculate turn order (based on agility - Dragon Quest Tact style)
       const allUnits = [...allyUnits, ...enemyUnits];
-      const turnOrder = allUnits.sort((a, b) => b.character.stats.agi - a.character.stats.agi);
-      
-      console.log("📋 Turn order:", turnOrder.map(u => ({ name: u.character.name, agi: u.character.stats.agi })));
+      const turnOrder = allUnits.sort(
+        (a, b) => b.character.stats.agi - a.character.stats.agi
+      );
+
+      console.log(
+        "📋 Turn order:",
+        turnOrder.map((u) => ({
+          name: u.character.name,
+          agi: u.character.stats.agi,
+        }))
+      );
 
       // Initial battle state
       const state: BattleState = {
@@ -136,12 +152,13 @@ export class BattlePresenter {
   async generateMetadata(mapId: string) {
     try {
       const battleMap = BATTLE_MAPS_MASTER.find((map) => map.id === mapId);
-      
+
       return {
-        title: battleMap 
+        title: battleMap
           ? `${battleMap.name} - Battle | RPG Open World Adventure`
           : "Battle | RPG Open World Adventure",
-        description: battleMap?.description || "Tactical grid-based battle system",
+        description:
+          battleMap?.description || "Tactical grid-based battle system",
       };
     } catch (error) {
       console.error("Error generating metadata:", error);
@@ -153,38 +170,48 @@ export class BattlePresenter {
    * Calculate movement range for a unit (Dragon Quest Tact style)
    * Uses Manhattan distance (grid-based movement)
    */
-  calculateMovementRange(unit: BattleUnit, gridWidth: number, gridHeight: number): { x: number; y: number }[] {
+  calculateMovementRange(
+    unit: BattleUnit,
+    gridWidth: number,
+    gridHeight: number
+  ): { x: number; y: number }[] {
     const range = unit.character.stats.mov; // Movement range from unit stats (typically 2-4)
     const positions: { x: number; y: number }[] = [];
-    
+
     for (let x = 0; x < gridWidth; x++) {
       for (let y = 0; y < gridHeight; y++) {
-        const distance = Math.abs(x - unit.position.x) + Math.abs(y - unit.position.y);
+        const distance =
+          Math.abs(x - unit.position.x) + Math.abs(y - unit.position.y);
         if (distance <= range && distance > 0) {
           positions.push({ x, y });
         }
       }
     }
-    
+
     return positions;
   }
 
   /**
    * Calculate attack range for a unit
    */
-  calculateAttackRange(unit: BattleUnit, gridWidth: number, gridHeight: number): { x: number; y: number }[] {
-    const range = 2; // Attack range (can be based on weapon/skill)
+  calculateAttackRange(
+    unit: BattleUnit,
+    gridWidth: number,
+    gridHeight: number
+  ): { x: number; y: number }[] {
+    const range = 2; // TODO: Attack range (can be based on weapon/skill)
     const positions: { x: number; y: number }[] = [];
-    
+
     for (let x = 0; x < gridWidth; x++) {
       for (let y = 0; y < gridHeight; y++) {
-        const distance = Math.abs(x - unit.position.x) + Math.abs(y - unit.position.y);
+        const distance =
+          Math.abs(x - unit.position.x) + Math.abs(y - unit.position.y);
         if (distance <= range && distance > 0) {
           positions.push({ x, y });
         }
       }
     }
-    
+
     return positions;
   }
 
@@ -192,7 +219,8 @@ export class BattlePresenter {
    * Calculate damage
    */
   calculateDamage(attacker: BattleUnit, defender: BattleUnit): number {
-    const baseDamage = attacker.character.stats.atk - defender.character.stats.def;
+    const baseDamage =
+      attacker.character.stats.atk - defender.character.stats.def;
     const damage = Math.max(1, baseDamage); // Minimum 1 damage
     return damage;
   }
@@ -206,7 +234,7 @@ export class BattlePresenterFactory {
     return new BattlePresenter();
   }
 
-  static async createClient(): Promise<BattlePresenter> {
+  static createClient(): BattlePresenter {
     return new BattlePresenter();
   }
 }

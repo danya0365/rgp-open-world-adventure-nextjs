@@ -1,10 +1,10 @@
+import { Location } from "@/src/domain/types/location.types";
 import { useCallback, useEffect, useState } from "react";
 import {
-  WorldViewModel,
   WorldPresenter,
   WorldPresenterFactory,
+  WorldViewModel,
 } from "./WorldPresenter";
-import { Location } from "@/src/domain/types/location.types";
 
 export interface WorldPresenterHook {
   // State
@@ -25,9 +25,9 @@ let presenterInstance: WorldPresenter | null = null;
 /**
  * Get or create presenter instance
  */
-async function getPresenter(): Promise<WorldPresenter> {
+function getPresenter(): WorldPresenter {
   if (!presenterInstance) {
-    presenterInstance = await WorldPresenterFactory.createClient();
+    presenterInstance = WorldPresenterFactory.createClient();
   }
   return presenterInstance;
 }
@@ -35,7 +35,7 @@ async function getPresenter(): Promise<WorldPresenter> {
 /**
  * Custom hook for World presenter
  * Provides state management and actions for world map operations
- * 
+ *
  * Note: Navigation is now handled by Next.js routing via URL
  * currentLocation and breadcrumb are derived from URL params
  */
@@ -50,9 +50,10 @@ export function useWorldPresenter(
   const [error, setError] = useState<string | null>(null);
 
   // Derive currentLocation from URL (currentLocationId)
-  const currentLocation = currentLocationId && viewModel
-    ? viewModel.locations.find((loc) => loc.id === currentLocationId) || null
-    : null;
+  const currentLocation =
+    currentLocationId && viewModel
+      ? viewModel.locations.find((loc) => loc.id === currentLocationId) || null
+      : null;
 
   // Build breadcrumb from currentLocation
   const breadcrumb: Location[] = [];
@@ -72,7 +73,7 @@ export function useWorldPresenter(
     setError(null);
 
     try {
-      const presenter = await getPresenter();
+      const presenter = getPresenter();
       const newViewModel = await presenter.getViewModel(currentLocationId);
       setViewModel(newViewModel);
     } catch (err) {

@@ -149,7 +149,7 @@ export class QuestPresenterFactory {
   /**
    * Create presenter for client-side (uses master data)
    */
-  static async createClient(): Promise<QuestPresenter> {
+  static createClient(): QuestPresenter {
     return new QuestPresenter(QUESTS_MASTER);
   }
 

@@ -1,4 +1,7 @@
-import { CHARACTERS_MASTER, getPlayableCharacters } from "@/src/data/master/characters.master";
+import {
+  CHARACTERS_MASTER,
+  getPlayableCharacters,
+} from "@/src/data/master/characters.master";
 import { Character } from "@/src/domain/types/character.types";
 
 /**
@@ -31,21 +34,21 @@ export class PartyPresenter {
     try {
       // Get playable characters from master data
       const playableChars = getPlayableCharacters();
-      
+
       // Filter by game state: only show characters that user has recruited
       // This ensures we don't show all 8 characters by default
       let availablePlayableChars: Character[];
-      
+
       if (recruitedCharacterIds.length === 0) {
         // If no characters recruited yet, show none (user must go to /characters first)
         availablePlayableChars = [];
       } else {
         // Show only characters that user has recruited
-        availablePlayableChars = playableChars.filter(
-          (c) => recruitedCharacterIds.includes(c.id)
+        availablePlayableChars = playableChars.filter((c) =>
+          recruitedCharacterIds.includes(c.id)
         );
       }
-      
+
       const recruitableChars = CHARACTERS_MASTER.filter((c) => c.isRecruitable);
       const legendaryChars = CHARACTERS_MASTER.filter(
         (c) => c.rarity === "legendary" || c.rarity === "mythic"
@@ -115,7 +118,7 @@ export class PartyPresenterFactory {
   /**
    * Create presenter for client-side
    */
-  static async createClient(): Promise<PartyPresenter> {
+  static createClient(): PartyPresenter {
     return new PartyPresenter();
   }
 }

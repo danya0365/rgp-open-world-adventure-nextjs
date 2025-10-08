@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  BattleViewModel,
   BattlePresenter,
   BattlePresenterFactory,
+  BattleViewModel,
 } from "./BattlePresenter";
 
 export interface BattlePresenterHook {
@@ -12,7 +12,7 @@ export interface BattlePresenterHook {
   viewModel: BattleViewModel | null;
   loading: boolean;
   error: string | null;
-  
+
   // Selection state
   selectedUnitId: string | null;
   selectedTilePosition: { x: number; y: number } | null;
@@ -34,9 +34,9 @@ let presenterInstance: BattlePresenter | null = null;
 /**
  * Get or create presenter instance
  */
-async function getPresenter(): Promise<BattlePresenter> {
+function getPresenter(): BattlePresenter {
   if (!presenterInstance) {
-    presenterInstance = await BattlePresenterFactory.createClient();
+    presenterInstance = BattlePresenterFactory.createClient();
   }
   return presenterInstance;
 }
@@ -54,12 +54,19 @@ export function useBattlePresenter(
   );
   const [loading, setLoading] = useState(!initialViewModel);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Selection state
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-  const [selectedTilePosition, setSelectedTilePosition] = useState<{ x: number; y: number } | null>(null);
-  const [movementRange, setMovementRange] = useState<{ x: number; y: number }[]>([]);
-  const [attackRange, setAttackRange] = useState<{ x: number; y: number }[]>([]);
+  const [selectedTilePosition, setSelectedTilePosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [movementRange, setMovementRange] = useState<
+    { x: number; y: number }[]
+  >([]);
+  const [attackRange, setAttackRange] = useState<{ x: number; y: number }[]>(
+    []
+  );
 
   /**
    * Load data from presenter
@@ -69,7 +76,7 @@ export function useBattlePresenter(
     setError(null);
 
     try {
-      const presenter = await getPresenter();
+      const presenter = getPresenter();
       const newViewModel = await presenter.getViewModel(mapId);
       setViewModel(newViewModel);
     } catch (err) {
@@ -93,30 +100,35 @@ export function useBattlePresenter(
   /**
    * Select a unit
    */
-  const selectUnit = useCallback(async (unitId: string) => {
-    if (!viewModel) return;
+  const selectUnit = useCallback(
+    async (unitId: string) => {
+      if (!viewModel) return;
 
-    const unit = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(u => u.id === unitId);
-    if (!unit) return;
+      const unit = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(
+        (u) => u.id === unitId
+      );
+      if (!unit) return;
 
-    setSelectedUnitId(unitId);
-    
-    // Calculate ranges
-    const presenter = await getPresenter();
-    const moveRange = presenter.calculateMovementRange(
-      unit,
-      viewModel.battleMap.width,
-      viewModel.battleMap.height
-    );
-    const atkRange = presenter.calculateAttackRange(
-      unit,
-      viewModel.battleMap.width,
-      viewModel.battleMap.height
-    );
-    
-    setMovementRange(moveRange);
-    setAttackRange(atkRange);
-  }, [viewModel]);
+      setSelectedUnitId(unitId);
+
+      // Calculate ranges
+      const presenter = getPresenter();
+      const moveRange = presenter.calculateMovementRange(
+        unit,
+        viewModel.battleMap.width,
+        viewModel.battleMap.height
+      );
+      const atkRange = presenter.calculateAttackRange(
+        unit,
+        viewModel.battleMap.width,
+        viewModel.battleMap.height
+      );
+
+      setMovementRange(moveRange);
+      setAttackRange(atkRange);
+    },
+    [viewModel]
+  );
 
   /**
    * Select a tile
@@ -128,64 +140,78 @@ export function useBattlePresenter(
   /**
    * Move unit to new position
    */
-  const moveUnit = useCallback((unitId: string, x: number, y: number) => {
-    if (!viewModel) return;
+  const moveUnit = useCallback(
+    (unitId: string, x: number, y: number) => {
+      if (!viewModel) return;
 
-    const newViewModel = { ...viewModel };
-    
-    // Update ally units
-    newViewModel.allyUnits = newViewModel.allyUnits.map(unit => 
-      unit.id === unitId ? { ...unit, position: { x, y } } : unit
-    );
-    
-    // Update enemy units
-    newViewModel.enemyUnits = newViewModel.enemyUnits.map(unit => 
-      unit.id === unitId ? { ...unit, position: { x, y } } : unit
-    );
-    
-    setViewModel(newViewModel);
-    setSelectedUnitId(null);
-    setMovementRange([]);
-  }, [viewModel]);
+      const newViewModel = { ...viewModel };
+
+      // Update ally units
+      newViewModel.allyUnits = newViewModel.allyUnits.map((unit) =>
+        unit.id === unitId ? { ...unit, position: { x, y } } : unit
+      );
+
+      // Update enemy units
+      newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) =>
+        unit.id === unitId ? { ...unit, position: { x, y } } : unit
+      );
+
+      setViewModel(newViewModel);
+      setSelectedUnitId(null);
+      setMovementRange([]);
+    },
+    [viewModel]
+  );
 
   /**
    * Attack target unit
    */
-  const attackUnit = useCallback(async (attackerId: string, targetId: string) => {
-    if (!viewModel) return;
+  const attackUnit = useCallback(
+    async (attackerId: string, targetId: string) => {
+      if (!viewModel) return;
 
-    const attacker = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(u => u.id === attackerId);
-    const target = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(u => u.id === targetId);
-    
-    if (!attacker || !target) return;
+      const attacker = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(
+        (u) => u.id === attackerId
+      );
+      const target = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(
+        (u) => u.id === targetId
+      );
 
-    const presenter = await getPresenter();
-    const damage = presenter.calculateDamage(attacker, target);
-    
-    const newViewModel = { ...viewModel };
-    
-    // Update target HP
-    newViewModel.allyUnits = newViewModel.allyUnits.map(unit => 
-      unit.id === targetId ? { ...unit, currentHp: Math.max(0, unit.currentHp - damage) } : unit
-    );
-    
-    newViewModel.enemyUnits = newViewModel.enemyUnits.map(unit => 
-      unit.id === targetId ? { ...unit, currentHp: Math.max(0, unit.currentHp - damage) } : unit
-    );
-    
-    // Mark attacker as acted
-    newViewModel.allyUnits = newViewModel.allyUnits.map(unit => 
-      unit.id === attackerId ? { ...unit, hasActed: true } : unit
-    );
-    
-    newViewModel.enemyUnits = newViewModel.enemyUnits.map(unit => 
-      unit.id === attackerId ? { ...unit, hasActed: true } : unit
-    );
-    
-    setViewModel(newViewModel);
-    setSelectedUnitId(null);
-    setAttackRange([]);
-  }, [viewModel]);
+      if (!attacker || !target) return;
+
+      const presenter = getPresenter();
+      const damage = presenter.calculateDamage(attacker, target);
+
+      const newViewModel = { ...viewModel };
+
+      // Update target HP
+      newViewModel.allyUnits = newViewModel.allyUnits.map((unit) =>
+        unit.id === targetId
+          ? { ...unit, currentHp: Math.max(0, unit.currentHp - damage) }
+          : unit
+      );
+
+      newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) =>
+        unit.id === targetId
+          ? { ...unit, currentHp: Math.max(0, unit.currentHp - damage) }
+          : unit
+      );
+
+      // Mark attacker as acted
+      newViewModel.allyUnits = newViewModel.allyUnits.map((unit) =>
+        unit.id === attackerId ? { ...unit, hasActed: true } : unit
+      );
+
+      newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) =>
+        unit.id === attackerId ? { ...unit, hasActed: true } : unit
+      );
+
+      setViewModel(newViewModel);
+      setSelectedUnitId(null);
+      setAttackRange([]);
+    },
+    [viewModel]
+  );
 
   /**
    * End current turn
@@ -194,19 +220,27 @@ export function useBattlePresenter(
     if (!viewModel) return;
 
     const newViewModel = { ...viewModel };
-    
+
     // Reset hasActed for all units
-    newViewModel.allyUnits = newViewModel.allyUnits.map(unit => ({ ...unit, hasActed: false }));
-    newViewModel.enemyUnits = newViewModel.enemyUnits.map(unit => ({ ...unit, hasActed: false }));
-    
+    newViewModel.allyUnits = newViewModel.allyUnits.map((unit) => ({
+      ...unit,
+      hasActed: false,
+    }));
+    newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) => ({
+      ...unit,
+      hasActed: false,
+    }));
+
     // Increment turn
     newViewModel.state.turn += 1;
-    
+
     // Get next unit in turn order
-    const currentIndex = newViewModel.turnOrder.findIndex(u => u.id === newViewModel.state.currentUnitId);
+    const currentIndex = newViewModel.turnOrder.findIndex(
+      (u) => u.id === newViewModel.state.currentUnitId
+    );
     const nextIndex = (currentIndex + 1) % newViewModel.turnOrder.length;
     newViewModel.state.currentUnitId = newViewModel.turnOrder[nextIndex].id;
-    
+
     setViewModel(newViewModel);
     setSelectedUnitId(null);
     setMovementRange([]);
@@ -216,13 +250,16 @@ export function useBattlePresenter(
   /**
    * Select action
    */
-  const selectAction = useCallback((action: "move" | "attack" | "skill" | null) => {
-    if (!viewModel) return;
+  const selectAction = useCallback(
+    (action: "move" | "attack" | "skill" | null) => {
+      if (!viewModel) return;
 
-    const newViewModel = { ...viewModel };
-    newViewModel.state.selectedAction = action;
-    setViewModel(newViewModel);
-  }, [viewModel]);
+      const newViewModel = { ...viewModel };
+      newViewModel.state.selectedAction = action;
+      setViewModel(newViewModel);
+    },
+    [viewModel]
+  );
 
   return {
     // State

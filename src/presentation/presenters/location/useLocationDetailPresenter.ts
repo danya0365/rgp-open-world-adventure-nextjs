@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   LocationDetailPresenterFactory,
   LocationDetailViewModel,
 } from "./LocationDetailPresenter";
+
+const presenter = LocationDetailPresenterFactory.createClient();
 
 /**
  * useLocationDetailPresenter Hook
@@ -34,12 +36,11 @@ export function useLocationDetailPresenter(
 
   const loadLocationDetail = async () => {
     if (!locationId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
 
-      const presenter = await LocationDetailPresenterFactory.createClient();
       const data = await presenter.getViewModel(locationId);
 
       setViewModel(data);

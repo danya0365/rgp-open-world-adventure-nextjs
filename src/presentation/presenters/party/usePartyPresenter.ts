@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { PartyViewModel, PartyPresenter, PartyPresenterFactory } from "./PartyPresenter";
 import { useGameStore } from "@/src/stores/gameStore";
-import { Character } from "@/src/domain/types/character.types";
+import { useCallback, useEffect, useState } from "react";
+import {
+  PartyPresenter,
+  PartyPresenterFactory,
+  PartyViewModel,
+} from "./PartyPresenter";
 
 export interface PartyPresenterHook {
   // State
@@ -11,17 +14,24 @@ export interface PartyPresenterHook {
 
   // Actions
   loadData: () => Promise<void>;
-  
+
   // Multiple Party Actions
   createParty: (name: string) => import("@/src/stores/gameStore").Party;
   deleteParty: (partyId: string) => void;
   renameParty: (partyId: string, newName: string) => void;
-  copyParty: (partyId: string, newName: string) => import("@/src/stores/gameStore").Party;
+  copyParty: (
+    partyId: string,
+    newName: string
+  ) => import("@/src/stores/gameStore").Party;
   setActiveParty: (partyId: string) => void;
   getActiveParty: () => import("@/src/stores/gameStore").Party | null;
-  addToPartyV2: (partyId: string, characterId: string, position?: number) => boolean;
+  addToPartyV2: (
+    partyId: string,
+    characterId: string,
+    position?: number
+  ) => boolean;
   removeFromPartyV2: (partyId: string, characterId: string) => void;
-  
+
   // State getters
   parties: import("@/src/stores/gameStore").Party[];
   activePartyId: string | null;
@@ -33,9 +43,9 @@ let presenterInstance: PartyPresenter | null = null;
 /**
  * Get or create presenter instance
  */
-async function getPresenter(): Promise<PartyPresenter> {
+function getPresenter(): PartyPresenter {
   if (!presenterInstance) {
-    presenterInstance = await PartyPresenterFactory.createClient();
+    presenterInstance = PartyPresenterFactory.createClient();
   }
   return presenterInstance;
 }
@@ -65,9 +75,11 @@ export function usePartyPresenter(
     setError(null);
 
     try {
-      const presenter = await getPresenter();
+      const presenter = getPresenter();
       // Pass selected and recruited characters from game state to presenter
-      const recruitedCharacterIds = progress.recruitedCharacters.map(rc => rc.characterId);
+      const recruitedCharacterIds = progress.recruitedCharacters.map(
+        (rc) => rc.characterId
+      );
       const newViewModel = await presenter.getViewModel(
         progress.selectedCharacters,
         recruitedCharacterIds
@@ -90,7 +102,7 @@ export function usePartyPresenter(
       loadData();
     }
   }, [initialViewModel, loadData]);
-  
+
   /**
    * Reload data when selected or unlocked characters change
    * This ensures the view model is updated with game state
@@ -123,7 +135,7 @@ export function usePartyPresenter(
 
     // Actions
     loadData,
-    
+
     // Multiple Party Actions
     createParty: storeCreateParty,
     deleteParty: storeDeleteParty,
@@ -133,7 +145,7 @@ export function usePartyPresenter(
     getActiveParty: storeGetActiveParty,
     addToPartyV2: storeAddToPartyV2,
     removeFromPartyV2: storeRemoveFromPartyV2,
-    
+
     // State getters
     parties,
     activePartyId,
