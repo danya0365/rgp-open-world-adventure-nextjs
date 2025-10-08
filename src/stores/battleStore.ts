@@ -367,12 +367,6 @@ export const useBattleStore = create<BattleStore>()(
           };
         });
 
-        const { allyUnits, enemyUnits } = get();
-        const totalActCount =
-          allyUnits.filter((unit) => unit.hasActed).length +
-          enemyUnits.filter((unit) => unit.hasActed).length;
-        console.log("totalActCount after attack", totalActCount);
-
         // Check victory/defeat after attack
         setTimeout(() => {
           const { checkVictory, checkDefeat } = get();
@@ -605,6 +599,10 @@ export const useBattleStore = create<BattleStore>()(
               currentUnit.character.stats.atk - unit.character.stats.def
             );
             store.attackUnit(currentUnit.id, unit.id, damage);
+
+            setTimeout(() => {
+              get().endTurn();
+            }, 500);
           }
         } else if (!unit && store.isTileInMovementRange(x, y)) {
           // Click on empty tile in movement range - move there
