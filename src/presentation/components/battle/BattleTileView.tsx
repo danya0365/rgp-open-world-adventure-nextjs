@@ -9,66 +9,61 @@ const BattleTileView = ({
   y,
   tile,
   isObstacle,
-  isUnwalkable,
   isInMoveRange,
   isInAttackRange,
   isCurrent,
   unit,
   onClick,
-  isCurrentTurn,
   isAllyTurn,
 }: {
   x: number;
   y: number;
   tile?: BattleTile;
   isObstacle: boolean;
-  isUnwalkable: boolean;
   isInMoveRange: boolean;
   isInAttackRange: boolean;
   isCurrent: boolean;
   unit: any;
   onClick: (x: number, y: number) => void;
-  isCurrentTurn: boolean;
   isAllyTurn: boolean;
 }) => {
+  const isUnwalkable = (tile && !tile.isWalkable) ?? true;
   const getTileStyle = () => {
     // Base style
-    let style =
-      "relative overflow-hidden transition-all duration-200 transform hover:scale-105 ";
+    let style = "relative transform transition-all duration-200 ";
 
-    // Tile type styling
+    switch (tile?.type) {
+      case "grass":
+        style += "bg-green-600 hover:bg-green-500 ";
+        break;
+      case "water":
+        style += "bg-blue-500 hover:bg-blue-400 ";
+        break;
+      case "mountain":
+        style += "bg-stone-500 hover:bg-stone-400 ";
+        break;
+      case "lava":
+        style += "bg-red-600 hover:bg-red-500 animate-pulse ";
+        break;
+      case "ice":
+        style += "bg-cyan-200 hover:bg-cyan-100 ";
+        break;
+      case "poison":
+        style += "bg-purple-600 hover:bg-purple-500 ";
+        break;
+      default:
+        style += "bg-slate-700 hover:bg-slate-600 ";
+    }
+
     if (isObstacle || isUnwalkable) {
       style += "bg-slate-700 opacity-70 cursor-not-allowed ";
-    } else {
-      switch (tile?.type) {
-        case "grass":
-          style += "bg-green-600 hover:bg-green-500 ";
-          break;
-        case "water":
-          style += "bg-blue-500 hover:bg-blue-400 ";
-          break;
-        case "mountain":
-          style += "bg-stone-500 hover:bg-stone-400 ";
-          break;
-        case "lava":
-          style += "bg-red-600 hover:bg-red-500 animate-pulse ";
-          break;
-        case "ice":
-          style += "bg-cyan-200 hover:bg-cyan-100 ";
-          break;
-        case "poison":
-          style += "bg-purple-600 hover:bg-purple-500 ";
-          break;
-        default:
-          style += "bg-slate-700 hover:bg-slate-600 ";
-      }
     }
 
     // Current unit highlight
     if (isCurrent) {
       style += isAllyTurn
-        ? "ring-4 ring-green-300 shadow-[0_0_20px_rgba(74,222,128,0.7)] "
-        : "ring-4 ring-orange-300 shadow-[0_0_20px_rgba(253,186,116,0.7)] ";
+        ? "ring-1 ring-green-300 "
+        : "ring-1 ring-orange-300 ";
     }
 
     return style;
@@ -79,9 +74,14 @@ const BattleTileView = ({
       <>
         {/* Move Range Overlay */}
         {isInMoveRange && (
-          <div className="absolute inset-0 flex items-center justify-center m-2">
-            <div className="w-full h-full bg-blue-500/10 border-2 border-blue-400/50 rounded-sm">
-              <span className="text-2xl">👣</span>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full h-full bg-blue-500/50"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center m-2">
+              <div className="w-full h-full border-2 border-blue-400/50 rounded-sm">
+                <span className="text-2xl">👣</span>
+              </div>
             </div>
           </div>
         )}
@@ -123,6 +123,12 @@ const BattleTileView = ({
     return unit.isAlly
       ? "bg-blue-500 shadow-lg shadow-blue-500/30"
       : "bg-red-500 shadow-lg shadow-red-500/30";
+  };
+
+  const renderCurrentIndicator = () => {
+    return (
+      <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+    );
   };
 
   return (

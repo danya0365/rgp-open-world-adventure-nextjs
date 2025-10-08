@@ -713,7 +713,6 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       battleMap.obstacles?.some(
                         (obs) => obs.x === x && obs.y === y
                       ) || false;
-                    const isUnwalkable = (tile && !tile.isWalkable) ?? true;
                     // Always show ranges for current unit
                     const isInMoveRange = isTileInMovementRange(x, y);
                     const isInAttackRange = isTileInAttackRange(x, y);
@@ -726,13 +725,11 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         y={y}
                         tile={tile}
                         isObstacle={isObstacle}
-                        isUnwalkable={isUnwalkable}
                         isInMoveRange={isInMoveRange}
                         isInAttackRange={isInAttackRange}
                         isCurrent={isCurrent}
                         unit={unit}
                         onClick={handleTileClick}
-                        isCurrentTurn={!!currentUnit}
                         isAllyTurn={!!currentUnit?.isAlly}
                       />
                     );
