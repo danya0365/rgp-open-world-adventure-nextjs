@@ -14,8 +14,6 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  ChevronLeft,
-  Home,
   MapPin,
   Scroll,
   Swords,
@@ -264,6 +262,29 @@ export function WorldMapView({
       )
     : [];
 
+  // Get connections for current location
+  const connectionPins = currentLocation
+    ? viewModel.connections
+        .filter((conn) => {
+          // แสดง connections ที่เชื่อมจาก/ถึง current location
+          const isFromCurrent = conn.fromLocationId === currentLocation.id;
+          const isToCurrent = conn.toLocationId === currentLocation.id;
+          return (isFromCurrent || isToCurrent) && conn.isTwoWay;
+        })
+        .map((conn) => {
+          const targetLocationId = conn.fromLocationId === currentLocation.id 
+            ? conn.toLocationId 
+            : conn.fromLocationId;
+          const targetLocation = viewModel.locations.find(loc => loc.id === targetLocationId);
+          
+          return {
+            ...conn,
+            targetLocation,
+          };
+        })
+        .filter(conn => conn.targetLocation) // แสดงทุก connections ที่มี target
+    : [];
+
   // Create virtual locations for current location's services/features
   const virtualServiceLocations: Array<{
     id: string;
@@ -396,8 +417,21 @@ export function WorldMapView({
     }
   }
 
-  // Combine child locations with virtual service locations
-  const allDisplayLocations = [...childLocations, ...virtualServiceLocations];
+  // Create virtual locations for connections (exits/entrances)
+  const virtualConnectionLocations = connectionPins.map((connPin) => ({
+    id: `connection-${connPin.id}`,
+    name: connPin.targetLocation?.name || 'Connection',
+    type: connPin.connectionType,
+    isService: true,
+    serviceType: 'connection',
+    connectionType: connPin.connectionType,
+    isLocked: connPin.isLocked,
+    targetLocation: connPin.targetLocation,
+    metadata: { connectionId: connPin.id },
+  }));
+
+  // Combine virtual service locations and connections (ไม่แสดง child locations เพราะมี connections แล้ว)
+  const allDisplayLocations = [...virtualServiceLocations, ...virtualConnectionLocations];
 
   // Generate positions for locations (simple grid layout for now)
   const locationsWithPositions = allDisplayLocations.map((loc, index) => {
@@ -475,30 +509,6 @@ export function WorldMapView({
                       <MapPin className="w-6 h-6" />
                       สำรวจ {currentLocation.name}
                     </button>
-                    
-                    {/* Navigation buttons */}
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          if (currentLocation.parentId) {
-                            router.push(`/world/${currentLocation.parentId}`);
-                          } else {
-                            router.push('/world');
-                          }
-                        }}
-                        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                        ย้อนกลับ
-                      </button>
-                      <button
-                        onClick={() => router.push('/world')}
-                        className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
-                      >
-                        <Home className="w-5 h-5" />
-                        กลับหน้าแรก
-                      </button>
-                    </div>
                   </div>
                 )}
               </div>
@@ -522,19 +532,28 @@ export function WorldMapView({
                 key={location.id}
                 onClick={() => {
                   if (isService) {
-                    // ถ้าคลิก service -> แสดงข้อความตาม service type
-                    const serviceMessages: Record<string, string> = {
-                      shop: '🏪 เปิดร้านค้า - Feature กำลังพัฒนา',
-                      inn: '🏨 พักผ่อน - Feature กำลังพัฒนา',
-                      guild: '🏛️ เข้าหอสมาคม - Feature กำลังพัฒนา',
-                      battle: '⚔️ เข้าสู่การต่อสู้ - Feature กำลังพัฒนา',
-                      npc: '👤 พูดคุยกับ NPC - Feature กำลังพัฒนา',
-                      encounter: '💀 Random Encounter - Feature กำลังพัฒนา',
-                      treasure: '💎 เปิดกล่องสมบัติ - Feature กำลังพัฒนา',
-                      secret: '🔮 สำรวจความลับ - Feature กำลังพัฒนา',
-                      exit: '🚪 ใช้ทางออก - Feature กำลังพัฒนา',
-                    };
-                    alert(serviceMessages[location.serviceType] || `${location.name} - Feature กำลังพัฒนา`);
+                    // ถ้าคลิก connection -> navigate ไปยัง target location
+                    if (location.serviceType === 'connection') {
+                      if (location.isLocked) {
+                        alert(`🔒 ${location.name} - ถูกล็อค! ต้องการไอเทมพิเศษ`);
+                      } else if (location.targetLocation) {
+                        router.push(`/world/${location.targetLocation.id}`);
+                      }
+                    } else {
+                      // ถ้าคลิก service อื่นๆ -> แสดงข้อความตาม service type
+                      const serviceMessages: Record<string, string> = {
+                        shop: '🏪 เปิดร้านค้า - Feature กำลังพัฒนา',
+                        inn: '🏨 พักผ่อน - Feature กำลังพัฒนา',
+                        guild: '🏛️ เข้าหอสมาคม - Feature กำลังพัฒนา',
+                        battle: '⚔️ เข้าสู่การต่อสู้ - Feature กำลังพัฒนา',
+                        npc: '👤 พูดคุยกับ NPC - Feature กำลังพัฒนา',
+                        encounter: '💀 Random Encounter - Feature กำลังพัฒนา',
+                        treasure: '💎 เปิดกล่องสมบัติ - Feature กำลังพัฒนา',
+                        secret: '🔮 สำรวจความลับ - Feature กำลังพัฒนา',
+                        exit: '🚪 ใช้ทางออก - Feature กำลังพัฒนา',
+                      };
+                      alert(serviceMessages[location.serviceType] || `${location.name} - Feature กำลังพัฒนา`);
+                    }
                   } else if (isCurrentLocation) {
                     // ถ้าคลิกที่ current location -> เปิด detail modal
                     setSelectedLocation(location);
@@ -579,6 +598,10 @@ export function WorldMapView({
                       ? 'bg-indigo-600 border-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500'
                       : location.serviceType === 'exit'
                       ? 'bg-teal-600 border-teal-400 group-hover:scale-110 group-hover:bg-teal-500'
+                      : location.serviceType === 'connection'
+                      ? location.isLocked
+                        ? 'bg-red-700 border-red-500 group-hover:scale-110 group-hover:bg-red-600'
+                        : 'bg-lime-600 border-lime-400 group-hover:scale-110 group-hover:bg-lime-500'
                       : 'bg-slate-600 border-slate-400 group-hover:scale-110 group-hover:bg-slate-500'
                     : isCurrentLocation
                     ? 'bg-amber-500 border-amber-300 scale-125'
@@ -604,6 +627,20 @@ export function WorldMapView({
                         ? '🔮'
                         : location.serviceType === 'exit'
                         ? '🚪'
+                        : location.serviceType === 'connection'
+                        ? location.isLocked
+                          ? '🔒'
+                          : location.connectionType === 'portal'
+                          ? '🌀'
+                          : location.connectionType === 'gate'
+                          ? '🚧'
+                          : location.connectionType === 'entrance'
+                          ? '🚪'
+                          : location.connectionType === 'stairs'
+                          ? '🪜'
+                          : location.connectionType === 'bridge'
+                          ? '🌉'
+                          : '🔗'
                         : '❓'
                       : isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'
                     }
@@ -695,6 +732,14 @@ export function WorldMapView({
                         {location.serviceType === 'treasure' && 'สมบัติ - เปิดกล่อง'}
                         {location.serviceType === 'secret' && 'ความลับ - สำรวจ'}
                         {location.serviceType === 'exit' && 'ทางออก - เดินทาง'}
+                        {location.serviceType === 'connection' && (
+                          <>
+                            {location.isLocked 
+                              ? '🔒 ทางเชื่อม - ถูกล็อค' 
+                              : `🔗 ทางเชื่อม → ${location.name}`
+                            }
+                          </>
+                        )}
                       </div>
                     )}
                     
@@ -733,7 +778,11 @@ export function WorldMapView({
                     
                     <div className="text-gray-400 text-[10px] mt-2 border-t border-slate-700 pt-1">
                       {isService 
-                        ? 'คลิกเพื่อใช้บริการ' 
+                        ? location.serviceType === 'connection'
+                          ? location.isLocked
+                            ? 'ถูกล็อค - ต้องการไอเทม'
+                            : 'คลิกเพื่อเดินทาง →'
+                          : 'คลิกเพื่อใช้บริการ'
                         : isCurrentLocation 
                         ? 'คลิกเพื่อดูรายละเอียด' 
                         : 'คลิกเพื่อเดินทาง'}
@@ -760,7 +809,7 @@ export function WorldMapView({
                   )}
                 </h1>
                 <p className="text-gray-400 text-xs">
-                  สถานที่: {childLocations.length} | บริการ: {virtualServiceLocations.length} | 
+                  บริการ: {virtualServiceLocations.length} | ทางเชื่อม: {virtualConnectionLocations.length} | 
                   🖱️ ลาก: Pan | 🎡 Scroll: Zoom
                 </p>
               </div>
@@ -787,37 +836,6 @@ export function WorldMapView({
             >
               <MapPin className="w-6 h-6" />
               <span>สำรวจ {currentLocation.name}</span>
-            </button>
-          )}
-        </div>
-
-        {/* Navigation Buttons - Top Left */}
-        <div className="absolute top-4 left-4 z-50 flex gap-2 pointer-events-auto">
-          {/* Back to Parent */}
-          {currentLocation && (
-            <button
-              onClick={() => {
-                if (currentLocation.parentId) {
-                  router.push(`/world/${currentLocation.parentId}`);
-                } else {
-                  router.push('/world');
-                }
-              }}
-              className="px-4 py-2 bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-xl hover:bg-slate-800/90 transition-colors flex items-center gap-2 shadow-lg"
-            >
-              <ChevronLeft className="w-4 h-4 text-purple-400" />
-              <span className="text-white text-sm font-medium">ย้อนกลับ</span>
-            </button>
-          )}
-          
-          {/* Home Button */}
-          {currentLocation && (
-            <button
-              onClick={() => router.push('/world')}
-              className="p-2 bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-xl hover:bg-slate-800/90 transition-colors shadow-lg"
-              title="กลับสู่แผนที่โลก"
-            >
-              <Home className="w-5 h-5 text-purple-400" />
             </button>
           )}
         </div>

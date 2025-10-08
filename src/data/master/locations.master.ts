@@ -347,11 +347,11 @@ export const LOCATIONS_MASTER: Location[] = [
 
   {
     id: "floor-guild-2f",
-    parentId: "building-guild-hall",
+    parentId: "floor-guild-1f",
     name: "ชั้น 2 - ห้องประชุม",
     nameEn: "2nd Floor - Meeting Rooms",
     type: "floor",
-    level: 6,
+    level: 7,
     path: [
       "world-aethoria",
       "continent-northern",
@@ -359,6 +359,7 @@ export const LOCATIONS_MASTER: Location[] = [
       "area-crystal-valley",
       "city-silverhold",
       "building-guild-hall",
+      "floor-guild-1f",
       "floor-guild-2f",
     ],
     slug: "guild-2f",
@@ -417,7 +418,7 @@ export const LOCATIONS_MASTER: Location[] = [
     name: "ห้องหัวหน้าสมาคม",
     nameEn: "Guild Master's Office",
     type: "room",
-    level: 7,
+    level: 8,
     path: [
       "world-aethoria",
       "continent-northern",
@@ -425,6 +426,7 @@ export const LOCATIONS_MASTER: Location[] = [
       "area-crystal-valley",
       "city-silverhold",
       "building-guild-hall",
+      "floor-guild-1f",
       "floor-guild-2f",
       "room-guild-master",
     ],
@@ -451,7 +453,7 @@ export const LOCATIONS_MASTER: Location[] = [
     name: "ห้องประชุม A",
     nameEn: "Meeting Room A",
     type: "room",
-    level: 7,
+    level: 8,
     path: [
       "world-aethoria",
       "continent-northern",
@@ -459,6 +461,7 @@ export const LOCATIONS_MASTER: Location[] = [
       "area-crystal-valley",
       "city-silverhold",
       "building-guild-hall",
+      "floor-guild-1f",
       "floor-guild-2f",
       "room-meeting-1",
     ],
@@ -522,6 +525,32 @@ export const LOCATIONS_MASTER: Location[] = [
 // LOCATION CONNECTIONS
 // ========================================
 export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
+  // ========================================
+  // LEVEL 0-1: World → Continents
+  // ========================================
+  {
+    id: "conn-world-1",
+    fromLocationId: "world-aethoria",
+    toLocationId: "continent-northern",
+    connectionType: "portal",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 200, y: 100 },
+  },
+
+  {
+    id: "conn-world-2",
+    fromLocationId: "world-aethoria",
+    toLocationId: "continent-eastern",
+    connectionType: "portal",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 600, y: 300 },
+  },
+
+  // ========================================
+  // LEVEL 1-1: Between Continents
+  // ========================================
   {
     id: "conn-1",
     fromLocationId: "continent-northern",
@@ -532,6 +561,68 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     coordinates: { x: 400, y: 200 },
   },
 
+  // ========================================
+  // LEVEL 1-2: Continents → Regions
+  // ========================================
+  {
+    id: "conn-continent-1",
+    fromLocationId: "continent-northern",
+    toLocationId: "region-frostpeak",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 150, y: 80 },
+  },
+
+  {
+    id: "conn-continent-2",
+    fromLocationId: "continent-eastern",
+    toLocationId: "region-elven-forest",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 500, y: 250 },
+  },
+
+  // ========================================
+  // LEVEL 2-3: Regions → Areas/Cities
+  // ========================================
+  {
+    id: "conn-region-1",
+    fromLocationId: "region-frostpeak",
+    toLocationId: "area-crystal-valley",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 120, y: 60 },
+  },
+
+  {
+    id: "conn-region-2",
+    fromLocationId: "region-elven-forest",
+    toLocationId: "city-elvenheim",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 480, y: 230 },
+  },
+
+  // ========================================
+  // LEVEL 3-4: Areas → Cities
+  // ========================================
+  {
+    id: "conn-area-1",
+    fromLocationId: "area-crystal-valley",
+    toLocationId: "city-silverhold",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 100, y: 50 },
+  },
+
+  // ========================================
+  // LEVEL 4-5: Cities → Buildings
+  // ========================================
   {
     id: "conn-2",
     fromLocationId: "city-silverhold",
@@ -543,6 +634,28 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   {
+    id: "conn-6",
+    fromLocationId: "city-elvenheim",
+    toLocationId: "building-magic-tower",
+    connectionType: "entrance",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 470, y: 220 },
+  },
+
+  // ========================================
+  // LEVEL 5-6: Buildings → Floors
+  // ========================================
+  {
+    id: "conn-building-1",
+    fromLocationId: "building-guild-hall",
+    toLocationId: "floor-guild-1f",
+    connectionType: "stairs",
+    isLocked: false,
+    isTwoWay: true,
+  },
+
+  {
     id: "conn-3",
     fromLocationId: "floor-guild-1f",
     toLocationId: "floor-guild-2f",
@@ -551,6 +664,18 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     isTwoWay: true,
   },
 
+  {
+    id: "conn-7",
+    fromLocationId: "building-magic-tower",
+    toLocationId: "floor-tower-1f",
+    connectionType: "stairs",
+    isLocked: false,
+    isTwoWay: true,
+  },
+
+  // ========================================
+  // LEVEL 6-7: Floors → Rooms
+  // ========================================
   {
     id: "conn-4",
     fromLocationId: "floor-guild-2f",
@@ -569,25 +694,9 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     isTwoWay: true,
   },
 
-  {
-    id: "conn-6",
-    fromLocationId: "city-elvenheim",
-    toLocationId: "building-magic-tower",
-    connectionType: "entrance",
-    isLocked: false,
-    isTwoWay: true,
-    coordinates: { x: 470, y: 220 },
-  },
-
-  {
-    id: "conn-7",
-    fromLocationId: "building-magic-tower",
-    toLocationId: "floor-tower-1f",
-    connectionType: "stairs",
-    isLocked: false,
-    isTwoWay: true,
-  },
-
+  // ========================================
+  // DUNGEONS
+  // ========================================
   {
     id: "conn-8",
     fromLocationId: "area-crystal-valley",

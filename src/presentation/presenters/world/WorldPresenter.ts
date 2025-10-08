@@ -1,9 +1,10 @@
 import {
   LOCATIONS_MASTER,
+  LOCATION_CONNECTIONS_MASTER,
   buildLocationTree,
   getLocationPath,
 } from "@/src/data/master/locations.master";
-import { Location } from "@/src/domain/types/location.types";
+import { Location, LocationConnection } from "@/src/domain/types/location.types";
 
 /**
  * World View Model
@@ -13,6 +14,7 @@ export interface WorldViewModel {
   currentLocation?: Location;
   locations: Location[];
   rootLocations: Location[];
+  connections: LocationConnection[];
   totalLocations: number;
   discoveredCount: number;
   continentCount: number;
@@ -54,6 +56,7 @@ export class WorldPresenter {
         currentLocation: LOCATIONS_MASTER.find((loc) => loc.id === locationId),
         locations: LOCATIONS_MASTER,
         rootLocations,
+        connections: LOCATION_CONNECTIONS_MASTER,
         totalLocations: LOCATIONS_MASTER.length,
         discoveredCount: discovered.length,
         continentCount: continents.length,
