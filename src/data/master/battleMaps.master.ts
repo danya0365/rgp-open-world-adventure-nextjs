@@ -287,5 +287,7 @@ export function getBattleMapsBySize(size: string): BattleMapConfig[] {
  * Get random battle map
  */
 export function getRandomBattleMap(): BattleMapConfig {
-  return BATTLE_MAPS_MASTER[Math.floor(Math.random() * BATTLE_MAPS_MASTER.length)];
+  return BATTLE_MAPS_MASTER[
+    Math.floor(Math.random() * BATTLE_MAPS_MASTER.length)
+  ];
 }
