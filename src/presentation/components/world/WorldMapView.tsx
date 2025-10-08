@@ -22,6 +22,7 @@ import {
   ShoppingBag,
   Hotel,
   Users2,
+  Navigation,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -52,6 +53,7 @@ export function WorldMapView({
   const [showStatsPanel, setShowStatsPanel] = useState(true);
   const [showCurrentAreaPanel, setShowCurrentAreaPanel] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [showFastTravelModal, setShowFastTravelModal] = useState(false);
   
   // Pan & Zoom state - restored from localStorage
   const [zoom, setZoom] = useState(() => {
@@ -615,6 +617,15 @@ export function WorldMapView({
                       </div>
                     </div>
                   )}
+                  
+                  {/* Fast Travel Indicator - Top Left */}
+                  {!isService && location.isFastTravelPoint && (
+                    <div className="absolute -top-2 -left-2 pointer-events-none">
+                      <div className="w-6 h-6 bg-cyan-500 border-2 border-cyan-300 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                        <Navigation className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Feature Badges - Top Right of Marker (only for real locations) */}
@@ -757,9 +768,19 @@ export function WorldMapView({
           </div>
         </div>
 
-        {/* Explore Current Location Button - Bottom Center */}
-        {currentLocation && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        {/* Action Buttons - Bottom Center */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto flex gap-4">
+          {/* Fast Travel Button */}
+          <button
+            onClick={() => setShowFastTravelModal(true)}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl transition-all flex items-center gap-2 font-bold shadow-2xl border-2 border-cyan-400/50 hover:scale-105 transform"
+          >
+            <Navigation className="w-5 h-5" />
+            <span>Fast Travel</span>
+          </button>
+          
+          {/* Explore Current Location Button */}
+          {currentLocation && (
             <button
               onClick={() => setSelectedLocation(currentLocation)}
               className="px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl transition-all flex items-center gap-3 font-bold shadow-2xl text-lg border-2 border-amber-400/50 hover:scale-105 transform"
@@ -767,8 +788,8 @@ export function WorldMapView({
               <MapPin className="w-6 h-6" />
               <span>สำรวจ {currentLocation.name}</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Navigation Buttons - Top Left */}
         <div className="absolute top-4 left-4 z-50 flex gap-2 pointer-events-auto">
@@ -1112,6 +1133,112 @@ export function WorldMapView({
             <div className="flex items-center">
               <span className="mr-2">⚠️</span>
               <span>{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Fast Travel Modal */}
+        {showFastTravelModal && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] pointer-events-auto">
+            <div className="bg-slate-900/95 border-2 border-cyan-500 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-cyan-900/50 to-blue-900/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Navigation className="w-6 h-6 text-cyan-400" />
+                    <h2 className="text-2xl font-bold text-white">Fast Travel</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowFastTravelModal(false)}
+                    className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    <X className="w-6 h-6 text-gray-400" />
+                  </button>
+                </div>
+                <p className="text-sm text-gray-400 mt-2">
+                  เลือกสถานที่ที่ต้องการเดินทางไปทันที
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="grid grid-cols-1 gap-3">
+                  {viewModel.locations
+                    .filter((loc) => loc.isFastTravelPoint && loc.isDiscoverable)
+                    .map((location) => {
+                      const isCurrentLoc = location.id === currentLocationId;
+                      const canTravel = !location.requiredLevel || true; // TODO: Check player level
+                      
+                      return (
+                        <button
+                          key={location.id}
+                          onClick={() => {
+                            if (!isCurrentLoc && canTravel) {
+                              setShowFastTravelModal(false);
+                              router.push(`/world/${location.id}`);
+                            }
+                          }}
+                          disabled={isCurrentLoc || !canTravel}
+                          className={`p-4 rounded-xl border-2 transition-all text-left ${
+                            isCurrentLoc
+                              ? 'bg-amber-500/20 border-amber-500 cursor-default'
+                              : canTravel
+                              ? 'bg-slate-800/50 border-slate-700 hover:border-cyan-500 hover:bg-slate-700/50 cursor-pointer'
+                              : 'bg-slate-800/30 border-slate-800 opacity-50 cursor-not-allowed'
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            {/* Icon */}
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 ${
+                              isCurrentLoc 
+                                ? 'bg-amber-500 border-amber-300' 
+                                : 'bg-cyan-600 border-cyan-400'
+                            }`}>
+                              <span className="text-2xl">
+                                {location.type === 'city' || location.type === 'town'
+                                  ? '🏰'
+                                  : location.type === 'building' || location.type === 'tower'
+                                  ? '🏛️'
+                                  : location.type === 'area'
+                                  ? '💎'
+                                  : '🗺️'}
+                              </span>
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-lg font-bold text-white">{location.name}</h3>
+                                {isCurrentLoc && (
+                                  <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded animate-pulse">
+                                    YOU ARE HERE
+                                  </span>
+                                )}
+                                <div className="w-5 h-5 bg-cyan-500 border-2 border-cyan-300 rounded-full flex items-center justify-center ml-auto">
+                                  <Navigation className="w-3 h-3 text-white" />
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-400 mb-2">{location.description}</p>
+                              <div className="flex items-center gap-3 text-xs">
+                                <span className="px-2 py-1 bg-slate-700 text-gray-300 rounded capitalize">
+                                  {location.type}
+                                </span>
+                                {location.requiredLevel && (
+                                  <span className="px-2 py-1 bg-purple-600/30 text-purple-300 rounded">
+                                    Lv. {location.requiredLevel}+
+                                  </span>
+                                )}
+                                {!isCurrentLoc && canTravel && (
+                                  <span className="text-cyan-400 ml-auto">คลิกเพื่อเดินทาง →</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
             </div>
           </div>
         )}
