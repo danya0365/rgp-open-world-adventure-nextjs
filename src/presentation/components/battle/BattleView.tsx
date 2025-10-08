@@ -565,13 +565,20 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link
-              href="/world"
+            <button
+              onClick={() => {
+                // Try to go back in history, if that fails (no history), go to /world
+                if (window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/world");
+                }
+              }}
               className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               กลับ
-            </Link>
+            </button>
             <div>
               <h1 className="text-3xl font-bold text-white">
                 {battleMap.name}
