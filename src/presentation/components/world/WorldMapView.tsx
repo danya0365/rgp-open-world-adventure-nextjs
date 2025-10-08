@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LocationDetailView } from "../location/LocationDetailView";
 import {
   GameLayout,
@@ -35,6 +36,7 @@ export function WorldMapView({
   initialViewModel,
   currentLocationId,
 }: WorldMapViewProps) {
+  const router = useRouter();
   const [showPartyPanel, setShowPartyPanel] = useState(true);
   const [showStatsPanel, setShowStatsPanel] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -217,7 +219,15 @@ export function WorldMapView({
             return (
               <button
                 key={location.id}
-                onClick={() => setSelectedLocation(location)}
+                onClick={() => {
+                  if (isCurrentLocation) {
+                    // ถ้าคลิกที่ current location -> เปิด detail modal
+                    setSelectedLocation(location);
+                  } else {
+                    // ถ้าคลิก location อื่น -> navigate ไปยัง location นั้น
+                    router.push(`/world/${location.id}`);
+                  }
+                }}
                 className="absolute group transform -translate-x-1/2 -translate-y-1/2"
                 style={{
                   left: `${location.x}%`,
@@ -270,7 +280,9 @@ export function WorldMapView({
                 <div className="absolute top-full mt-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <div className="px-3 py-2 bg-slate-900/95 border border-purple-500/50 rounded-lg text-xs text-gray-300 whitespace-nowrap shadow-xl">
                     <div className="font-semibold text-purple-400 capitalize">{location.type}</div>
-                    <div className="text-gray-400 text-[10px] mt-1">คลิกเพื่อดูรายละเอียด</div>
+                    <div className="text-gray-400 text-[10px] mt-1">
+                      {isCurrentLocation ? 'คลิกเพื่อดูรายละเอียด' : 'คลิกเพื่อเดินทาง'}
+                    </div>
                   </div>
                 </div>
               </button>
@@ -289,7 +301,7 @@ export function WorldMapView({
                 </h1>
                 <p className="text-gray-400 text-xs">
                   สถานที่: {discoveredLocations.length}/{viewModel.totalLocations} | 
-                  คลิกที่ไอคอนเพื่อดูรายละเอียด
+                  คลิกที่ไอคอนเพื่อเดินทาง
                 </p>
               </div>
             </div>
