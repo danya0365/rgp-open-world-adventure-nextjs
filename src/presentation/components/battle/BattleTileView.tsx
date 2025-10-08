@@ -124,12 +124,12 @@ const BattleTileView = ({
     if (!isAllyTurn)
       return (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-4 h-4 bg-orange-400 rounded-full animate-ping"></div>
+          <div className="animate-spin rounded-full w-full h-full border-b-2 border-dashed border-orange-600"></div>
         </div>
       );
     return (
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+        <div className="animate-spin rounded-full w-full h-full border-b-2 border-dashed border-yellow-600"></div>
       </div>
     );
   };
