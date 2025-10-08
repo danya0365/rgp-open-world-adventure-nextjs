@@ -481,13 +481,13 @@ export function WorldMapView({
     <GameLayout>
       {/* Full Screen Map Container */}
       <div 
-        className="absolute inset-0 overflow-hidden"
+        className="absolute inset-0 overflow-hidden pointer-events-auto"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab', zIndex: 0 }}
       >
         {/* Map Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">

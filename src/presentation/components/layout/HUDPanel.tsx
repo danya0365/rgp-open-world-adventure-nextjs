@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 
 export interface HUDPanelProps {
   title?: string;
@@ -26,15 +26,7 @@ export function HUDPanel({
   className = "",
   maxHeight = "500px",
   maxWidth = "400px",
-  defaultOpen = true,
 }: HUDPanelProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    onClose?.();
-  };
-
   const positionClasses = {
     "top-left": "top-4 left-4",
     "top-right": "top-4 right-4",
@@ -42,21 +34,19 @@ export function HUDPanel({
     "bottom-right": "bottom-4 right-4",
   };
 
-  if (!isOpen) return null;
-
   return (
     <div
-      className={`absolute ${positionClasses[position]} z-10 ${className}`}
+      className={`absolute ${positionClasses[position]} z-50 ${className}`}
       style={{ maxWidth }}
     >
-      <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
+      <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4 pointer-events-auto">
         {/* Close Button */}
-        {closable && (
+        {closable && onClose && (
           <button
-            onClick={handleClose}
-            className="absolute -top-2 -right-2 z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"
+            onClick={onClose}
+            className="absolute -top-2 -right-2 z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors border border-slate-600 shadow-lg"
           >
-            <X className="w-4 h-4 text-gray-400" />
+            <X className="w-4 h-4 text-gray-400 hover:text-white" />
           </button>
         )}
 
@@ -109,7 +99,7 @@ export function HUDPanelToggle({
   return (
     <button
       onClick={onClick}
-      className={`absolute ${positionClasses[position]} px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-10 flex items-center gap-2`}
+      className={`absolute ${positionClasses[position]} px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-50 flex items-center gap-2 pointer-events-auto`}
     >
       {icon}
       {label}
