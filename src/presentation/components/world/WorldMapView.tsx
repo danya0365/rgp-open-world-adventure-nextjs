@@ -14,6 +14,8 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
+  ChevronLeft,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -239,14 +241,15 @@ export function WorldMapView({
     );
   }
 
-  // Get all locations (flatten hierarchy for map display)
-  const allLocations = viewModel.locations;
-
-  // Get discovered locations
-  const discoveredLocations = allLocations.filter((loc) => loc.isDiscoverable);
+  // Get child locations of current location only
+  const childLocations = currentLocation
+    ? viewModel.locations.filter(
+        (loc) => loc.parentId === currentLocation.id && loc.isDiscoverable
+      )
+    : viewModel.rootLocations.filter((loc) => loc.isDiscoverable);
 
   // Generate positions for locations (simple grid layout for now)
-  const locationsWithPositions = discoveredLocations.map((loc, index) => {
+  const locationsWithPositions = childLocations.map((loc, index) => {
     // Simple grid: 4 columns
     const col = index % 4;
     const row = Math.floor(index / 4);
@@ -300,6 +303,45 @@ export function WorldMapView({
             transformOrigin: 'center center',
           }}
         >
+          {/* Empty State */}
+          {childLocations.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center pointer-events-auto">
+                <div className="text-6xl mb-4">🏁</div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  ไม่มีสถานที่ภายใน
+                </h3>
+                <p className="text-gray-400 mb-4">
+                  นี่คือจุดสิ้นสุดของการเดินทาง
+                </p>
+                {currentLocation && (
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        if (currentLocation.parentId) {
+                          router.push(`/world/${currentLocation.parentId}`);
+                        } else {
+                          router.push('/world');
+                        }
+                      }}
+                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                      ย้อนกลับ
+                    </button>
+                    <button
+                      onClick={() => router.push('/world')}
+                      className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
+                    >
+                      <Home className="w-5 h-5" />
+                      กลับหน้าแรก
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {locationsWithPositions.map((location) => {
             const isCurrentLocation = location.id === currentLocationId;
             const isCityOrTown = location.type === 'city' || location.type === 'town';
@@ -384,16 +426,52 @@ export function WorldMapView({
             <div className="flex items-center gap-3">
               <MapIcon className="w-6 h-6 text-purple-400" />
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-white flex items-center gap-2">
                   {currentLocation ? currentLocation.name : "แผนที่โลก Aethoria"}
+                  {currentLocation && (
+                    <span className="text-xs text-gray-400 font-normal capitalize">
+                      ({currentLocation.type})
+                    </span>
+                  )}
                 </h1>
                 <p className="text-gray-400 text-xs">
-                  สถานที่: {discoveredLocations.length}/{viewModel.totalLocations} | 
+                  สถานที่ภายใน: {childLocations.length} | 
                   🖱️ ลาก: Pan | 🎡 Scroll: Zoom | 👆 คลิก: เดินทาง
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Navigation Buttons - Top Left */}
+        <div className="absolute top-4 left-4 z-50 flex gap-2 pointer-events-auto">
+          {/* Back to Parent */}
+          {currentLocation && (
+            <button
+              onClick={() => {
+                if (currentLocation.parentId) {
+                  router.push(`/world/${currentLocation.parentId}`);
+                } else {
+                  router.push('/world');
+                }
+              }}
+              className="px-4 py-2 bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-xl hover:bg-slate-800/90 transition-colors flex items-center gap-2 shadow-lg"
+            >
+              <ChevronLeft className="w-4 h-4 text-purple-400" />
+              <span className="text-white text-sm font-medium">ย้อนกลับ</span>
+            </button>
+          )}
+          
+          {/* Home Button */}
+          {currentLocation && (
+            <button
+              onClick={() => router.push('/world')}
+              className="p-2 bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-xl hover:bg-slate-800/90 transition-colors shadow-lg"
+              title="กลับสู่แผนที่โลก"
+            >
+              <Home className="w-5 h-5 text-purple-400" />
+            </button>
+          )}
         </div>
 
         {/* Minimap - Bottom Left */}
