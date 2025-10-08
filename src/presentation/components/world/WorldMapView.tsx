@@ -661,15 +661,19 @@ export function WorldMapView({
                         : location.serviceType === 'connection'
                         ? location.isLocked
                           ? '🔒'
-                          : location.direction === 'up'
-                          ? '⬆️' // ขึ้นบน (parent)
-                          : location.direction === 'down'
-                          ? '⬇️' // ลงล่าง (child)
-                          : location.connectionType === 'bridge'
-                          ? '🌉' // sibling (bridge/portal)
                           : location.connectionType === 'portal'
                           ? '🌀'
-                          : '↔️' // sibling
+                          : location.connectionType === 'gate'
+                          ? '🚧'
+                          : location.connectionType === 'entrance'
+                          ? '🚪'
+                          : location.connectionType === 'stairs'
+                          ? '🪜'
+                          : location.connectionType === 'door'
+                          ? '🚪'
+                          : location.connectionType === 'bridge'
+                          ? '🌉'
+                          : '🔗'
                         : '❓'
                       : isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'
                     }
@@ -689,6 +693,21 @@ export function WorldMapView({
                     <div className="absolute -top-2 -left-2 pointer-events-none">
                       <div className="w-6 h-6 bg-cyan-500 border-2 border-cyan-300 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                         <Navigation className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Direction Badge - Top Left (for connections) */}
+                  {isService && location.serviceType === 'connection' && !location.isLocked && (
+                    <div className="absolute -top-2 -left-2 pointer-events-none">
+                      <div className={`w-6 h-6 border-2 rounded-full flex items-center justify-center shadow-lg font-bold text-sm ${
+                        location.direction === 'up'
+                          ? 'bg-blue-500 border-blue-300 text-white'
+                          : location.direction === 'down'
+                          ? 'bg-green-500 border-green-300 text-white'
+                          : 'bg-purple-500 border-purple-300 text-white'
+                      }`}>
+                        {location.direction === 'up' ? '↑' : location.direction === 'down' ? '↓' : '↔'}
                       </div>
                     </div>
                   )}
