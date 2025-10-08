@@ -2,7 +2,15 @@
  * Character & Enemy Types for RPG System
  */
 
-export type ElementType = "fire" | "water" | "earth" | "wind" | "light" | "dark";
+export type ElementType =
+  | "fire"
+  | "water"
+  | "earth"
+  | "wind"
+  | "light"
+  | "dark"
+  | "ice"
+  | "poison";
 
 export type CharacterClass =
   | "warrior"
@@ -14,7 +22,13 @@ export type CharacterClass =
   | "monk"
   | "necromancer";
 
-export type RarityType = "common" | "uncommon" | "rare" | "epic" | "legendary" | "mythic";
+export type RarityType =
+  | "common"
+  | "uncommon"
+  | "rare"
+  | "epic"
+  | "legendary"
+  | "mythic";
 
 /**
  * Stats based on Dragon Quest Tact system
@@ -25,17 +39,17 @@ export interface Stats {
   maxHp: number;
   mp: number;
   maxMp: number;
-  
+
   // Combat Stats
-  atk: number;  // Attack (physical damage)
-  def: number;  // Defence (physical resistance)
-  
+  atk: number; // Attack (physical damage)
+  def: number; // Defence (physical resistance)
+
   // Magic Stats
-  wis: number;  // Wisdom (magical damage & healing power)
-  
+  wis: number; // Wisdom (magical damage & healing power)
+
   // Speed & Movement
-  agi: number;  // Agility (determines turn order & evasion)
-  mov: number;  // Movement range on grid (typically 2-4)
+  agi: number; // Agility (determines turn order & evasion)
+  mov: number; // Movement range on grid (typically 2-4)
 }
 
 export interface ElementalAffinity {

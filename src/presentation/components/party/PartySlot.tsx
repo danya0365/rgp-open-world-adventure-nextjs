@@ -27,6 +27,8 @@ export function PartySlot({
     wind: "text-teal-400",
     light: "text-amber-400",
     dark: "text-slate-400",
+    ice: "text-blue-400",
+    poison: "text-pink-400",
   };
 
   if (!member) {

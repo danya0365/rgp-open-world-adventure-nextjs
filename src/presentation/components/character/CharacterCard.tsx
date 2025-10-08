@@ -1,9 +1,14 @@
 "use client";
 
 import { Character } from "@/src/domain/types/character.types";
-import { Card, CardHeader, CardTitle, CardContent } from "@/src/presentation/components/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/presentation/components/ui";
 import { ProgressBar } from "@/src/presentation/components/ui/ProgressBar";
-import { Sword, Shield, Sparkles, Heart, Zap, Lock } from "lucide-react";
+import { Heart, Lock, Shield, Sparkles, Sword, Zap } from "lucide-react";
 
 interface CharacterCardProps {
   character: Character;
@@ -34,6 +39,8 @@ export function CharacterCard({
     wind: "text-teal-400",
     light: "text-amber-400",
     dark: "text-slate-400",
+    ice: "text-blue-400",
+    poison: "text-pink-400",
   };
 
   const classIcons = {
@@ -92,7 +99,9 @@ export function CharacterCard({
         {/* Name & Class */}
         <CardTitle className="text-xl">{character.name}</CardTitle>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-sm text-gray-400 capitalize">{character.class}</span>
+          <span className="text-sm text-gray-400 capitalize">
+            {character.class}
+          </span>
           <span className="text-sm font-semibold text-purple-400">
             Lv {character.level}
           </span>
