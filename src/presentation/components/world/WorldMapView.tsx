@@ -892,42 +892,18 @@ export function WorldMapView({
           )}
         </div>
 
-        {/* Minimap - Bottom Left */}
-        <div className="absolute bottom-4 left-4 z-10">
-          <div className="w-48 h-48 bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-xl p-3">
-            <div className="text-xs text-gray-400 mb-2 flex items-center justify-between">
-              <span>Minimap</span>
-              <span className="text-purple-400">{Math.round(zoom * 100)}%</span>
-            </div>
-            <div className="relative w-full h-full bg-slate-800/50 rounded overflow-hidden">
-              {/* Viewport indicator */}
-              <div 
-                className="absolute border-2 border-green-400/60 bg-green-400/10 pointer-events-none"
-                style={{
-                  width: `${100 / zoom}%`,
-                  height: `${100 / zoom}%`,
-                  left: `${50 - (pan.x / (zoom * 2))}%`,
-                  top: `${50 - (pan.y / (zoom * 2))}%`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              />
-              
-              {/* Location dots */}
-              {locationsWithPositions.slice(0, 15).map((loc) => (
-                <div
-                  key={loc.id}
-                  className={`absolute w-2 h-2 rounded-full ${
-                    loc.id === currentLocationId ? 'bg-amber-400 ring-2 ring-amber-300' : 'bg-purple-400'
-                  }`}
-                  style={{
-                    left: `${loc.x}%`,
-                    top: `${loc.y}%`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Map Controls - Bottom Left */}
+        <div className="absolute bottom-4 left-4 z-10 pointer-events-auto">
+          <button
+            onClick={() => {
+              setPan({ x: 0, y: 0 });
+              setZoom(1);
+            }}
+            className="p-3 bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-xl hover:bg-slate-800/80 transition-colors group"
+            title="Center Map"
+          >
+            <Maximize2 className="w-5 h-5 text-gray-400 group-hover:text-purple-400" />
+          </button>
         </div>
 
         {/* Zoom Controls - Bottom Right */}
