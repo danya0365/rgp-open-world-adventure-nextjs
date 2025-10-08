@@ -448,10 +448,16 @@ export function WorldMapView({
     };
   });
 
+  // Sort connections by direction: UP first → SAME → DOWN last
+  const sortedConnections = [...virtualConnectionLocations].sort((a, b) => {
+    const directionOrder = { up: 0, same: 1, down: 2 };
+    return directionOrder[a.direction] - directionOrder[b.direction];
+  });
+
   // Combine virtual service locations and connections
   // ถ้าไม่มี currentLocation (หน้าแรก) ให้แสดง childLocations แทน
   const allDisplayLocations = currentLocation 
-    ? [...virtualServiceLocations, ...virtualConnectionLocations]
+    ? [...sortedConnections, ...virtualServiceLocations] // Connections ก่อน (เรียงแล้ว), services ทีหลัง
     : childLocations; // หน้าแรก: แสดง root locations (continents)
 
   // Generate positions for locations (simple grid layout for now)
