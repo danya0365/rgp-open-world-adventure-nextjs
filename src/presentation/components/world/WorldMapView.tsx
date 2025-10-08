@@ -17,9 +17,9 @@ import {
   ChevronLeft,
   Home,
   MapPin,
+  Scroll,
   Swords,
   ShoppingBag,
-  Scroll,
   Hotel,
   Users2,
 } from "lucide-react";
@@ -262,8 +262,73 @@ export function WorldMapView({
       )
     : [];
 
+  // Create virtual locations for current location's services/features
+  const virtualServiceLocations: Array<{
+    id: string;
+    name: string;
+    type: string;
+    isService: boolean;
+    serviceType: string;
+    metadata?: any;
+  }> = [];
+  if (currentLocation?.metadata) {
+    
+    // Add shops as virtual locations
+    if (currentLocation.metadata.shops && currentLocation.metadata.shops.length > 0) {
+      currentLocation.metadata.shops.forEach((shopId) => {
+        virtualServiceLocations.push({
+          id: `service-shop-${shopId}`,
+          name: `Shop`,
+          type: 'shop',
+          isService: true,
+          serviceType: 'shop',
+          metadata: { shopId },
+        });
+      });
+    }
+    
+    // Add inn as virtual location
+    if (currentLocation.metadata.services?.includes('inn')) {
+      virtualServiceLocations.push({
+        id: `service-inn-${currentLocation.id}`,
+        name: `Inn`,
+        type: 'inn',
+        isService: true,
+        serviceType: 'inn',
+      });
+    }
+    
+    // Add guild as virtual location
+    if (currentLocation.metadata.services?.includes('guild')) {
+      virtualServiceLocations.push({
+        id: `service-guild-${currentLocation.id}`,
+        name: `Guild Hall`,
+        type: 'guild',
+        isService: true,
+        serviceType: 'guild',
+      });
+    }
+    
+    // Add battle maps as virtual locations
+    if (currentLocation.metadata.battleMaps && currentLocation.metadata.battleMaps.length > 0) {
+      currentLocation.metadata.battleMaps.forEach((battleMapId, idx) => {
+        virtualServiceLocations.push({
+          id: `service-battle-${battleMapId}`,
+          name: `Battle Area ${idx + 1}`,
+          type: 'battle',
+          isService: true,
+          serviceType: 'battle',
+          metadata: { battleMapId },
+        });
+      });
+    }
+  }
+
+  // Combine child locations with virtual service locations
+  const allDisplayLocations = [...childLocations, ...virtualServiceLocations];
+
   // Generate positions for locations (simple grid layout for now)
-  const locationsWithPositions = childLocations.map((loc, index) => {
+  const locationsWithPositions = allDisplayLocations.map((loc, index) => {
     // Simple grid: 4 columns
     const col = index % 4;
     const row = Math.floor(index / 4);
@@ -368,22 +433,27 @@ export function WorldMapView({
             </div>
           )}
 
-          {locationsWithPositions.map((location) => {
+          {locationsWithPositions.map((location: any) => {
             const isCurrentLocation = location.id === currentLocationId;
             const isCityOrTown = location.type === 'city' || location.type === 'town';
+            const isService = !!(location as any).isService;
             
-            // Check location features
-            const hasBattle = !!(location.metadata?.battleMaps?.length || location.encounterTableId);
-            const hasShop = !!(location.metadata?.shops?.length);
-            const hasInn = !!(location.metadata?.services?.includes('inn'));
-            const hasGuild = !!(location.metadata?.services?.includes('guild'));
-            const hasQuest = location.type === 'temple' || location.type === 'castle' || location.type === 'town';
+            // Check location features (only for real locations, not services)
+            const hasBattle = !isService && !!(location.metadata?.battleMaps?.length || location.encounterTableId);
+            const hasShop = !isService && !!(location.metadata?.shops?.length);
+            const hasInn = !isService && !!(location.metadata?.services?.includes('inn'));
+            const hasGuild = !isService && !!(location.metadata?.services?.includes('guild'));
+            const hasQuest = !isService && (location.type === 'temple' || location.type === 'castle' || location.type === 'town');
             
             return (
               <button
                 key={location.id}
                 onClick={() => {
-                  if (isCurrentLocation) {
+                  if (isService) {
+                    // ถ้าคลิก service -> อาจจะเปิด shop/inn/battle modal ในอนาคต
+                    // TODO: Handle service click
+                    alert(`คลิกที่ ${location.name} - Feature นี้กำลังพัฒนา`);
+                  } else if (isCurrentLocation) {
                     // ถ้าคลิกที่ current location -> เปิด detail modal
                     setSelectedLocation(location);
                   } else {
@@ -408,12 +478,33 @@ export function WorldMapView({
                 
                 {/* Marker Icon */}
                 <div className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
-                  isCurrentLocation
+                  isService
+                    ? location.serviceType === 'shop'
+                      ? 'bg-green-600 border-green-400 group-hover:scale-110 group-hover:bg-green-500'
+                      : location.serviceType === 'inn'
+                      ? 'bg-blue-600 border-blue-400 group-hover:scale-110 group-hover:bg-blue-500'
+                      : location.serviceType === 'guild'
+                      ? 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500'
+                      : location.serviceType === 'battle'
+                      ? 'bg-red-600 border-red-400 group-hover:scale-110 group-hover:bg-red-500'
+                      : 'bg-slate-600 border-slate-400 group-hover:scale-110 group-hover:bg-slate-500'
+                    : isCurrentLocation
                     ? 'bg-amber-500 border-amber-300 scale-125'
                     : 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500'
                 }`}>
                   <span className="text-2xl">
-                    {isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'}
+                    {isService
+                      ? location.serviceType === 'shop'
+                        ? '🏪'
+                        : location.serviceType === 'inn'
+                        ? '🏨'
+                        : location.serviceType === 'guild'
+                        ? '🏛️'
+                        : location.serviceType === 'battle'
+                        ? '⚔️'
+                        : '❓'
+                      : isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'
+                    }
                   </span>
                   
                   {/* Current Location Indicator */}
@@ -426,40 +517,42 @@ export function WorldMapView({
                   )}
                 </div>
 
-                {/* Feature Badges - Top Right of Marker */}
-                <div className="absolute -top-2 -right-2 flex flex-col gap-1 pointer-events-none">
-                  {hasBattle && (
-                    <div className="px-1.5 py-0.5 bg-red-600/90 border border-red-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Battle Available">
-                      <Swords className="w-3 h-3" />
-                      {location.metadata?.battleMaps && location.metadata.battleMaps.length > 1 && (
-                        <span className="text-[9px] font-bold">{location.metadata.battleMaps.length}</span>
-                      )}
-                    </div>
-                  )}
-                  {hasShop && (
-                    <div className="px-1.5 py-0.5 bg-green-600/90 border border-green-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Shop">
-                      <ShoppingBag className="w-3 h-3" />
-                      {location.metadata?.shops && location.metadata.shops.length > 1 && (
-                        <span className="text-[9px] font-bold">{location.metadata.shops.length}</span>
-                      )}
-                    </div>
-                  )}
-                  {hasInn && (
-                    <div className="px-1.5 py-0.5 bg-blue-600/90 border border-blue-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Inn">
-                      <Hotel className="w-3 h-3" />
-                    </div>
-                  )}
-                  {hasGuild && (
-                    <div className="px-1.5 py-0.5 bg-purple-600/90 border border-purple-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Guild">
-                      <Users2 className="w-3 h-3" />
-                    </div>
-                  )}
-                  {hasQuest && (
-                    <div className="px-1.5 py-0.5 bg-amber-600/90 border border-amber-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm animate-pulse" title="Quest Available">
-                      <Scroll className="w-3 h-3" />
-                    </div>
-                  )}
-                </div>
+                {/* Feature Badges - Top Right of Marker (only for real locations) */}
+                {!isService && (hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
+                  <div className="absolute -top-2 -right-2 flex flex-col gap-1 pointer-events-none">
+                    {hasBattle && (
+                      <div className="px-1.5 py-0.5 bg-red-600/90 border border-red-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Battle Available">
+                        <Swords className="w-3 h-3" />
+                        {location.metadata?.battleMaps && location.metadata.battleMaps.length > 1 && (
+                          <span className="text-[9px] font-bold">{location.metadata.battleMaps.length}</span>
+                        )}
+                      </div>
+                    )}
+                    {hasShop && (
+                      <div className="px-1.5 py-0.5 bg-green-600/90 border border-green-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Shop">
+                        <ShoppingBag className="w-3 h-3" />
+                        {location.metadata?.shops && location.metadata.shops.length > 1 && (
+                          <span className="text-[9px] font-bold">{location.metadata.shops.length}</span>
+                        )}
+                      </div>
+                    )}
+                    {hasInn && (
+                      <div className="px-1.5 py-0.5 bg-blue-600/90 border border-blue-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Inn">
+                        <Hotel className="w-3 h-3" />
+                      </div>
+                    )}
+                    {hasGuild && (
+                      <div className="px-1.5 py-0.5 bg-purple-600/90 border border-purple-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Guild">
+                        <Users2 className="w-3 h-3" />
+                      </div>
+                    )}
+                    {hasQuest && (
+                      <div className="px-1.5 py-0.5 bg-amber-600/90 border border-amber-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm animate-pulse" title="Quest Available">
+                        <Scroll className="w-3 h-3" />
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 {/* Location Name */}
                 <div className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap ${
@@ -479,8 +572,18 @@ export function WorldMapView({
                   <div className="px-3 py-2 bg-slate-900/95 border border-purple-500/50 rounded-lg text-xs text-gray-300 whitespace-nowrap shadow-xl">
                     <div className="font-semibold text-purple-400 capitalize">{location.type}</div>
                     
-                    {/* Available Features */}
-                    {(hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
+                    {/* Service Info */}
+                    {isService && (
+                      <div className="mt-1 text-[10px] text-gray-400">
+                        {location.serviceType === 'shop' && 'ร้านค้า - ซื้อขายไอเทม'}
+                        {location.serviceType === 'inn' && 'โรงแรม - พักฟื้น'}
+                        {location.serviceType === 'guild' && 'หอสมาคม - รับเควส'}
+                        {location.serviceType === 'battle' && 'สนามรบ - เข้าสู่การต่อสู้'}
+                      </div>
+                    )}
+                    
+                    {/* Available Features (only for real locations) */}
+                    {!isService && (hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
                       <div className="mt-2 space-y-1 text-[10px]">
                         {hasBattle && (
                           <div className="flex items-center gap-1 text-red-300">
@@ -513,7 +616,11 @@ export function WorldMapView({
                     )}
                     
                     <div className="text-gray-400 text-[10px] mt-2 border-t border-slate-700 pt-1">
-                      {isCurrentLocation ? 'คลิกเพื่อดูรายละเอียด' : 'คลิกเพื่อเดินทาง'}
+                      {isService 
+                        ? 'คลิกเพื่อใช้บริการ' 
+                        : isCurrentLocation 
+                        ? 'คลิกเพื่อดูรายละเอียด' 
+                        : 'คลิกเพื่อเดินทาง'}
                     </div>
                   </div>
                 </div>
@@ -537,8 +644,8 @@ export function WorldMapView({
                   )}
                 </h1>
                 <p className="text-gray-400 text-xs">
-                  สถานที่ภายใน: {childLocations.length} | 
-                  🖱️ ลาก: Pan | 🎡 Scroll: Zoom | 👆 คลิก: เดินทาง
+                  สถานที่: {childLocations.length} | บริการ: {virtualServiceLocations.length} | 
+                  🖱️ ลาก: Pan | 🎡 Scroll: Zoom
                 </p>
               </div>
             </div>
