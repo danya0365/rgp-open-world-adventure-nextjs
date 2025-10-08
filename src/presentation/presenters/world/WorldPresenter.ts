@@ -1,7 +1,7 @@
-import { 
-  LOCATIONS_MASTER, 
-  buildLocationTree, 
-  getLocationPath 
+import {
+  LOCATIONS_MASTER,
+  buildLocationTree,
+  getLocationPath,
 } from "@/src/data/master/locations.master";
 import { Location } from "@/src/domain/types/location.types";
 
@@ -9,6 +9,8 @@ import { Location } from "@/src/domain/types/location.types";
  * World View Model
  */
 export interface WorldViewModel {
+  locationId?: string;
+  currentLocation?: Location;
   locations: Location[];
   rootLocations: Location[];
   totalLocations: number;
@@ -36,16 +38,20 @@ export class WorldPresenter {
   /**
    * Get view model for world map page
    */
-  async getViewModel(): Promise<WorldViewModel> {
+  async getViewModel(locationId?: string): Promise<WorldViewModel> {
     try {
       const locationTree = buildLocationTree(LOCATIONS_MASTER);
       const rootLocations = locationTree.filter((loc) => !loc.parentId);
-      
-      const continents = LOCATIONS_MASTER.filter((loc) => loc.type === "continent");
+
+      const continents = LOCATIONS_MASTER.filter(
+        (loc) => loc.type === "continent"
+      );
       const cities = LOCATIONS_MASTER.filter((loc) => loc.type === "city");
       const discovered = LOCATIONS_MASTER.filter((loc) => loc.isDiscoverable);
 
       return {
+        locationId,
+        currentLocation: LOCATIONS_MASTER.find((loc) => loc.id === locationId),
         locations: LOCATIONS_MASTER,
         rootLocations,
         totalLocations: LOCATIONS_MASTER.length,
@@ -62,16 +68,20 @@ export class WorldPresenter {
   /**
    * Get location detail view model
    */
-  async getLocationDetail(locationId: string): Promise<LocationDetailViewModel> {
+  async getLocationDetail(
+    locationId: string
+  ): Promise<LocationDetailViewModel> {
     try {
       const location = LOCATIONS_MASTER.find((loc) => loc.id === locationId);
-      
+
       if (!location) {
         throw new Error(`Location not found: ${locationId}`);
       }
 
       const path = getLocationPath(locationId);
-      const children = LOCATIONS_MASTER.filter((loc) => loc.parentId === locationId);
+      const children = LOCATIONS_MASTER.filter(
+        (loc) => loc.parentId === locationId
+      );
       const connections: Location[] = []; // TODO: Implement connections from metadata
 
       return {
@@ -93,7 +103,9 @@ export class WorldPresenter {
    */
   async generateMetadata(currentLocationId?: string) {
     if (currentLocationId) {
-      const location = LOCATIONS_MASTER.find((loc) => loc.id === currentLocationId);
+      const location = LOCATIONS_MASTER.find(
+        (loc) => loc.id === currentLocationId
+      );
       if (location) {
         return {
           title: `${location.name} | แผนที่โลก | RPG Open World Adventure`,
@@ -102,7 +114,7 @@ export class WorldPresenter {
         };
       }
     }
-    
+
     return {
       title: "แผนที่โลก | RPG Open World Adventure",
       description: "สำรวจโลกแฟนตาซีกว้างใหญ่ พร้อมสถานที่มากกว่า 20+ แห่ง",
@@ -116,7 +128,7 @@ export class WorldPresenter {
   async generateLocationMetadata(locationId: string) {
     try {
       const location = LOCATIONS_MASTER.find((loc) => loc.id === locationId);
-      
+
       if (!location) {
         return {
           title: "สถานที่ | RPG Open World Adventure",
