@@ -16,6 +16,7 @@ import {
   Maximize2,
   ChevronLeft,
   Home,
+  MapPin,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -44,6 +45,7 @@ export function WorldMapView({
   const router = useRouter();
   const [showPartyPanel, setShowPartyPanel] = useState(true);
   const [showStatsPanel, setShowStatsPanel] = useState(true);
+  const [showCurrentAreaPanel, setShowCurrentAreaPanel] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   
   // Pan & Zoom state - restored from localStorage
@@ -248,6 +250,13 @@ export function WorldMapView({
       )
     : viewModel.rootLocations.filter((loc) => loc.isDiscoverable);
 
+  // Get sibling locations (same parent as current location) - for "You are here" indicator
+  const siblingLocations = currentLocation
+    ? viewModel.locations.filter(
+        (loc) => loc.parentId === currentLocation.parentId && loc.isDiscoverable
+      )
+    : [];
+
   // Generate positions for locations (simple grid layout for now)
   const locationsWithPositions = childLocations.map((loc, index) => {
     // Simple grid: 4 columns
@@ -311,31 +320,43 @@ export function WorldMapView({
                 <h3 className="text-2xl font-bold text-white mb-2">
                   ไม่มีสถานที่ภายใน
                 </h3>
-                <p className="text-gray-400 mb-4">
+                <p className="text-gray-400 mb-6">
                   นี่คือจุดสิ้นสุดของการเดินทาง
                 </p>
                 {currentLocation && (
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex flex-col gap-3 items-center">
+                    {/* สำรวจที่นี่ */}
                     <button
-                      onClick={() => {
-                        if (currentLocation.parentId) {
-                          router.push(`/world/${currentLocation.parentId}`);
-                        } else {
-                          router.push('/world');
-                        }
-                      }}
-                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
+                      onClick={() => setSelectedLocation(currentLocation)}
+                      className="px-8 py-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors flex items-center gap-2 font-bold shadow-xl text-lg"
                     >
-                      <ChevronLeft className="w-5 h-5" />
-                      ย้อนกลับ
+                      <MapPin className="w-6 h-6" />
+                      สำรวจ {currentLocation.name}
                     </button>
-                    <button
-                      onClick={() => router.push('/world')}
-                      className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
-                    >
-                      <Home className="w-5 h-5" />
-                      กลับหน้าแรก
-                    </button>
+                    
+                    {/* Navigation buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          if (currentLocation.parentId) {
+                            router.push(`/world/${currentLocation.parentId}`);
+                          } else {
+                            router.push('/world');
+                          }
+                        }}
+                        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                        ย้อนกลับ
+                      </button>
+                      <button
+                        onClick={() => router.push('/world')}
+                        className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2 font-semibold shadow-lg"
+                      >
+                        <Home className="w-5 h-5" />
+                        กลับหน้าแรก
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -442,6 +463,19 @@ export function WorldMapView({
             </div>
           </div>
         </div>
+
+        {/* Explore Current Location Button - Bottom Center */}
+        {currentLocation && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+            <button
+              onClick={() => setSelectedLocation(currentLocation)}
+              className="px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl transition-all flex items-center gap-3 font-bold shadow-2xl text-lg border-2 border-amber-400/50 hover:scale-105 transform"
+            >
+              <MapPin className="w-6 h-6" />
+              <span>สำรวจ {currentLocation.name}</span>
+            </button>
+          </div>
+        )}
 
         {/* Navigation Buttons - Top Left */}
         <div className="absolute top-4 left-4 z-50 flex gap-2 pointer-events-auto">
@@ -694,6 +728,89 @@ export function WorldMapView({
             onClick={() => setShowStatsPanel(true)}
             position="bottom-right"
           />
+        )}
+
+        {/* Current Area Panel - Top Right (แสดง sibling locations + You are here) */}
+        {currentLocation && siblingLocations.length > 0 && (
+          showCurrentAreaPanel ? (
+            <HUDPanel
+              title="พื้นที่ปัจจุบัน"
+              icon={<MapPin className="w-5 h-5" />}
+              position="top-right"
+              onClose={() => setShowCurrentAreaPanel(false)}
+              maxWidth="350px"
+              maxHeight="400px"
+            >
+              <div className="space-y-2 pointer-events-auto">
+                <p className="text-gray-400 text-xs mb-3">
+                  สถานที่ระดับเดียวกัน ({siblingLocations.length})
+                </p>
+                {siblingLocations.map((location) => {
+                  const isCurrentLocation = location.id === currentLocationId;
+                  return (
+                    <button
+                      key={location.id}
+                      onClick={() => {
+                        if (isCurrentLocation) {
+                          // คลิก current location → เปิด detail modal เพื่อสำรวจ
+                          setSelectedLocation(location);
+                        } else {
+                          // คลิก location อื่น → navigate
+                          router.push(`/world/${location.id}`);
+                        }
+                      }}
+                      className={`w-full p-3 rounded-lg border transition-all text-left ${
+                        isCurrentLocation
+                          ? 'bg-amber-500/20 border-amber-500 ring-2 ring-amber-400/50 cursor-pointer hover:bg-amber-500/30'
+                          : 'bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-purple-500'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">
+                          {location.type === 'city' || location.type === 'town' 
+                            ? '🏰' 
+                            : location.type === 'region' 
+                            ? '🏔️' 
+                            : '🗺️'}
+                        </span>
+                        <span className={`text-sm font-medium ${
+                          isCurrentLocation ? 'text-amber-300' : 'text-white'
+                        }`}>
+                          {location.name}
+                        </span>
+                        {isCurrentLocation && (
+                          <span className="ml-auto px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded animate-pulse">
+                            YOU ARE HERE
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-xs capitalize ${
+                        isCurrentLocation ? 'text-amber-400/80' : 'text-gray-400'
+                      }`}>
+                        {location.type}
+                      </p>
+                      {isCurrentLocation ? (
+                        <p className="text-xs text-amber-500/80 mt-1 font-medium">
+                          👆 คลิกเพื่อสำรวจพื้นที่
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-1">
+                          คลิกเพื่อเดินทาง →
+                        </p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </HUDPanel>
+          ) : (
+            <HUDPanelToggle
+              label="พื้นที่"
+              icon={<MapPin className="w-4 h-4" />}
+              onClick={() => setShowCurrentAreaPanel(true)}
+              position="top-right"
+            />
+          )
         )}
 
         {/* Error Toast */}
