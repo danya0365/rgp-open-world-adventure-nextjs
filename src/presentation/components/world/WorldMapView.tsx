@@ -17,6 +17,11 @@ import {
   ChevronLeft,
   Home,
   MapPin,
+  Swords,
+  ShoppingBag,
+  Scroll,
+  Hotel,
+  Users2,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -367,6 +372,13 @@ export function WorldMapView({
             const isCurrentLocation = location.id === currentLocationId;
             const isCityOrTown = location.type === 'city' || location.type === 'town';
             
+            // Check location features
+            const hasBattle = !!(location.metadata?.battleMaps?.length || location.encounterTableId);
+            const hasShop = !!(location.metadata?.shops?.length);
+            const hasInn = !!(location.metadata?.services?.includes('inn'));
+            const hasGuild = !!(location.metadata?.services?.includes('guild'));
+            const hasQuest = location.type === 'temple' || location.type === 'castle' || location.type === 'town';
+            
             return (
               <button
                 key={location.id}
@@ -413,6 +425,41 @@ export function WorldMapView({
                     </div>
                   )}
                 </div>
+
+                {/* Feature Badges - Top Right of Marker */}
+                <div className="absolute -top-2 -right-2 flex flex-col gap-1 pointer-events-none">
+                  {hasBattle && (
+                    <div className="px-1.5 py-0.5 bg-red-600/90 border border-red-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Battle Available">
+                      <Swords className="w-3 h-3" />
+                      {location.metadata?.battleMaps && location.metadata.battleMaps.length > 1 && (
+                        <span className="text-[9px] font-bold">{location.metadata.battleMaps.length}</span>
+                      )}
+                    </div>
+                  )}
+                  {hasShop && (
+                    <div className="px-1.5 py-0.5 bg-green-600/90 border border-green-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Shop">
+                      <ShoppingBag className="w-3 h-3" />
+                      {location.metadata?.shops && location.metadata.shops.length > 1 && (
+                        <span className="text-[9px] font-bold">{location.metadata.shops.length}</span>
+                      )}
+                    </div>
+                  )}
+                  {hasInn && (
+                    <div className="px-1.5 py-0.5 bg-blue-600/90 border border-blue-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Inn">
+                      <Hotel className="w-3 h-3" />
+                    </div>
+                  )}
+                  {hasGuild && (
+                    <div className="px-1.5 py-0.5 bg-purple-600/90 border border-purple-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Guild">
+                      <Users2 className="w-3 h-3" />
+                    </div>
+                  )}
+                  {hasQuest && (
+                    <div className="px-1.5 py-0.5 bg-amber-600/90 border border-amber-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm animate-pulse" title="Quest Available">
+                      <Scroll className="w-3 h-3" />
+                    </div>
+                  )}
+                </div>
                 
                 {/* Location Name */}
                 <div className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap ${
@@ -428,10 +475,44 @@ export function WorldMapView({
                 </div>
                 
                 {/* Hover Info */}
-                <div className="absolute top-full mt-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <div className="absolute top-full mt-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   <div className="px-3 py-2 bg-slate-900/95 border border-purple-500/50 rounded-lg text-xs text-gray-300 whitespace-nowrap shadow-xl">
                     <div className="font-semibold text-purple-400 capitalize">{location.type}</div>
-                    <div className="text-gray-400 text-[10px] mt-1">
+                    
+                    {/* Available Features */}
+                    {(hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
+                      <div className="mt-2 space-y-1 text-[10px]">
+                        {hasBattle && (
+                          <div className="flex items-center gap-1 text-red-300">
+                            <Swords className="w-3 h-3" /> Battle
+                            {location.metadata?.battleMaps && ` (${location.metadata.battleMaps.length})`}
+                          </div>
+                        )}
+                        {hasShop && (
+                          <div className="flex items-center gap-1 text-green-300">
+                            <ShoppingBag className="w-3 h-3" /> Shop
+                            {location.metadata?.shops && ` (${location.metadata.shops.length})`}
+                          </div>
+                        )}
+                        {hasInn && (
+                          <div className="flex items-center gap-1 text-blue-300">
+                            <Hotel className="w-3 h-3" /> Inn
+                          </div>
+                        )}
+                        {hasGuild && (
+                          <div className="flex items-center gap-1 text-purple-300">
+                            <Users2 className="w-3 h-3" /> Guild
+                          </div>
+                        )}
+                        {hasQuest && (
+                          <div className="flex items-center gap-1 text-amber-300">
+                            <Scroll className="w-3 h-3" /> Quest
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="text-gray-400 text-[10px] mt-2 border-t border-slate-700 pt-1">
                       {isCurrentLocation ? 'คลิกเพื่อดูรายละเอียด' : 'คลิกเพื่อเดินทาง'}
                     </div>
                   </div>
