@@ -549,6 +549,12 @@ export const useBattleStore = create<BattleStore>()(
        * End Turn
        */
       endTurn: () => {
+        // เก็บข้อมูล unit ปัจจุบันก่อน set() เพื่อใช้ใน log
+        const stateBefore = get();
+        const unitEndingTurn = [...stateBefore.allyUnits, ...stateBefore.enemyUnits].find(
+          u => u.id === stateBefore.currentUnitId
+        );
+
         set((state) => {
           const currentUnitId = state.currentUnitId;
           const newAllyUnits = state.allyUnits.map((unit) => {
@@ -624,30 +630,30 @@ export const useBattleStore = create<BattleStore>()(
           };
         });
 
-        // Add turn logs
-        const state = get();
-        const currentUnit = [...state.allyUnits, ...state.enemyUnits].find(u => u.id === state.currentUnitId);
-        
-        if (currentUnit) {
+        // Add turn end log (ใช้ข้อมูลที่เก็บไว้ก่อน set)
+        if (unitEndingTurn) {
           get().addBattleLog({
             type: "turn_end",
-            message: `⏹️ ${currentUnit.character.name} จบเทิร์น`,
-            unitId: currentUnit.id,
-            unitName: currentUnit.character.name,
-            isAlly: currentUnit.isAlly,
+            message: `⏹️ ${unitEndingTurn.character.name} จบเทิร์น`,
+            unitId: unitEndingTurn.id,
+            unitName: unitEndingTurn.character.name,
+            isAlly: unitEndingTurn.isAlly,
           });
         }
 
-        const nextUnitState = get();
-        const nextUnitData = [...nextUnitState.allyUnits, ...nextUnitState.enemyUnits].find(u => u.id === nextUnitState.currentUnitId);
+        // Add turn start log (ใช้ข้อมูลหลัง set)
+        const stateAfter = get();
+        const unitStartingTurn = [...stateAfter.allyUnits, ...stateAfter.enemyUnits].find(
+          u => u.id === stateAfter.currentUnitId
+        );
         
-        if (nextUnitData) {
+        if (unitStartingTurn) {
           get().addBattleLog({
             type: "turn_start",
-            message: `🎯 เทิร์นของ ${nextUnitData.character.name} (${nextUnitData.isAlly ? "พันธมิตร" : "ศัตรู"})`,
-            unitId: nextUnitData.id,
-            unitName: nextUnitData.character.name,
-            isAlly: nextUnitData.isAlly,
+            message: `🎯 เทิร์นของ ${unitStartingTurn.character.name} (${unitStartingTurn.isAlly ? "พันธมิตร" : "ศัตรู"})`,
+            unitId: unitStartingTurn.id,
+            unitName: unitStartingTurn.character.name,
+            isAlly: unitStartingTurn.isAlly,
           });
         }
       },
