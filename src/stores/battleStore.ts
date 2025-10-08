@@ -1,5 +1,64 @@
-import { BattleUnit } from "@/src/presentation/presenters/battle/BattlePresenter";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { BattleMapConfig, GridPosition } from "../domain/types/battle.types";
+import {
+  Character,
+  CharacterClass,
+  ElementalAffinity,
+  ElementType,
+  Enemy,
+  RarityType,
+  Stats,
+} from "../domain/types/character.types";
+import { PartyMemberV2 } from "./gameStore";
+
+// Custom storage for browser-only (client-side)
+// Using localStorage for better Next.js SSR compatibility
+// Storage limit: ~5-10 MB
+const createBrowserStorage = () => {
+  // Check if we're in browser environment
+  if (typeof window === "undefined") {
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    };
+  }
+
+  return {
+    getItem: (name: string) => {
+      const str = localStorage.getItem(name);
+      if (!str) return null;
+      try {
+        return JSON.parse(str);
+      } catch {
+        return null;
+      }
+    },
+    setItem: (name: string, value: unknown) => {
+      try {
+        localStorage.setItem(name, JSON.stringify(value));
+      } catch (error) {
+        console.warn("localStorage quota exceeded, clearing cache", error);
+        localStorage.removeItem(name);
+      }
+    },
+    removeItem: (name: string) => {
+      localStorage.removeItem(name);
+    },
+  };
+};
+
+/**
+ * Status Effect
+ */
+export interface StatusEffect {
+  id: string;
+  name: string;
+  type: "buff" | "debuff";
+  duration: number;
+  value: number;
+}
 
 /**
  * Battle Phase
@@ -9,28 +68,96 @@ export type BattlePhase = "placement" | "battle" | "victory" | "defeat";
 /**
  * Battle Action Type
  */
-export type BattleActionType = "move" | "attack" | "skill" | "wait" | null;
+export type BattleActionType =
+  | "move"
+  | "attack"
+  | "skill"
+  | "item"
+  | "defend"
+  | "wait";
+
+/**
+ * Battle Action
+ */
+export interface BattleAction {
+  unitId: string;
+  actionType: BattleActionType;
+  targetPosition?: GridPosition;
+  targetUnitId?: string;
+  skillId?: string;
+  itemId?: string;
+}
+
+/**
+ * Character State
+ */
+export interface CharacterState {
+  id: string;
+  name: string;
+  class: CharacterClass;
+  level: number;
+  exp: number;
+  maxExp: number;
+  stats: Stats;
+  elements: ElementType[];
+  elementalAffinities: ElementalAffinity[];
+  skills: string[]; // Skill IDs
+  equipment: {
+    weapon?: string;
+    armor?: string;
+    accessory1?: string;
+    accessory2?: string;
+  };
+  rarity: RarityType;
+  portrait: string;
+  description: string;
+  backstory?: string;
+  isPlayable: boolean;
+  isRecruitable: boolean;
+  recruitQuestId?: string;
+}
+
+/**
+ * Battle Unit - Character with position on grid
+ */
+export interface BattleUnitState {
+  id: string;
+  character: Character | Enemy;
+  position: GridPosition;
+  currentHp: number;
+  maxHp: number;
+  currentMp: number;
+  maxMp: number;
+  isAlly: boolean;
+  hasActed: boolean;
+  buffs: StatusEffect[];
+  debuffs: StatusEffect[];
+}
 
 /**
  * Battle State
  */
 interface BattleState {
+  battleStateId: string;
   // Battle Info
-  battleId: string | null;
-  mapId: string | null;
+  battleMap: BattleMapConfig | null;
+
+  // Characters
+  characters: Character[];
+  enemies: Enemy[];
 
   // Units
-  allyUnits: BattleUnit[];
-  enemyUnits: BattleUnit[];
+  allyUnits: BattleUnitState[];
+  enemyUnits: BattleUnitState[];
 
   // Turn Management
   turn: number;
   phase: BattlePhase;
   currentUnitId: string | null;
-  turnOrder: BattleUnit[];
+  turnOrder: BattleUnitState[];
 
   // Action State
-  selectedAction: BattleActionType;
+  selectedAction: BattleAction | null;
   selectedUnitId: string | null;
   selectedSkillId: string | null;
 
@@ -53,9 +180,10 @@ interface BattleState {
 interface BattleActions {
   // Initialize Battle
   initBattle: (
-    mapId: string,
-    allyUnits: BattleUnit[],
-    enemyUnits: BattleUnit[]
+    battleMap: BattleMapConfig,
+    characters: Character[],
+    enemies: Enemy[],
+    activePartyMembers: PartyMemberV2[]
   ) => void;
 
   // Unit Actions
@@ -68,7 +196,7 @@ interface BattleActions {
   nextUnit: () => void;
   // Selection
   selectUnit: (unitId: string | null) => void;
-  selectAction: (action: BattleActionType) => void;
+  selectAction: (action: BattleAction) => void;
   selectSkill: (skillId: string | null) => void;
 
   // Range Management
@@ -77,9 +205,9 @@ interface BattleActions {
   setOriginalPosition: (position: { x: number; y: number } | null) => void;
 
   // Computed Getters (Pure functions - no side effects)
-  getCurrentUnit: () => BattleUnit | null;
-  getAliveTurnOrder: () => BattleUnit[];
-  getUnitAtPosition: (x: number, y: number) => BattleUnit | undefined;
+  getCurrentUnit: () => BattleUnitState | null;
+  getAliveTurnOrder: () => BattleUnitState[];
+  getUnitAtPosition: (x: number, y: number) => BattleUnitState | undefined;
   isTileInMovementRange: (x: number, y: number) => boolean;
   isTileInAttackRange: (x: number, y: number) => boolean;
 
@@ -100,8 +228,10 @@ interface BattleActions {
 type BattleStore = BattleState & BattleActions;
 
 const initialState: BattleState = {
-  battleId: null,
-  mapId: null,
+  battleStateId: "",
+  battleMap: null,
+  characters: [],
+  enemies: [],
   allyUnits: [],
   enemyUnits: [],
   turn: 1,
@@ -117,355 +247,428 @@ const initialState: BattleState = {
   rewards: null,
 };
 
-export const useBattleStore = create<BattleStore>((set, get) => ({
-  ...initialState,
+export const useBattleStore = create<BattleStore>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-  /**
-   * Initialize Battle
-   */
-  initBattle: (mapId, allyUnits, enemyUnits) => {
-    // Calculate turn order (based on AGI)
-    const allUnits = [...allyUnits, ...enemyUnits];
-    const turnOrder = allUnits.sort(
-      (a, b) => b.character.stats.agi - a.character.stats.agi
-    );
+      /**
+       * Initialize Battle
+       */
+      initBattle: (battleMap, characters, enemies, activePartyMembers) => {
+        const allyUnits: BattleUnitState[] = battleMap.startPositions.ally
+          .map((pos, index) => {
+            const character = characters.find(
+              (c) => c.id === activePartyMembers[index]?.characterId
+            );
+            if (!character) return null;
 
-    set({
-      battleId: `battle-${Date.now()}`,
-      mapId,
-      allyUnits,
-      enemyUnits,
-      turn: 1,
-      phase: "battle",
-      currentUnitId: turnOrder[0]?.id || null,
-      turnOrder,
-      selectedAction: null,
-      selectedUnitId: null,
-      selectedSkillId: null,
-      rewards: null,
-    });
-  },
+            return {
+              id: `ally-${character.id}`,
+              character,
+              position: pos,
+              currentHp: character.stats.maxHp,
+              maxHp: character.stats.maxHp,
+              currentMp: character.stats.maxMp,
+              maxMp: character.stats.maxMp,
+              isAlly: true,
+              hasActed: false,
+              buffs: [],
+              debuffs: [],
+            };
+          })
+          .filter(Boolean) as BattleUnitState[];
 
-  /**
-   * Move Unit
-   * Note: Does NOT set hasActed to allow multiple moves within range
-   */
-  moveUnit: (unitId, x, y) => {
-    set((state) => {
-      const newAllyUnits = state.allyUnits.map((unit) =>
-        unit.id === unitId ? { ...unit, position: { x, y } } : unit
-      );
-      const newEnemyUnits = state.enemyUnits.map((unit) =>
-        unit.id === unitId ? { ...unit, position: { x, y } } : unit
-      );
+        const enemyUnits: BattleUnitState[] = battleMap.startPositions.enemy
+          .map((pos, index) => {
+            const enemy = enemies[index];
+            if (!enemy) return null;
 
-      return {
-        allyUnits: newAllyUnits,
-        enemyUnits: newEnemyUnits,
-        selectedAction: null,
-        selectedUnitId: null,
-      };
-    });
-  },
+            return {
+              id: `enemy-${enemy.id}`,
+              character: enemy,
+              position: pos,
+              currentHp: enemy.stats.maxHp,
+              maxHp: enemy.stats.maxHp,
+              currentMp: enemy.stats.maxMp,
+              maxMp: enemy.stats.maxMp,
+              isAlly: false,
+              hasActed: false,
+              buffs: [],
+              debuffs: [],
+            };
+          })
+          .filter(Boolean) as BattleUnitState[];
 
-  /**
-   * Attack Unit
-   */
-  attackUnit: (attackerId, targetId, damage) => {
-    set((state) => {
-      const newAllyUnits = state.allyUnits.map((unit) => {
-        if (unit.id === targetId) {
-          return { ...unit, currentHp: Math.max(0, unit.currentHp - damage) };
-        }
-        if (unit.id === attackerId) {
-          return { ...unit, hasActed: true };
-        }
-        return unit;
-      });
+        // Calculate turn order (based on AGI)
+        const allUnits = [...allyUnits, ...enemyUnits];
+        const turnOrder = allUnits.sort(
+          (a, b) => b.character.stats.agi - a.character.stats.agi
+        );
 
-      const newEnemyUnits = state.enemyUnits.map((unit) => {
-        if (unit.id === targetId) {
-          return { ...unit, currentHp: Math.max(0, unit.currentHp - damage) };
-        }
-        if (unit.id === attackerId) {
-          return { ...unit, hasActed: true };
-        }
-        return unit;
-      });
+        /**
+         * Generate a UUID
+         */
+        const generateId = () =>
+          `battle_state_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
 
-      // Remove dead units
-      const filteredAllyUnits = newAllyUnits.filter(
-        (unit) => unit.currentHp > 0
-      );
-      const filteredEnemyUnits = newEnemyUnits.filter(
-        (unit) => unit.currentHp > 0
-      );
+        const battleStateId = generateId();
 
-      return {
-        allyUnits: filteredAllyUnits,
-        enemyUnits: filteredEnemyUnits,
-        selectedAction: null,
-        selectedUnitId: null,
-      };
-    });
-
-    // Check victory/defeat after attack
-    setTimeout(() => {
-      const { checkVictory, checkDefeat } = get();
-      if (checkVictory()) {
-        get().endBattle(true, {
-          exp: 100,
-          gold: 50,
-          items: [],
-        });
-      } else if (checkDefeat()) {
-        get().endBattle(false);
-      }
-    }, 500);
-  },
-
-  /**
-   * Use Skill
-   */
-  useSkill: (casterId, targetId, skillId) => {
-    // TODO: Implement skill effects
-    set((state) => ({
-      allyUnits: state.allyUnits.map((unit) =>
-        unit.id === casterId ? { ...unit, hasActed: true } : unit
-      ),
-      enemyUnits: state.enemyUnits.map((unit) =>
-        unit.id === casterId ? { ...unit, hasActed: true } : unit
-      ),
-      selectedAction: null,
-      selectedUnitId: null,
-      selectedSkillId: null,
-    }));
-  },
-
-  /**
-   * End Turn
-   */
-  endTurn: () => {
-    set((state) => {
-      // Reset hasActed for all units
-      const newAllyUnits = state.allyUnits.map((unit) => ({
-        ...unit,
-        hasActed: false,
-      }));
-      const newEnemyUnits = state.enemyUnits.map((unit) => ({
-        ...unit,
-        hasActed: false,
-      }));
-
-      // Get all alive units
-      const aliveUnitIds = new Set([
-        ...newAllyUnits
-          .filter((unit) => unit.currentHp > 0)
-          .map((unit) => unit.id),
-        ...newEnemyUnits
-          .filter((unit) => unit.currentHp > 0)
-          .map((unit) => unit.id),
-      ]);
-
-      // Filter turn order to only include alive units
-      const aliveTurnOrder = state.turnOrder.filter((unit) =>
-        aliveUnitIds.has(unit.id)
-      );
-
-      // If no alive units left, return current state (shouldn't happen as battle should end first)
-      if (aliveTurnOrder.length === 0) {
-        return {
-          allyUnits: newAllyUnits,
-          enemyUnits: newEnemyUnits,
+        set({
+          battleStateId,
+          battleMap,
+          allyUnits,
+          enemyUnits,
+          characters,
+          enemies,
+          turn: 1,
+          phase: "battle",
+          currentUnitId: turnOrder[0]?.id || null,
+          turnOrder,
           selectedAction: null,
           selectedUnitId: null,
-        };
-      }
+          selectedSkillId: null,
+          rewards: null,
+        });
+      },
 
-      // Find the next alive unit in the turn order
-      const currentIndex = state.currentUnitId
-        ? aliveTurnOrder.findIndex((u) => u.id === state.currentUnitId)
-        : -1;
+      /**
+       * Move Unit
+       * Note: Does NOT set hasActed to allow multiple moves within range
+       */
+      moveUnit: (unitId, x, y) => {
+        set((state) => {
+          const newAllyUnits = state.allyUnits.map((unit) =>
+            unit.id === unitId ? { ...unit, position: { x, y } } : unit
+          );
+          const newEnemyUnits = state.enemyUnits.map((unit) =>
+            unit.id === unitId ? { ...unit, position: { x, y } } : unit
+          );
 
-      // Get next unit index, wrapping around if needed
-      const nextIndex = (currentIndex + 1) % aliveTurnOrder.length;
+          return {
+            allyUnits: newAllyUnits,
+            enemyUnits: newEnemyUnits,
+            selectedAction: null,
+            selectedUnitId: null,
+          };
+        });
+      },
 
-      // If we were at the end of the turn order, increment the turn counter
-      const isNewTurn = currentIndex >= aliveTurnOrder.length - 1;
+      /**
+       * Attack Unit
+       */
+      attackUnit: (attackerId, targetId, damage) => {
+        set((state) => {
+          const newAllyUnits = state.allyUnits.map((unit) => {
+            if (unit.id === targetId) {
+              return {
+                ...unit,
+                currentHp: Math.max(0, unit.currentHp - damage),
+              };
+            }
+            if (unit.id === attackerId) {
+              return { ...unit, hasActed: true };
+            }
+            return unit;
+          });
 
-      // Get the next alive unit
-      const nextUnit = aliveTurnOrder[nextIndex];
+          const newEnemyUnits = state.enemyUnits.map((unit) => {
+            if (unit.id === targetId) {
+              return {
+                ...unit,
+                currentHp: Math.max(0, unit.currentHp - damage),
+              };
+            }
+            if (unit.id === attackerId) {
+              return { ...unit, hasActed: true };
+            }
+            return unit;
+          });
 
-      return {
-        allyUnits: newAllyUnits,
-        enemyUnits: newEnemyUnits,
-        turn: isNewTurn ? state.turn + 1 : state.turn,
-        currentUnitId: nextUnit?.id || null,
-        selectedAction: null,
-        selectedUnitId: null,
-      };
-    });
-  },
+          // Remove dead units
+          const filteredAllyUnits = newAllyUnits.filter(
+            (unit) => unit.currentHp > 0
+          );
+          const filteredEnemyUnits = newEnemyUnits.filter(
+            (unit) => unit.currentHp > 0
+          );
 
-  /**
-   * Next Unit
-   */
-  nextUnit: () => {
-    get().endTurn();
-  },
+          return {
+            allyUnits: filteredAllyUnits,
+            enemyUnits: filteredEnemyUnits,
+            selectedAction: null,
+            selectedUnitId: null,
+          };
+        });
 
-  /**
-   * Select Unit
-   */
-  selectUnit: (unitId) => {
-    set({ selectedUnitId: unitId });
-  },
+        // Check victory/defeat after attack
+        setTimeout(() => {
+          const { checkVictory, checkDefeat } = get();
+          if (checkVictory()) {
+            get().endBattle(true, {
+              exp: 100,
+              gold: 50,
+              items: [],
+            });
+          } else if (checkDefeat()) {
+            get().endBattle(false);
+          }
+        }, 500);
+      },
 
-  /**
-   * Select Action
-   */
-  selectAction: (action) => {
-    set({ selectedAction: action });
-  },
+      /**
+       * Use Skill
+       */
+      useSkill: (casterId, targetId, skillId) => {
+        // TODO: Implement skill effects
+        set((state) => ({
+          allyUnits: state.allyUnits.map((unit) =>
+            unit.id === casterId ? { ...unit, hasActed: true } : unit
+          ),
+          enemyUnits: state.enemyUnits.map((unit) =>
+            unit.id === casterId ? { ...unit, hasActed: true } : unit
+          ),
+          selectedAction: null,
+          selectedUnitId: null,
+          selectedSkillId: null,
+        }));
+      },
 
-  /**
-   * Select Skill
-   */
-  selectSkill: (skillId) => {
-    set({ selectedSkillId: skillId });
-  },
+      /**
+       * End Turn
+       */
+      endTurn: () => {
+        set((state) => {
+          // Reset hasActed for all units
+          const newAllyUnits = state.allyUnits.map((unit) => ({
+            ...unit,
+            hasActed: false,
+          }));
+          const newEnemyUnits = state.enemyUnits.map((unit) => ({
+            ...unit,
+            hasActed: false,
+          }));
 
-  /**
-   * Set Movement Range
-   */
-  setMovementRange: (range) => {
-    set({ movementRange: range });
-  },
+          // Get all alive units
+          const aliveUnitIds = new Set([
+            ...newAllyUnits
+              .filter((unit) => unit.currentHp > 0)
+              .map((unit) => unit.id),
+            ...newEnemyUnits
+              .filter((unit) => unit.currentHp > 0)
+              .map((unit) => unit.id),
+          ]);
 
-  /**
-   * Set Attack Range
-   */
-  setAttackRange: (range) => {
-    set({ attackRange: range });
-  },
+          // Filter turn order to only include alive units
+          const aliveTurnOrder = state.turnOrder.filter((unit) =>
+            aliveUnitIds.has(unit.id)
+          );
 
-  /**
-   * Set Original Position
-   */
-  setOriginalPosition: (position) => {
-    set({ originalPosition: position });
-  },
+          // If no alive units left, return current state (shouldn't happen as battle should end first)
+          if (aliveTurnOrder.length === 0) {
+            return {
+              allyUnits: newAllyUnits,
+              enemyUnits: newEnemyUnits,
+              selectedAction: null,
+              selectedUnitId: null,
+            };
+          }
 
-  /**
-   * Get Current Unit (Computed)
-   */
-  getCurrentUnit: () => {
-    const { currentUnitId, allyUnits, enemyUnits } = get();
-    return (
-      [...allyUnits, ...enemyUnits].find((u) => u.id === currentUnitId) || null
-    );
-  },
+          // Find the next alive unit in the turn order
+          const currentIndex = state.currentUnitId
+            ? aliveTurnOrder.findIndex((u) => u.id === state.currentUnitId)
+            : -1;
 
-  /**
-   * Get Alive Turn Order (Computed)
-   */
-  getAliveTurnOrder: () => {
-    const { turnOrder, allyUnits, enemyUnits } = get();
-    return turnOrder.filter((unit) => {
-      const actualUnit = [...allyUnits, ...enemyUnits].find(
-        (u) => u.id === unit.id
-      );
-      return actualUnit && actualUnit.currentHp > 0;
-    });
-  },
+          // Get next unit index, wrapping around if needed
+          const nextIndex = (currentIndex + 1) % aliveTurnOrder.length;
 
-  /**
-   * Get Unit at Position (Computed)
-   */
-  getUnitAtPosition: (x, y) => {
-    const { allyUnits, enemyUnits } = get();
-    return [...allyUnits, ...enemyUnits].find(
-      (u) => u.position.x === x && u.position.y === y
-    );
-  },
+          // If we were at the end of the turn order, increment the turn counter
+          const isNewTurn = currentIndex >= aliveTurnOrder.length - 1;
 
-  /**
-   * Check if tile is in movement range (Computed)
-   */
-  isTileInMovementRange: (x, y) => {
-    const { movementRange } = get();
-    return movementRange.some((pos) => pos.x === x && pos.y === y);
-  },
+          // Get the next alive unit
+          const nextUnit = aliveTurnOrder[nextIndex];
 
-  /**
-   * Check if tile is in attack range (Computed)
-   */
-  isTileInAttackRange: (x, y) => {
-    const { attackRange } = get();
-    return attackRange.some((pos) => pos.x === x && pos.y === y);
-  },
+          return {
+            allyUnits: newAllyUnits,
+            enemyUnits: newEnemyUnits,
+            turn: isNewTurn ? state.turn + 1 : state.turn,
+            currentUnitId: nextUnit?.id || null,
+            selectedAction: null,
+            selectedUnitId: null,
+          };
+        });
+      },
 
-  /**
-   * Handle Tile Click (Action)
-   */
-  handleTileClick: (x, y) => {
-    const store = get();
-    const currentUnit = store.getCurrentUnit();
+      /**
+       * Next Unit
+       */
+      nextUnit: () => {
+        get().endTurn();
+      },
 
-    // Only allow actions for current unit if it's ally's turn
-    if (!currentUnit || !currentUnit.isAlly || currentUnit.hasActed) return;
+      /**
+       * Select Unit
+       */
+      selectUnit: (unitId) => {
+        set({ selectedUnitId: unitId });
+      },
 
-    const unit = store.getUnitAtPosition(x, y);
+      /**
+       * Select Action
+       */
+      selectAction: (action) => {
+        set({ selectedAction: action });
+      },
 
-    if (unit && unit.id !== currentUnit.id) {
-      // Click on another unit - try to attack if in range
-      if (store.isTileInAttackRange(x, y) && !unit.isAlly) {
-        const damage = Math.max(
-          1,
-          currentUnit.character.stats.atk - unit.character.stats.def
+      /**
+       * Select Skill
+       */
+      selectSkill: (skillId) => {
+        set({ selectedSkillId: skillId });
+      },
+
+      /**
+       * Set Movement Range
+       */
+      setMovementRange: (range) => {
+        set({ movementRange: range });
+      },
+
+      /**
+       * Set Attack Range
+       */
+      setAttackRange: (range) => {
+        set({ attackRange: range });
+      },
+
+      /**
+       * Set Original Position
+       */
+      setOriginalPosition: (position) => {
+        set({ originalPosition: position });
+      },
+
+      /**
+       * Get Current Unit (Computed)
+       */
+      getCurrentUnit: () => {
+        const { currentUnitId, allyUnits, enemyUnits } = get();
+        return (
+          [...allyUnits, ...enemyUnits].find((u) => u.id === currentUnitId) ||
+          null
         );
-        store.attackUnit(currentUnit.id, unit.id, damage);
-      }
-    } else if (!unit && store.isTileInMovementRange(x, y)) {
-      // Click on empty tile in movement range - move there
-      store.moveUnit(currentUnit.id, x, y);
+      },
+
+      /**
+       * Get Alive Turn Order (Computed)
+       */
+      getAliveTurnOrder: () => {
+        const { turnOrder, allyUnits, enemyUnits } = get();
+        return turnOrder.filter((unit) => {
+          const actualUnit = [...allyUnits, ...enemyUnits].find(
+            (u) => u.id === unit.id
+          );
+          return actualUnit && actualUnit.currentHp > 0;
+        });
+      },
+
+      /**
+       * Get Unit at Position (Computed)
+       */
+      getUnitAtPosition: (x, y) => {
+        const { allyUnits, enemyUnits } = get();
+        return [...allyUnits, ...enemyUnits].find(
+          (u) => u.position.x === x && u.position.y === y
+        );
+      },
+
+      /**
+       * Check if tile is in movement range (Computed)
+       */
+      isTileInMovementRange: (x, y) => {
+        const { movementRange } = get();
+        return movementRange.some((pos) => pos.x === x && pos.y === y);
+      },
+
+      /**
+       * Check if tile is in attack range (Computed)
+       */
+      isTileInAttackRange: (x, y) => {
+        const { attackRange } = get();
+        return attackRange.some((pos) => pos.x === x && pos.y === y);
+      },
+
+      /**
+       * Handle Tile Click (Action)
+       */
+      handleTileClick: (x, y) => {
+        const store = get();
+        const currentUnit = store.getCurrentUnit();
+
+        // Only allow actions for current unit if it's ally's turn
+        if (!currentUnit || !currentUnit.isAlly || currentUnit.hasActed) return;
+
+        const unit = store.getUnitAtPosition(x, y);
+
+        if (unit && unit.id !== currentUnit.id) {
+          // Click on another unit - try to attack if in range
+          if (store.isTileInAttackRange(x, y) && !unit.isAlly) {
+            const damage = Math.max(
+              1,
+              currentUnit.character.stats.atk - unit.character.stats.def
+            );
+            store.attackUnit(currentUnit.id, unit.id, damage);
+          }
+        } else if (!unit && store.isTileInMovementRange(x, y)) {
+          // Click on empty tile in movement range - move there
+          store.moveUnit(currentUnit.id, x, y);
+        }
+      },
+
+      /**
+       * Check Victory
+       */
+      checkVictory: () => {
+        const { enemyUnits } = get();
+        return (
+          enemyUnits.length === 0 ||
+          enemyUnits.every((unit) => unit.currentHp <= 0)
+        );
+      },
+
+      /**
+       * Check Defeat
+       */
+      checkDefeat: () => {
+        const { allyUnits } = get();
+        return (
+          allyUnits.length === 0 ||
+          allyUnits.every((unit) => unit.currentHp <= 0)
+        );
+      },
+
+      /**
+       * End Battle
+       */
+      endBattle: (victory, rewards) => {
+        set({
+          phase: victory ? "victory" : "defeat",
+          rewards: rewards || null,
+        });
+      },
+
+      /**
+       * Reset Battle
+       */
+      resetBattle: () => {
+        set(initialState);
+      },
+    }),
+    {
+      name: "battle-store",
+      storage: createBrowserStorage(),
     }
-  },
-
-  /**
-   * Check Victory
-   */
-  checkVictory: () => {
-    const { enemyUnits } = get();
-    return (
-      enemyUnits.length === 0 || enemyUnits.every((unit) => unit.currentHp <= 0)
-    );
-  },
-
-  /**
-   * Check Defeat
-   */
-  checkDefeat: () => {
-    const { allyUnits } = get();
-    return (
-      allyUnits.length === 0 || allyUnits.every((unit) => unit.currentHp <= 0)
-    );
-  },
-
-  /**
-   * End Battle
-   */
-  endBattle: (victory, rewards) => {
-    set({
-      phase: victory ? "victory" : "defeat",
-      rewards: rewards || null,
-    });
-  },
-
-  /**
-   * Reset Battle
-   */
-  resetBattle: () => {
-    set(initialState);
-  },
-}));
+  )
+);

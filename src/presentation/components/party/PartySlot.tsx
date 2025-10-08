@@ -1,15 +1,17 @@
 "use client";
 
-import { PartyMember } from "@/src/stores/partyStore";
-import { Crown, X, Users } from "lucide-react";
-import { Button } from "@/src/presentation/components/ui";
+import { Character } from "@/src/domain/types/character.types";
+import { Crown, Users, X } from "lucide-react";
 
 interface PartySlotProps {
   position: number;
-  member: PartyMember | null;
+  member: {
+    character: Character;
+    position: number;
+    isLeader: boolean;
+  } | null;
   onRemove?: (characterId: string) => void;
   onSelect?: (position: number) => void;
-  isSelecting?: boolean;
 }
 
 export function PartySlot({
@@ -17,7 +19,6 @@ export function PartySlot({
   member,
   onRemove,
   onSelect,
-  isSelecting = false,
 }: PartySlotProps) {
   const elementColors = {
     fire: "text-red-400",
@@ -31,7 +32,7 @@ export function PartySlot({
   if (!member) {
     // Empty slot - clickable if onSelect is provided
     const isClickable = !!onSelect;
-    
+
     return (
       <div
         className={`relative bg-slate-900/50 border-2 border-dashed border-slate-700 rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] transition-all duration-300 ${
@@ -91,7 +92,7 @@ export function PartySlot({
               Lv {character.level}
             </span>
           </div>
-          
+
           <p className="text-sm text-gray-400 capitalize mb-2">
             {character.class}
           </p>

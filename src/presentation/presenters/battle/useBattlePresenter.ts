@@ -1,11 +1,11 @@
 "use client";
 
-import { useBattleStore } from "@/src/stores/battleStore";
+import { BattleUnitState, useBattleStore } from "@/src/stores/battleStore";
+import { useGameStore } from "@/src/stores/gameStore";
 import { useCallback, useEffect, useState } from "react";
 import {
   BattlePresenter,
   BattlePresenterFactory,
-  BattleUnit,
   BattleViewModel,
 } from "./BattlePresenter";
 
@@ -16,8 +16,8 @@ export interface BattlePresenterHook {
   error: string | null;
 
   // Battle state from store
-  allyUnits: BattleUnit[];
-  enemyUnits: BattleUnit[];
+  allyUnits: BattleUnitState[];
+  enemyUnits: BattleUnitState[];
   turn: number;
   phase: "placement" | "battle" | "victory" | "defeat";
   currentUnitId: string | null;
@@ -28,14 +28,14 @@ export interface BattlePresenterHook {
   } | null;
 
   // Computed state
-  currentUnit: BattleUnit | null;
-  aliveTurnOrder: BattleUnit[];
+  currentUnit: BattleUnitState | null;
+  aliveTurnOrder: BattleUnitState[];
 
   // Actions (delegate to store)
   handleTileClick: (x: number, y: number) => void;
   handleEndTurn: () => void;
   handleResetBattle: () => void;
-  getUnitAtPosition: (x: number, y: number) => BattleUnit | undefined;
+  getUnitAtPosition: (x: number, y: number) => BattleUnitState | undefined;
   isTileInMovementRange: (x: number, y: number) => boolean;
   isTileInAttackRange: (x: number, y: number) => boolean;
 }
@@ -65,6 +65,13 @@ export function useBattlePresenter(
   );
   const [loading, setLoading] = useState(!initialViewModel);
   const [error, setError] = useState<string | null>(null);
+
+  // Get multiple party state from store
+  const { parties, activePartyId } = useGameStore();
+
+  // Get active party data
+  const activeParty = parties.find((p) => p.id === activePartyId);
+  const activePartyMembers = activeParty?.members || [];
 
   // Battle Store - get state and actions
   const store = useBattleStore();
@@ -116,15 +123,25 @@ export function useBattlePresenter(
   }, [initialViewModel, loadData]);
 
   // Initialize battle when presenter data is ready
+  // Override allyUnits and enemyUnits from store
   useEffect(() => {
-    if (viewModel && allyUnits.length === 0) {
+    console.log("viewModel?.battleMap", viewModel?.battleMap);
+    console.log("activePartyMembers", activePartyMembers);
+
+    if (
+      viewModel?.battleMap &&
+      !store.battleStateId &&
+      activePartyMembers.length > 0
+    ) {
+      console.log("initBattle store.battleStateId", store.battleStateId);
       initBattle(
-        viewModel.battleMap.id,
-        viewModel.allyUnits,
-        viewModel.enemyUnits
+        viewModel.battleMap,
+        viewModel.characters,
+        viewModel.enemies,
+        activePartyMembers
       );
     }
-  }, [viewModel, allyUnits.length, initBattle]);
+  }, [viewModel?.battleMap, store.battleStateId, activePartyMembers]);
 
   // Get computed state from store
   const currentUnit = store.getCurrentUnit();
@@ -141,7 +158,7 @@ export function useBattlePresenter(
   // Calculate ranges - ALWAYS show for current unit's turn
   // ⚠️ CRITICAL: ต้องใช้ currentUnit object ใน dependencies เพื่อ detect position change หลัง move
   useEffect(() => {
-    if (!viewModel || !currentUnit) {
+    if (!currentUnit || !store.battleMap) {
       console.log("❌ No viewModel or currentUnit", {
         viewModel: !!viewModel,
         currentUnit: !!currentUnit,
@@ -155,16 +172,6 @@ export function useBattlePresenter(
     const hasEnemies = currentUnit.isAlly
       ? enemyUnits.length > 0
       : allyUnits.length > 0;
-
-    console.log("🎯 Calculating ranges for:", {
-      unit: currentUnit.character.name,
-      isAlly: currentUnit.isAlly,
-      currentPosition: currentUnit.position,
-      originalPosition: originalPosition,
-      hasActed: currentUnit.hasActed,
-      hasEnemies: hasEnemies,
-      mov: currentUnit.character.stats.mov,
-    });
 
     // Movement range - use BFS pathfinding (cannot jump over enemies)
     const moveRange: { x: number; y: number }[] = [];
@@ -195,9 +202,9 @@ export function useBattlePresenter(
         // Check bounds
         if (
           next.x < 0 ||
-          next.x >= viewModel.battleMap.width ||
+          next.x >= store.battleMap.width ||
           next.y < 0 ||
-          next.y >= viewModel.battleMap.height
+          next.y >= store.battleMap.height
         ) {
           continue;
         }
@@ -280,8 +287,8 @@ export function useBattlePresenter(
     const attackRangeValue = 2; // Can be based on weapon
 
     if (hasEnemies) {
-      for (let x = 0; x < viewModel.battleMap.width; x++) {
-        for (let y = 0; y < viewModel.battleMap.height; y++) {
+      for (let x = 0; x < store.battleMap.width; x++) {
+        for (let y = 0; y < store.battleMap.height; y++) {
           const attackDistance =
             Math.abs(x - currentUnit.position.x) +
             Math.abs(y - currentUnit.position.y);
@@ -292,20 +299,13 @@ export function useBattlePresenter(
       }
     }
 
-    console.log("✅ Ranges calculated:", {
-      movementRange: moveRange.length,
-      attackRange: atkRange.length,
-      hasEnemies: hasEnemies,
-      usingOriginalPos: !!originalPosition,
-    });
-
     setMovementRange(moveRange);
     setAttackRange(atkRange);
   }, [
     currentUnit,
     allyUnits,
     enemyUnits,
-    viewModel,
+    store.battleMap,
     originalPosition,
     setMovementRange,
     setAttackRange,
@@ -317,7 +317,7 @@ export function useBattlePresenter(
       !currentUnit ||
       currentUnit.isAlly ||
       currentUnit.hasActed ||
-      !viewModel
+      !store.battleMap
     )
       return;
 
@@ -388,7 +388,7 @@ export function useBattlePresenter(
     currentUnit,
     allyUnits,
     enemyUnits,
-    viewModel,
+    store.battleMap,
     storeMoveUnit,
     storeAttackUnit,
     storeEndTurn,

@@ -1,4 +1,4 @@
-import { BattleView } from "@/src/presentation/components/battle/BattleView";
+import ClientBattleView from "@/src/presentation/components/battle/ClientBattleView";
 import { BattlePresenterFactory } from "@/src/presentation/presenters/battle/BattlePresenter";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -45,7 +45,7 @@ export default async function BattlePage({ params }: BattlePageProps) {
     // Get view model from presenter
     const viewModel = await presenter.getViewModel(mapId);
 
-    return <BattleView mapId={mapId} initialViewModel={viewModel} />;
+    return <ClientBattleView mapId={mapId} initialViewModel={viewModel} />;
   } catch (error) {
     console.error("Error fetching battle data:", error);
 
@@ -53,9 +53,7 @@ export default async function BattlePage({ params }: BattlePageProps) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-2">
-            เกิดข้อผิดพลาด
-          </h1>
+          <h1 className="text-2xl font-bold text-white mb-2">เกิดข้อผิดพลาด</h1>
           <p className="text-gray-400 mb-4">ไม่สามารถโหลดข้อมูลสนามรบได้</p>
           <Link
             href="/world"

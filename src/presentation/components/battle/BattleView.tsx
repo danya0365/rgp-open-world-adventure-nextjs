@@ -97,7 +97,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
   const { battleMap } = presenterViewModel;
 
   // Validate: Check if there are enemies
-  if (presenterViewModel.enemyUnits.length === 0) {
+  if (presenterViewModel.enemies.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-yellow-700 rounded-xl p-8 text-center">
@@ -126,7 +126,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
   }
 
   // Validate: Check if there are allies
-  if (presenterViewModel.allyUnits.length === 0) {
+  if (presenterViewModel.characters.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-red-700 rounded-xl p-8 text-center">

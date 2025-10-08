@@ -1,18 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Character } from "@/src/domain/types/character.types";
+import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
+import { CreatePartyModal } from "@/src/presentation/components/party/CreatePartyModal";
+import { PartySlider } from "@/src/presentation/components/party/PartySlider";
+import { PartySlot } from "@/src/presentation/components/party/PartySlot";
+import { RenamePartyModal } from "@/src/presentation/components/party/RenamePartyModal";
+import { Modal } from "@/src/presentation/components/ui";
 import { PartyViewModel } from "@/src/presentation/presenters/party/PartyPresenter";
 import { usePartyPresenter } from "@/src/presentation/presenters/party/usePartyPresenter";
 import { getPartyStats, getPartySynergy } from "@/src/stores/gameStore";
-import { Character } from "@/src/domain/types/character.types";
-import { PartySlot } from "@/src/presentation/components/party/PartySlot";
-import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
-import { Modal } from "@/src/presentation/components/ui";
-import { PartySlider } from "@/src/presentation/components/party/PartySlider";
-import { CreatePartyModal } from "@/src/presentation/components/party/CreatePartyModal";
-import { RenamePartyModal } from "@/src/presentation/components/party/RenamePartyModal";
-import { Users, Sparkles, Heart, Zap, Shield, Map, AlertCircle } from "lucide-react";
+import {
+  AlertCircle,
+  Heart,
+  Map,
+  Shield,
+  Sparkles,
+  Users,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface PartyViewProps {
   initialViewModel?: PartyViewModel;
@@ -45,16 +53,6 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   const [renamePartyId, setRenamePartyId] = useState<string>("");
   const [renamePartyName, setRenamePartyName] = useState<string>("");
 
-  // Initialize default parties if none exist
-  useEffect(() => {
-    if (parties.length === 0) {
-      const mainParty = createParty("Main Team");
-      createParty("Boss Team");
-      createParty("Farm Team");
-      setActiveParty(mainParty.id);
-    }
-  }, [parties.length, createParty, setActiveParty]);
-
   const handleCreateParty = (name: string) => {
     const newParty = createParty(name);
     setActiveParty(newParty.id);
@@ -73,7 +71,10 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   };
 
   const handleCopyParty = (partyId: string, currentName: string) => {
-    const newName = prompt(`Copy "${currentName}" as:`, `${currentName} (Copy)`);
+    const newName = prompt(
+      `Copy "${currentName}" as:`,
+      `${currentName} (Copy)`
+    );
     if (newName && newName.trim()) {
       copyParty(partyId, newName.trim());
     }
@@ -84,8 +85,8 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
       alert("ไม่สามารถลบ Party สุดท้ายได้!");
       return;
     }
-    
-    const party = parties.find(p => p.id === partyId);
+
+    const party = parties.find((p) => p.id === partyId);
     if (party && confirm(`ต้องการลบ "${party.name}" หรือไม่?`)) {
       deleteParty(partyId);
     }
@@ -135,36 +136,49 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   }
 
   // Get active party data
-  const activeParty = parties.find(p => p.id === activePartyId);
+  const activeParty = parties.find((p) => p.id === activePartyId);
   const activePartyMembers = activeParty?.members || [];
-  
+
   // Get character objects from recruited characters
-  const activePartyCharacters = activePartyMembers.map(member => {
-    const recruited = progress.recruitedCharacters.find(rc => rc.characterId === member.characterId);
-    if (!recruited) return null;
-    
-    // Find character from master data
-    const character = viewModel?.playableCharacters.find(c => c.id === recruited.characterId);
-    if (!character) return null;
-    
-    return {
-      character,
-      position: member.position,
-      isLeader: member.isLeader,
-    };
-  }).filter(Boolean) as { character: Character; position: number; isLeader: boolean }[];
+  const activePartyCharacters = activePartyMembers
+    .map((member) => {
+      const recruited = progress.recruitedCharacters.find(
+        (rc) => rc.characterId === member.characterId
+      );
+      if (!recruited) return null;
+
+      // Find character from master data
+      const character = viewModel?.playableCharacters.find(
+        (c) => c.id === recruited.characterId
+      );
+      if (!character) return null;
+
+      return {
+        character,
+        position: member.position,
+        isLeader: member.isLeader,
+      };
+    })
+    .filter(Boolean) as {
+    character: Character;
+    position: number;
+    isLeader: boolean;
+  }[];
 
   const stats = getPartyStats(activePartyCharacters);
   const synergies = getPartySynergy(activePartyCharacters);
-  
+
   // Available characters = recruited but not in active party
-  const availableChars = viewModel?.playableCharacters.filter(
-    (c) => {
-      const isRecruited = progress.recruitedCharacters.some(rc => rc.characterId === c.id);
-      const isInActiveParty = activePartyMembers.some(m => m.characterId === c.id);
+  const availableChars =
+    viewModel?.playableCharacters.filter((c) => {
+      const isRecruited = progress.recruitedCharacters.some(
+        (rc) => rc.characterId === c.id
+      );
+      const isInActiveParty = activePartyMembers.some(
+        (m) => m.characterId === c.id
+      );
       return isRecruited && !isInActiveParty;
-    }
-  ) || [];
+    }) || [];
 
   // Show warning if no recruited characters
   if (progress.recruitedCharacters.length === 0) {
@@ -172,7 +186,9 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
           <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">ยังไม่มีตัวละคร!</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            ยังไม่มีตัวละคร!
+          </h2>
           <p className="text-gray-400 mb-6">
             คุณต้องรีครูทตัวละครก่อนจึงจะสามารถจัดทีมได้
             <br />
@@ -205,26 +221,30 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   };
 
   const handleCharacterSelect = (character: Character) => {
-    console.log('🎮 handleCharacterSelect', {
+    console.log("🎮 handleCharacterSelect", {
       character: character.name,
       characterId: character.id,
       selectedPosition,
       activePartyId,
     });
-    
+
     if (selectedPosition !== null && activePartyId) {
       // Add to active party using V2 API
-      const success = addToPartyV2(activePartyId, character.id, selectedPosition);
-      console.log('✅ addToPartyV2 result:', success);
-      
+      const success = addToPartyV2(
+        activePartyId,
+        character.id,
+        selectedPosition
+      );
+      console.log("✅ addToPartyV2 result:", success);
+
       if (success) {
         setIsSelectModalOpen(false);
         setSelectedPosition(null);
       } else {
-        console.error('❌ Failed to add to party');
+        console.error("❌ Failed to add to party");
       }
     } else {
-      console.error('❌ Missing data:', { selectedPosition, activePartyId });
+      console.error("❌ Missing data:", { selectedPosition, activePartyId });
     }
   };
 
@@ -327,11 +347,13 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
         {/* Party Slots */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-white mb-4">
-            ทีมของคุณ {activeParty ? `- ${activeParty.name}` : ''}
+            ทีมของคุณ {activeParty ? `- ${activeParty.name}` : ""}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[0, 1, 2, 3].map((position) => {
-              const member = activePartyCharacters.find(m => m.position === position) || null;
+              const member =
+                activePartyCharacters.find((m) => m.position === position) ||
+                null;
               return (
                 <PartySlot
                   key={position}
@@ -371,9 +393,12 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
               <div className="flex items-center gap-3">
                 <Map className="w-8 h-8 text-purple-400" />
                 <div>
-                  <h3 className="text-xl font-bold text-white">พร้อมออกผจญภัย!</h3>
+                  <h3 className="text-xl font-bold text-white">
+                    พร้อมออกผจญภัย!
+                  </h3>
                   <p className="text-gray-400 text-sm">
-                    {activeParty?.name} มี {activePartyMembers.length} คน พร้อมสำรวจโลกแล้ว
+                    {activeParty?.name} มี {activePartyMembers.length} คน
+                    พร้อมสำรวจโลกแล้ว
                   </p>
                 </div>
               </div>

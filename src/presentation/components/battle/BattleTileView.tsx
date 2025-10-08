@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { BattleTile } from "@/src/domain/types/battle.types";
+import { BattleMapTile } from "@/src/domain/types/battle.types";
 
 const isDebug = false;
 
@@ -18,7 +18,7 @@ const BattleTileView = ({
 }: {
   x: number;
   y: number;
-  tile?: BattleTile;
+  tile?: BattleMapTile;
   isObstacle: boolean;
   isInMoveRange: boolean;
   isInAttackRange: boolean;

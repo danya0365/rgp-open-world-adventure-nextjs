@@ -168,7 +168,9 @@ export function WorldView({
                 </p>
               </div>
             </div>
-            <Link href="/party">จัดการทีม</Link>
+            <Link href="/party" className=" text-white">
+              จัดการทีม
+            </Link>
           </div>
           <div className="mt-3 flex gap-2">
             {activePartyCharacters.map((member) => (
