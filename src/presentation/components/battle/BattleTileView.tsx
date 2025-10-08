@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { BattleMapTile } from "@/src/domain/types/battle.types";
+import { BattleUnitState } from "@/src/stores/battleStore";
 
 const isDebug = false;
 
@@ -23,7 +24,7 @@ const BattleTileView = ({
   isInMoveRange: boolean;
   isInAttackRange: boolean;
   isCurrent: boolean;
-  unit: any;
+  unit: BattleUnitState | null;
   onClick: (x: number, y: number) => void;
   isAllyTurn: boolean;
 }) => {
@@ -57,13 +58,6 @@ const BattleTileView = ({
 
     if (isObstacle || isUnwalkable) {
       style += "bg-slate-700 opacity-70 cursor-not-allowed ";
-    }
-
-    // Current unit highlight
-    if (isCurrent) {
-      style += isAllyTurn
-        ? "ring-1 ring-green-300 "
-        : "ring-1 ring-orange-300 ";
     }
 
     return style;
@@ -126,8 +120,17 @@ const BattleTileView = ({
   };
 
   const renderCurrentIndicator = () => {
+    if (!isCurrent) return null;
+    if (!isAllyTurn)
+      return (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-4 h-4 bg-orange-400 rounded-full animate-ping"></div>
+        </div>
+      );
     return (
-      <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
+      </div>
     );
   };
 
@@ -177,16 +180,16 @@ const BattleTileView = ({
               hover:scale-110 ${getUnitStyle()}
             `}
           >
-            {unit.character.emoji || (unit.isAlly ? "😊" : "👹")}
+            {unit.isAlly ? "🦸" : "👹"}
           </div>
         </div>
       )}
 
       {/* HP Bar for units */}
       {unit && (
-        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/30 rounded-b">
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/30">
           <div
-            className="h-full bg-green-500 rounded-b transition-all duration-500"
+            className="h-full bg-green-500 transition-all duration-500"
             style={{
               width: `${(unit.currentHp / unit.character.stats.maxHp) * 100}%`,
             }}
@@ -194,10 +197,8 @@ const BattleTileView = ({
         </div>
       )}
 
-      {/* Action Indicator */}
-      {isCurrent && (
-        <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full animate-ping"></div>
-      )}
+      {/* Current Indicator */}
+      {renderCurrentIndicator()}
 
       {/* Hover Effect */}
       <div className="absolute inset-0 rounded-xl opacity-0 hover:opacity-20 bg-white transition-opacity duration-200"></div>

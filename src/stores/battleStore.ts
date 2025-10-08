@@ -1,15 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { BattleMapConfig, GridPosition } from "../domain/types/battle.types";
-import {
-  Character,
-  CharacterClass,
-  ElementalAffinity,
-  ElementType,
-  Enemy,
-  RarityType,
-  Stats,
-} from "../domain/types/character.types";
+import { Character, Enemy } from "../domain/types/character.types";
 import { PartyMemberV2 } from "./gameStore";
 
 // Custom storage for browser-only (client-side)
@@ -86,35 +78,6 @@ export interface BattleAction {
   targetUnitId?: string;
   skillId?: string;
   itemId?: string;
-}
-
-/**
- * Character State
- */
-export interface CharacterState {
-  id: string;
-  name: string;
-  class: CharacterClass;
-  level: number;
-  exp: number;
-  maxExp: number;
-  stats: Stats;
-  elements: ElementType[];
-  elementalAffinities: ElementalAffinity[];
-  skills: string[]; // Skill IDs
-  equipment: {
-    weapon?: string;
-    armor?: string;
-    accessory1?: string;
-    accessory2?: string;
-  };
-  rarity: RarityType;
-  portrait: string;
-  description: string;
-  backstory?: string;
-  isPlayable: boolean;
-  isRecruitable: boolean;
-  recruitQuestId?: string;
 }
 
 /**
@@ -709,10 +672,10 @@ export const useBattleStore = create<BattleStore>()(
             1,
             currentUnit.character.stats.atk - nearestAlly.character.stats.def
           );
-          
+
           // Execute attack
           state.attackUnit(currentUnit.id, nearestAlly.id, damage);
-          
+
           // Wait a bit before ending turn
           await new Promise((resolve) => setTimeout(resolve, 500));
           state.endTurn();
@@ -733,7 +696,10 @@ export const useBattleStore = create<BattleStore>()(
 
           // Check if tile is occupied
           const occupied = [...allyUnits, ...enemyUnits].some(
-            (u) => u.position.x === newX && u.position.y === newY && u.id !== currentUnit.id
+            (u) =>
+              u.position.x === newX &&
+              u.position.y === newY &&
+              u.id !== currentUnit.id
           );
 
           if (!occupied) {
@@ -744,10 +710,10 @@ export const useBattleStore = create<BattleStore>()(
           await new Promise((resolve) => setTimeout(resolve, 500));
           state.endTurn();
         }
-      }
+      },
     }),
     {
-      name: 'battle-store',
+      name: "battle-store",
       storage: createBrowserStorage(),
     }
   )

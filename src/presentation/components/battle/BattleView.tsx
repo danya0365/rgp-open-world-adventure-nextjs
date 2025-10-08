@@ -304,7 +304,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                         isInMoveRange={isInMoveRange}
                         isInAttackRange={isInAttackRange}
                         isCurrent={isCurrent}
-                        unit={unit}
+                        unit={unit || null}
                         onClick={handleTileClick}
                         isAllyTurn={!!currentUnit?.isAlly}
                       />
