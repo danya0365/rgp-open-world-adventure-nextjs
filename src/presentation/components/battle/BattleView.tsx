@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import BattleTileView from "./BattleTileView";
 
 interface BattleViewProps {
   mapId: string;
@@ -689,7 +690,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
             <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
               <div
-                className="grid gap-1 mx-auto"
+                className="grid mx-auto"
                 style={{
                   gridTemplateColumns: `repeat(${battleMap.width}, minmax(0, 1fr))`,
                   maxWidth: `${battleMap.width * 60}px`,
@@ -705,134 +706,28 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       battleMap.obstacles?.some(
                         (obs) => obs.x === x && obs.y === y
                       ) || false;
-                    const isUnwalkable = tile && !tile.isWalkable;
+                    const isUnwalkable = (tile && !tile.isWalkable) ?? true;
                     // Always show ranges for current unit
                     const isInMoveRange = isTileInMovementRange(x, y);
                     const isInAttackRange = isTileInAttackRange(x, y);
                     const isCurrent = unit?.id === currentUnitId;
 
-                    // Get tile icon based on type
-                    const getTileIcon = () => {
-                      if (!tile) return null;
-                      switch (tile.type) {
-                        case "grass":
-                          return "🌿";
-                        case "water":
-                          return "💧";
-                        case "mountain":
-                          return "⛰️";
-                        case "lava":
-                          return "🔥";
-                        case "ice":
-                          return "❄️";
-                        case "poison":
-                          return "☠️";
-                        default:
-                          return null;
-                      }
-                    };
-
                     return (
-                      <button
+                      <BattleTileView
                         key={`${x}-${y}`}
-                        onClick={() => handleTileClick(x, y)}
-                        className={`
-                          aspect-square relative rounded-lg transition-all
-                          bg-slate-800
-                          ${
-                            isObstacle || isUnwalkable
-                              ? "opacity-50 cursor-not-allowed"
-                              : isInMoveRange &&
-                                isInAttackRange &&
-                                currentUnit?.isAlly
-                              ? "ring-2 ring-purple-500"
-                              : isInMoveRange &&
-                                isInAttackRange &&
-                                currentUnit &&
-                                !currentUnit.isAlly
-                              ? "ring-2 ring-yellow-500"
-                              : isInMoveRange && currentUnit?.isAlly
-                              ? "ring-2 ring-blue-500"
-                              : isInMoveRange &&
-                                currentUnit &&
-                                !currentUnit.isAlly
-                              ? "ring-2 ring-orange-500"
-                              : isInAttackRange && currentUnit?.isAlly
-                              ? "ring-2 ring-red-500"
-                              : isInAttackRange &&
-                                currentUnit &&
-                                !currentUnit.isAlly
-                              ? "ring-2 ring-red-500"
-                              : ""
-                          }
-                          ${
-                            isCurrent && currentUnit?.isAlly
-                              ? "ring-4 ring-green-400"
-                              : ""
-                          }
-                          ${
-                            isCurrent && currentUnit && !currentUnit.isAlly
-                              ? "ring-4 ring-orange-400"
-                              : ""
-                          }
-                        `}
-                        disabled={isObstacle || isUnwalkable}
-                      >
-                        {/* Tile Icon */}
-                        {getTileIcon() && !unit && (
-                          <div className="absolute inset-0 flex items-center justify-center text-2xl opacity-30">
-                            {getTileIcon()}
-                          </div>
-                        )}
-
-                        {/* Grid Coordinates (debug) */}
-                        <span className="absolute top-0 left-1 text-[8px] text-gray-600">
-                          {x},{y}
-                        </span>
-
-                        {/* Unit */}
-                        {unit && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div
-                              className={`
-                              w-10 h-10 rounded-full flex items-center justify-center text-xl
-                              ${unit.isAlly ? "bg-blue-600" : "bg-red-600"}
-                            `}
-                            >
-                              {unit.isAlly ? "🛡️" : "👹"}
-                            </div>
-                            {/* HP Bar */}
-                            <div className="absolute bottom-1 left-1 right-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full transition-all ${
-                                  unit.isAlly ? "bg-green-500" : "bg-red-500"
-                                }`}
-                                style={{
-                                  width: `${
-                                    (unit.currentHp /
-                                      unit.character.stats.maxHp) *
-                                    100
-                                  }%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Obstacle */}
-                        {isObstacle && (
-                          <div className="absolute inset-0 flex items-center justify-center text-2xl">
-                            🪨
-                          </div>
-                        )}
-
-                        {/* Tile Effect Indicator (top-right corner) */}
-                        {tile?.effect && tile.effect.type === "damage" && (
-                          <div className="absolute top-0.5 right-0.5 text-xs animate-pulse">
-                            ⚠️
-                          </div>
-                        )}
-                      </button>
+                        x={x}
+                        y={y}
+                        tile={tile}
+                        isObstacle={isObstacle}
+                        isUnwalkable={isUnwalkable}
+                        isInMoveRange={isInMoveRange}
+                        isInAttackRange={isInAttackRange}
+                        isCurrent={isCurrent}
+                        unit={unit}
+                        onClick={handleTileClick}
+                        isCurrentTurn={!!currentUnit}
+                        isAllyTurn={!!currentUnit?.isAlly}
+                      />
                     );
                   })
                 )}
