@@ -34,6 +34,11 @@ interface BattleState {
   selectedUnitId: string | null;
   selectedSkillId: string | null;
 
+  // Range State (calculated by presenter, stored here)
+  movementRange: { x: number; y: number }[];
+  attackRange: { x: number; y: number }[];
+  originalPosition: { x: number; y: number } | null;
+
   // Battle Results
   rewards: {
     exp: number;
@@ -61,17 +66,30 @@ interface BattleActions {
   // Turn Management
   endTurn: () => void;
   nextUnit: () => void;
-
   // Selection
   selectUnit: (unitId: string | null) => void;
   selectAction: (action: BattleActionType) => void;
   selectSkill: (skillId: string | null) => void;
 
+  // Range Management
+  setMovementRange: (range: { x: number; y: number }[]) => void;
+  setAttackRange: (range: { x: number; y: number }[]) => void;
+  setOriginalPosition: (position: { x: number; y: number } | null) => void;
+
+  // Computed Getters (Pure functions - no side effects)
+  getCurrentUnit: () => BattleUnit | null;
+  getAliveTurnOrder: () => BattleUnit[];
+  getUnitAtPosition: (x: number, y: number) => BattleUnit | undefined;
+  isTileInMovementRange: (x: number, y: number) => boolean;
+  isTileInAttackRange: (x: number, y: number) => boolean;
+
+  // Game Actions
+  handleTileClick: (x: number, y: number) => void;
+
   // Battle Flow
   checkVictory: () => boolean;
   checkDefeat: () => boolean;
   endBattle: (victory: boolean, rewards?: BattleState["rewards"]) => void;
-
   // Reset
   resetBattle: () => void;
 }
@@ -93,6 +111,9 @@ const initialState: BattleState = {
   selectedAction: null,
   selectedUnitId: null,
   selectedSkillId: null,
+  movementRange: [],
+  attackRange: [],
+  originalPosition: null,
   rewards: null,
 };
 
@@ -312,6 +333,103 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
    */
   selectSkill: (skillId) => {
     set({ selectedSkillId: skillId });
+  },
+
+  /**
+   * Set Movement Range
+   */
+  setMovementRange: (range) => {
+    set({ movementRange: range });
+  },
+
+  /**
+   * Set Attack Range
+   */
+  setAttackRange: (range) => {
+    set({ attackRange: range });
+  },
+
+  /**
+   * Set Original Position
+   */
+  setOriginalPosition: (position) => {
+    set({ originalPosition: position });
+  },
+
+  /**
+   * Get Current Unit (Computed)
+   */
+  getCurrentUnit: () => {
+    const { currentUnitId, allyUnits, enemyUnits } = get();
+    return (
+      [...allyUnits, ...enemyUnits].find((u) => u.id === currentUnitId) || null
+    );
+  },
+
+  /**
+   * Get Alive Turn Order (Computed)
+   */
+  getAliveTurnOrder: () => {
+    const { turnOrder, allyUnits, enemyUnits } = get();
+    return turnOrder.filter((unit) => {
+      const actualUnit = [...allyUnits, ...enemyUnits].find(
+        (u) => u.id === unit.id
+      );
+      return actualUnit && actualUnit.currentHp > 0;
+    });
+  },
+
+  /**
+   * Get Unit at Position (Computed)
+   */
+  getUnitAtPosition: (x, y) => {
+    const { allyUnits, enemyUnits } = get();
+    return [...allyUnits, ...enemyUnits].find(
+      (u) => u.position.x === x && u.position.y === y
+    );
+  },
+
+  /**
+   * Check if tile is in movement range (Computed)
+   */
+  isTileInMovementRange: (x, y) => {
+    const { movementRange } = get();
+    return movementRange.some((pos) => pos.x === x && pos.y === y);
+  },
+
+  /**
+   * Check if tile is in attack range (Computed)
+   */
+  isTileInAttackRange: (x, y) => {
+    const { attackRange } = get();
+    return attackRange.some((pos) => pos.x === x && pos.y === y);
+  },
+
+  /**
+   * Handle Tile Click (Action)
+   */
+  handleTileClick: (x, y) => {
+    const store = get();
+    const currentUnit = store.getCurrentUnit();
+
+    // Only allow actions for current unit if it's ally's turn
+    if (!currentUnit || !currentUnit.isAlly || currentUnit.hasActed) return;
+
+    const unit = store.getUnitAtPosition(x, y);
+
+    if (unit && unit.id !== currentUnit.id) {
+      // Click on another unit - try to attack if in range
+      if (store.isTileInAttackRange(x, y) && !unit.isAlly) {
+        const damage = Math.max(
+          1,
+          currentUnit.character.stats.atk - unit.character.stats.def
+        );
+        store.attackUnit(currentUnit.id, unit.id, damage);
+      }
+    } else if (!unit && store.isTileInMovementRange(x, y)) {
+      // Click on empty tile in movement range - move there
+      store.moveUnit(currentUnit.id, x, y);
+    }
   },
 
   /**

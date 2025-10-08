@@ -1,9 +1,11 @@
 "use client";
 
+import { useBattleStore } from "@/src/stores/battleStore";
 import { useCallback, useEffect, useState } from "react";
 import {
   BattlePresenter,
   BattlePresenterFactory,
+  BattleUnit,
   BattleViewModel,
 } from "./BattlePresenter";
 
@@ -13,20 +15,29 @@ export interface BattlePresenterHook {
   loading: boolean;
   error: string | null;
 
-  // Selection state
-  selectedUnitId: string | null;
-  selectedTilePosition: { x: number; y: number } | null;
-  movementRange: { x: number; y: number }[];
-  attackRange: { x: number; y: number }[];
+  // Battle state from store
+  allyUnits: BattleUnit[];
+  enemyUnits: BattleUnit[];
+  turn: number;
+  phase: "placement" | "battle" | "victory" | "defeat";
+  currentUnitId: string | null;
+  rewards: {
+    exp: number;
+    gold: number;
+    items: { itemId: string; quantity: number }[];
+  } | null;
 
-  // Actions
-  loadData: () => Promise<void>;
-  selectUnit: (unitId: string) => void;
-  selectTile: (x: number, y: number) => void;
-  moveUnit: (unitId: string, x: number, y: number) => void;
-  attackUnit: (attackerId: string, targetId: string) => void;
-  endTurn: () => void;
-  selectAction: (action: "move" | "attack" | "skill" | null) => void;
+  // Computed state
+  currentUnit: BattleUnit | null;
+  aliveTurnOrder: BattleUnit[];
+
+  // Actions (delegate to store)
+  handleTileClick: (x: number, y: number) => void;
+  handleEndTurn: () => void;
+  handleResetBattle: () => void;
+  getUnitAtPosition: (x: number, y: number) => BattleUnit | undefined;
+  isTileInMovementRange: (x: number, y: number) => boolean;
+  isTileInAttackRange: (x: number, y: number) => boolean;
 }
 
 let presenterInstance: BattlePresenter | null = null;
@@ -55,18 +66,25 @@ export function useBattlePresenter(
   const [loading, setLoading] = useState(!initialViewModel);
   const [error, setError] = useState<string | null>(null);
 
-  // Selection state
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-  const [selectedTilePosition, setSelectedTilePosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const [movementRange, setMovementRange] = useState<
-    { x: number; y: number }[]
-  >([]);
-  const [attackRange, setAttackRange] = useState<{ x: number; y: number }[]>(
-    []
-  );
+  // Battle Store - get state and actions
+  const store = useBattleStore();
+  const {
+    allyUnits,
+    enemyUnits,
+    turn,
+    phase,
+    currentUnitId,
+    rewards,
+    originalPosition,
+    initBattle,
+    moveUnit: storeMoveUnit,
+    attackUnit: storeAttackUnit,
+    endTurn: storeEndTurn,
+    resetBattle,
+    setMovementRange,
+    setAttackRange,
+    setOriginalPosition,
+  } = useBattleStore();
 
   /**
    * Load data from presenter
@@ -97,187 +115,325 @@ export function useBattlePresenter(
     }
   }, [initialViewModel, loadData]);
 
-  /**
-   * Select a unit
-   */
-  const selectUnit = useCallback(
-    async (unitId: string) => {
-      if (!viewModel) return;
-
-      const unit = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(
-        (u) => u.id === unitId
+  // Initialize battle when presenter data is ready
+  useEffect(() => {
+    if (viewModel && allyUnits.length === 0) {
+      initBattle(
+        viewModel.battleMap.id,
+        viewModel.allyUnits,
+        viewModel.enemyUnits
       );
-      if (!unit) return;
+    }
+  }, [viewModel, allyUnits.length, initBattle]);
 
-      setSelectedUnitId(unitId);
+  // Get computed state from store
+  const currentUnit = store.getCurrentUnit();
+  const aliveTurnOrder = store.getAliveTurnOrder();
 
-      // Calculate ranges
-      const presenter = getPresenter();
-      const moveRange = presenter.calculateMovementRange(
-        unit,
-        viewModel.battleMap.width,
-        viewModel.battleMap.height
-      );
-      const atkRange = presenter.calculateAttackRange(
-        unit,
-        viewModel.battleMap.width,
-        viewModel.battleMap.height
-      );
+  // Save original position when turn starts (ONLY when turn changes)
+  useEffect(() => {
+    if (currentUnit && !currentUnit.hasActed) {
+      setOriginalPosition({ ...currentUnit.position });
+      console.log("💾 Saved original position:", currentUnit.position);
+    }
+  }, [currentUnitId]); // ✅ เฉพาะเมื่อเปลี่ยนเทิร์น - ห้ามใส่ currentUnit!
 
-      setMovementRange(moveRange);
-      setAttackRange(atkRange);
-    },
-    [viewModel]
-  );
-
-  /**
-   * Select a tile
-   */
-  const selectTile = useCallback((x: number, y: number) => {
-    setSelectedTilePosition({ x, y });
-  }, []);
-
-  /**
-   * Move unit to new position
-   */
-  const moveUnit = useCallback(
-    (unitId: string, x: number, y: number) => {
-      if (!viewModel) return;
-
-      const newViewModel = { ...viewModel };
-
-      // Update ally units
-      newViewModel.allyUnits = newViewModel.allyUnits.map((unit) =>
-        unit.id === unitId ? { ...unit, position: { x, y } } : unit
-      );
-
-      // Update enemy units
-      newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) =>
-        unit.id === unitId ? { ...unit, position: { x, y } } : unit
-      );
-
-      setViewModel(newViewModel);
-      setSelectedUnitId(null);
+  // Calculate ranges - ALWAYS show for current unit's turn
+  // ⚠️ CRITICAL: ต้องใช้ currentUnit object ใน dependencies เพื่อ detect position change หลัง move
+  useEffect(() => {
+    if (!viewModel || !currentUnit) {
+      console.log("❌ No viewModel or currentUnit", {
+        viewModel: !!viewModel,
+        currentUnit: !!currentUnit,
+      });
       setMovementRange([]);
-    },
-    [viewModel]
-  );
-
-  /**
-   * Attack target unit
-   */
-  const attackUnit = useCallback(
-    async (attackerId: string, targetId: string) => {
-      if (!viewModel) return;
-
-      const attacker = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(
-        (u) => u.id === attackerId
-      );
-      const target = [...viewModel.allyUnits, ...viewModel.enemyUnits].find(
-        (u) => u.id === targetId
-      );
-
-      if (!attacker || !target) return;
-
-      const presenter = getPresenter();
-      const damage = presenter.calculateDamage(attacker, target);
-
-      const newViewModel = { ...viewModel };
-
-      // Update target HP
-      newViewModel.allyUnits = newViewModel.allyUnits.map((unit) =>
-        unit.id === targetId
-          ? { ...unit, currentHp: Math.max(0, unit.currentHp - damage) }
-          : unit
-      );
-
-      newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) =>
-        unit.id === targetId
-          ? { ...unit, currentHp: Math.max(0, unit.currentHp - damage) }
-          : unit
-      );
-
-      // Mark attacker as acted
-      newViewModel.allyUnits = newViewModel.allyUnits.map((unit) =>
-        unit.id === attackerId ? { ...unit, hasActed: true } : unit
-      );
-
-      newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) =>
-        unit.id === attackerId ? { ...unit, hasActed: true } : unit
-      );
-
-      setViewModel(newViewModel);
-      setSelectedUnitId(null);
       setAttackRange([]);
+      return;
+    }
+
+    // Check if there are enemies to attack
+    const hasEnemies = currentUnit.isAlly
+      ? enemyUnits.length > 0
+      : allyUnits.length > 0;
+
+    console.log("🎯 Calculating ranges for:", {
+      unit: currentUnit.character.name,
+      isAlly: currentUnit.isAlly,
+      currentPosition: currentUnit.position,
+      originalPosition: originalPosition,
+      hasActed: currentUnit.hasActed,
+      hasEnemies: hasEnemies,
+      mov: currentUnit.character.stats.mov,
+    });
+
+    // Movement range - use BFS pathfinding (cannot jump over enemies)
+    const moveRange: { x: number; y: number }[] = [];
+    const positionForMove = originalPosition || currentUnit.position;
+    const range = currentUnit.character.stats.mov;
+
+    // BFS to find reachable tiles
+    const visited = new Set<string>();
+    const queue: { x: number; y: number; distance: number }[] = [
+      { x: positionForMove.x, y: positionForMove.y, distance: 0 },
+    ];
+    visited.add(`${positionForMove.x},${positionForMove.y}`);
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+
+      // Check 4 directions (up, down, left, right)
+      const directions = [
+        { x: current.x, y: current.y - 1 }, // up
+        { x: current.x, y: current.y + 1 }, // down
+        { x: current.x - 1, y: current.y }, // left
+        { x: current.x + 1, y: current.y }, // right
+      ];
+
+      for (const next of directions) {
+        const key = `${next.x},${next.y}`;
+
+        // Check bounds
+        if (
+          next.x < 0 ||
+          next.x >= viewModel.battleMap.width ||
+          next.y < 0 ||
+          next.y >= viewModel.battleMap.height
+        ) {
+          continue;
+        }
+
+        // Skip if already visited
+        if (visited.has(key)) continue;
+
+        // Check if tile is occupied by enemy (cannot pass through enemies)
+        const occupiedByEnemy = currentUnit.isAlly
+          ? enemyUnits.some(
+              (u) => u.position.x === next.x && u.position.y === next.y
+            )
+          : allyUnits.some(
+              (u) => u.position.x === next.x && u.position.y === next.y
+            );
+
+        // Skip if occupied by enemy (cannot pass through)
+        if (occupiedByEnemy) continue;
+
+        // Check if tile is final destination (cannot stop on ally)
+        const occupiedByAlly = currentUnit.isAlly
+          ? allyUnits.some(
+              (u) =>
+                u.position.x === next.x &&
+                u.position.y === next.y &&
+                u.id !== currentUnit.id
+            )
+          : enemyUnits.some(
+              (u) =>
+                u.position.x === next.x &&
+                u.position.y === next.y &&
+                u.id !== currentUnit.id
+            );
+
+        const newDistance = current.distance + 1;
+
+        // Add to movement range if within range and not occupied by ally
+        if (newDistance <= range) {
+          // Can pass through ally but cannot stop on ally
+          if (!occupiedByAlly) {
+            moveRange.push({ x: next.x, y: next.y });
+          }
+          visited.add(key);
+          queue.push({ x: next.x, y: next.y, distance: newDistance });
+        }
+      }
+    }
+
+    // Show original position (start point) as moveable
+    if (originalPosition) {
+      const alreadyExists = moveRange.some(
+        (pos) => pos.x === originalPosition.x && pos.y === originalPosition.y
+      );
+      if (!alreadyExists) {
+        moveRange.push({ x: originalPosition.x, y: originalPosition.y });
+      }
+    }
+
+    // Also show current position as moveable (where unit moved to)
+    if (
+      originalPosition &&
+      (currentUnit.position.x !== originalPosition.x ||
+        currentUnit.position.y !== originalPosition.y)
+    ) {
+      const alreadyExists = moveRange.some(
+        (pos) =>
+          pos.x === currentUnit.position.x && pos.y === currentUnit.position.y
+      );
+      if (!alreadyExists) {
+        moveRange.push({
+          x: currentUnit.position.x,
+          y: currentUnit.position.y,
+        });
+      }
+    }
+
+    // Attack range - use CURRENT position (after move)
+    // Only show if there are enemies
+    const atkRange: { x: number; y: number }[] = [];
+    const attackRangeValue = 2; // Can be based on weapon
+
+    if (hasEnemies) {
+      for (let x = 0; x < viewModel.battleMap.width; x++) {
+        for (let y = 0; y < viewModel.battleMap.height; y++) {
+          const attackDistance =
+            Math.abs(x - currentUnit.position.x) +
+            Math.abs(y - currentUnit.position.y);
+          if (attackDistance <= attackRangeValue && attackDistance > 0) {
+            atkRange.push({ x, y });
+          }
+        }
+      }
+    }
+
+    console.log("✅ Ranges calculated:", {
+      movementRange: moveRange.length,
+      attackRange: atkRange.length,
+      hasEnemies: hasEnemies,
+      usingOriginalPos: !!originalPosition,
+    });
+
+    setMovementRange(moveRange);
+    setAttackRange(atkRange);
+  }, [
+    currentUnit,
+    allyUnits,
+    enemyUnits,
+    viewModel,
+    originalPosition,
+    setMovementRange,
+    setAttackRange,
+  ]);
+
+  // Enemy AI - Auto play enemy turn
+  useEffect(() => {
+    if (
+      !currentUnit ||
+      currentUnit.isAlly ||
+      currentUnit.hasActed ||
+      !viewModel
+    )
+      return;
+
+    const playEnemyTurn = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+
+      // Find nearest ally
+      let nearestAlly = null;
+      let minDistance = Infinity;
+
+      for (const ally of allyUnits) {
+        const distance =
+          Math.abs(ally.position.x - currentUnit.position.x) +
+          Math.abs(ally.position.y - currentUnit.position.y);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestAlly = ally;
+        }
+      }
+
+      if (!nearestAlly) {
+        storeEndTurn();
+        return;
+      }
+
+      // Check if in attack range
+      const attackRangeValue = 2;
+      if (minDistance <= attackRangeValue) {
+        // Attack!
+        const damage = Math.max(
+          1,
+          currentUnit.character.stats.atk - nearestAlly.character.stats.def
+        );
+        storeAttackUnit(currentUnit.id, nearestAlly.id, damage);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        storeEndTurn();
+      } else {
+        // Move toward ally
+        const dx = nearestAlly.position.x - currentUnit.position.x;
+        const dy = nearestAlly.position.y - currentUnit.position.y;
+
+        let newX = currentUnit.position.x;
+        let newY = currentUnit.position.y;
+
+        // Move in the direction of the ally
+        if (Math.abs(dx) > Math.abs(dy)) {
+          newX += dx > 0 ? 1 : -1;
+        } else {
+          newY += dy > 0 ? 1 : -1;
+        }
+
+        // Check if tile is occupied
+        const occupied = [...allyUnits, ...enemyUnits].some(
+          (u) => u.position.x === newX && u.position.y === newY
+        );
+
+        if (!occupied) {
+          storeMoveUnit(currentUnit.id, newX, newY);
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        storeEndTurn();
+      }
+    };
+
+    playEnemyTurn();
+  }, [
+    currentUnit,
+    allyUnits,
+    enemyUnits,
+    viewModel,
+    storeMoveUnit,
+    storeAttackUnit,
+    storeEndTurn,
+  ]);
+
+  // Action handlers - delegate to store
+  const handleTileClick = useCallback(
+    (x: number, y: number) => {
+      store.handleTileClick(x, y);
     },
-    [viewModel]
+    [store]
   );
 
-  /**
-   * End current turn
-   */
-  const endTurn = useCallback(() => {
-    if (!viewModel) return;
+  const handleEndTurn = useCallback(() => {
+    storeEndTurn();
+  }, [storeEndTurn]);
 
-    const newViewModel = { ...viewModel };
-
-    // Reset hasActed for all units
-    newViewModel.allyUnits = newViewModel.allyUnits.map((unit) => ({
-      ...unit,
-      hasActed: false,
-    }));
-    newViewModel.enemyUnits = newViewModel.enemyUnits.map((unit) => ({
-      ...unit,
-      hasActed: false,
-    }));
-
-    // Increment turn
-    newViewModel.state.turn += 1;
-
-    // Get next unit in turn order
-    const currentIndex = newViewModel.turnOrder.findIndex(
-      (u) => u.id === newViewModel.state.currentUnitId
-    );
-    const nextIndex = (currentIndex + 1) % newViewModel.turnOrder.length;
-    newViewModel.state.currentUnitId = newViewModel.turnOrder[nextIndex].id;
-
-    setViewModel(newViewModel);
-    setSelectedUnitId(null);
-    setMovementRange([]);
-    setAttackRange([]);
-  }, [viewModel]);
-
-  /**
-   * Select action
-   */
-  const selectAction = useCallback(
-    (action: "move" | "attack" | "skill" | null) => {
-      if (!viewModel) return;
-
-      const newViewModel = { ...viewModel };
-      newViewModel.state.selectedAction = action;
-      setViewModel(newViewModel);
-    },
-    [viewModel]
-  );
+  const handleResetBattle = useCallback(() => {
+    resetBattle();
+  }, [resetBattle]);
 
   return {
     // State
     viewModel,
     loading,
     error,
-    selectedUnitId,
-    selectedTilePosition,
-    movementRange,
-    attackRange,
 
-    // Actions
-    loadData,
-    selectUnit,
-    selectTile,
-    moveUnit,
-    attackUnit,
-    endTurn,
-    selectAction,
+    // Battle state from store
+    allyUnits,
+    enemyUnits,
+    turn,
+    phase,
+    currentUnitId,
+    rewards,
+
+    // Computed state
+    currentUnit: currentUnit || null,
+    aliveTurnOrder,
+
+    // Actions - delegate to store
+    handleTileClick,
+    handleEndTurn,
+    handleResetBattle,
+    getUnitAtPosition: store.getUnitAtPosition,
+    isTileInMovementRange: store.isTileInMovementRange,
+    isTileInAttackRange: store.isTileInAttackRange,
   };
 }
