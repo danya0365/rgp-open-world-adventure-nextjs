@@ -273,6 +273,20 @@ export function WorldMapView({
   }> = [];
   if (currentLocation?.metadata) {
     
+    // Add NPCs as virtual locations
+    if (currentLocation.metadata.npcs && currentLocation.metadata.npcs.length > 0) {
+      currentLocation.metadata.npcs.forEach((npcId, idx) => {
+        virtualServiceLocations.push({
+          id: `service-npc-${npcId}`,
+          name: `NPC ${idx + 1}`,
+          type: 'npc',
+          isService: true,
+          serviceType: 'npc',
+          metadata: { npcId },
+        });
+      });
+    }
+    
     // Add shops as virtual locations
     if (currentLocation.metadata.shops && currentLocation.metadata.shops.length > 0) {
       currentLocation.metadata.shops.forEach((shopId) => {
@@ -319,6 +333,62 @@ export function WorldMapView({
           isService: true,
           serviceType: 'battle',
           metadata: { battleMapId },
+        });
+      });
+    }
+    
+    // Add encounters as virtual locations
+    if (currentLocation.metadata.encounters && currentLocation.metadata.encounters.length > 0) {
+      currentLocation.metadata.encounters.forEach((encounterId, idx) => {
+        virtualServiceLocations.push({
+          id: `service-encounter-${encounterId}`,
+          name: `Encounter ${idx + 1}`,
+          type: 'encounter',
+          isService: true,
+          serviceType: 'encounter',
+          metadata: { encounterId },
+        });
+      });
+    }
+    
+    // Add treasures as virtual locations
+    if (currentLocation.metadata.treasures && currentLocation.metadata.treasures.length > 0) {
+      currentLocation.metadata.treasures.forEach((treasureId, idx) => {
+        virtualServiceLocations.push({
+          id: `service-treasure-${treasureId}`,
+          name: `Treasure ${idx + 1}`,
+          type: 'treasure',
+          isService: true,
+          serviceType: 'treasure',
+          metadata: { treasureId },
+        });
+      });
+    }
+    
+    // Add secrets as virtual locations
+    if (currentLocation.metadata.secrets && currentLocation.metadata.secrets.length > 0) {
+      currentLocation.metadata.secrets.forEach((secretId, idx) => {
+        virtualServiceLocations.push({
+          id: `service-secret-${secretId}`,
+          name: `Secret ${idx + 1}`,
+          type: 'secret',
+          isService: true,
+          serviceType: 'secret',
+          metadata: { secretId },
+        });
+      });
+    }
+    
+    // Add exits as virtual locations
+    if (currentLocation.metadata.exits && currentLocation.metadata.exits.length > 0) {
+      currentLocation.metadata.exits.forEach((exit, idx) => {
+        virtualServiceLocations.push({
+          id: `service-exit-${exit.id}`,
+          name: `Exit ${idx + 1}`,
+          type: 'exit',
+          isService: true,
+          serviceType: 'exit',
+          metadata: { exit },
         });
       });
     }
@@ -450,9 +520,19 @@ export function WorldMapView({
                 key={location.id}
                 onClick={() => {
                   if (isService) {
-                    // ถ้าคลิก service -> อาจจะเปิด shop/inn/battle modal ในอนาคต
-                    // TODO: Handle service click
-                    alert(`คลิกที่ ${location.name} - Feature นี้กำลังพัฒนา`);
+                    // ถ้าคลิก service -> แสดงข้อความตาม service type
+                    const serviceMessages: Record<string, string> = {
+                      shop: '🏪 เปิดร้านค้า - Feature กำลังพัฒนา',
+                      inn: '🏨 พักผ่อน - Feature กำลังพัฒนา',
+                      guild: '🏛️ เข้าหอสมาคม - Feature กำลังพัฒนา',
+                      battle: '⚔️ เข้าสู่การต่อสู้ - Feature กำลังพัฒนา',
+                      npc: '👤 พูดคุยกับ NPC - Feature กำลังพัฒนา',
+                      encounter: '💀 Random Encounter - Feature กำลังพัฒนา',
+                      treasure: '💎 เปิดกล่องสมบัติ - Feature กำลังพัฒนา',
+                      secret: '🔮 สำรวจความลับ - Feature กำลังพัฒนา',
+                      exit: '🚪 ใช้ทางออก - Feature กำลังพัฒนา',
+                    };
+                    alert(serviceMessages[location.serviceType] || `${location.name} - Feature กำลังพัฒนา`);
                   } else if (isCurrentLocation) {
                     // ถ้าคลิกที่ current location -> เปิด detail modal
                     setSelectedLocation(location);
@@ -487,6 +567,16 @@ export function WorldMapView({
                       ? 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500'
                       : location.serviceType === 'battle'
                       ? 'bg-red-600 border-red-400 group-hover:scale-110 group-hover:bg-red-500'
+                      : location.serviceType === 'npc'
+                      ? 'bg-cyan-600 border-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500'
+                      : location.serviceType === 'encounter'
+                      ? 'bg-orange-600 border-orange-400 group-hover:scale-110 group-hover:bg-orange-500'
+                      : location.serviceType === 'treasure'
+                      ? 'bg-yellow-600 border-yellow-400 group-hover:scale-110 group-hover:bg-yellow-500'
+                      : location.serviceType === 'secret'
+                      ? 'bg-indigo-600 border-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500'
+                      : location.serviceType === 'exit'
+                      ? 'bg-teal-600 border-teal-400 group-hover:scale-110 group-hover:bg-teal-500'
                       : 'bg-slate-600 border-slate-400 group-hover:scale-110 group-hover:bg-slate-500'
                     : isCurrentLocation
                     ? 'bg-amber-500 border-amber-300 scale-125'
@@ -502,6 +592,16 @@ export function WorldMapView({
                         ? '🏛️'
                         : location.serviceType === 'battle'
                         ? '⚔️'
+                        : location.serviceType === 'npc'
+                        ? '👤'
+                        : location.serviceType === 'encounter'
+                        ? '💀'
+                        : location.serviceType === 'treasure'
+                        ? '💎'
+                        : location.serviceType === 'secret'
+                        ? '🔮'
+                        : location.serviceType === 'exit'
+                        ? '🚪'
                         : '❓'
                       : isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'
                     }
@@ -579,6 +679,11 @@ export function WorldMapView({
                         {location.serviceType === 'inn' && 'โรงแรม - พักฟื้น'}
                         {location.serviceType === 'guild' && 'หอสมาคม - รับเควส'}
                         {location.serviceType === 'battle' && 'สนามรบ - เข้าสู่การต่อสู้'}
+                        {location.serviceType === 'npc' && 'NPC - พูดคุย/รับเควส'}
+                        {location.serviceType === 'encounter' && 'การสุ่มเจอ - มอนสเตอร์'}
+                        {location.serviceType === 'treasure' && 'สมบัติ - เปิดกล่อง'}
+                        {location.serviceType === 'secret' && 'ความลับ - สำรวจ'}
+                        {location.serviceType === 'exit' && 'ทางออก - เดินทาง'}
                       </div>
                     )}
                     
