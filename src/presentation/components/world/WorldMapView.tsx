@@ -5,38 +5,39 @@ import { useWorldPresenter } from "@/src/presentation/presenters/world/useWorldP
 import { getPartyStats, useGameStore } from "@/src/stores/gameStore";
 import {
   AlertTriangle,
-  Compass,
-  Globe,
-  Map,
-  MapPin,
   Users,
   Shield,
   Heart,
   Zap,
+  X,
+  Map as MapIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LocationDetailView } from "../location/LocationDetailView";
-import { Breadcrumb } from "./Breadcrumb";
-import { LocationCard } from "./LocationCard";
 import {
   GameLayout,
-  GameLayoutContent,
   GameLayoutOverlay,
 } from "@/src/presentation/components/layout/GameLayout";
 import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
+import { Location } from "@/src/domain/types/location.types";
 
-interface WorldViewProps {
+interface WorldMapViewProps {
   initialViewModel?: WorldViewModel;
   currentLocationId?: string;
 }
 
-export function WorldView({
+/**
+ * WorldMapView - Game-style world map without scrolling
+ * Displays locations as interactive markers on a full-screen map
+ */
+export function WorldMapView({
   initialViewModel,
   currentLocationId,
-}: WorldViewProps) {
+}: WorldMapViewProps) {
   const [showPartyPanel, setShowPartyPanel] = useState(true);
   const [showStatsPanel, setShowStatsPanel] = useState(true);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const {
     parties,
@@ -57,7 +58,6 @@ export function WorldView({
       );
       if (!recruited) return null;
 
-      // This is a simplified version - in real app, you'd fetch full character data
       return {
         character: {
           id: member.characterId,
@@ -73,7 +73,7 @@ export function WorldView({
 
   const partyStats = getPartyStats(activePartyCharacters);
 
-  const { viewModel, loading, error, currentLocation, breadcrumb } =
+  const { viewModel, loading, error, currentLocation } =
     useWorldPresenter(initialViewModel, currentLocationId);
 
   // Save location to game store when it changes
@@ -83,16 +83,16 @@ export function WorldView({
     }
   }, [currentLocation?.id, saveCurrentLocation]);
 
-  // Show loading only on initial load
+  // Show loading state
   if (loading && !viewModel) {
     return (
       <GameLayout>
-        <GameLayoutContent centered>
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <p className="text-gray-400">กำลังโหลดแผนที่โลก...</p>
           </div>
-        </GameLayoutContent>
+        </div>
       </GameLayout>
     );
   }
@@ -101,7 +101,7 @@ export function WorldView({
   if (error && !viewModel) {
     return (
       <GameLayout>
-        <GameLayoutContent centered>
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
             <p className="text-red-400 font-medium mb-2">เกิดข้อผิดพลาด</p>
@@ -113,7 +113,7 @@ export function WorldView({
               กลับหน้าแรก
             </Link>
           </div>
-        </GameLayoutContent>
+        </div>
       </GameLayout>
     );
   }
@@ -122,12 +122,12 @@ export function WorldView({
   if (!viewModel) {
     return (
       <GameLayout>
-        <GameLayoutContent centered>
+        <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 text-6xl mb-4">🗺️</div>
             <p className="text-gray-400 font-medium mb-2">ยังไม่มีข้อมูลแผนที่</p>
           </div>
-        </GameLayoutContent>
+        </div>
       </GameLayout>
     );
   }
@@ -136,7 +136,7 @@ export function WorldView({
   if (activePartyMembers.length === 0) {
     return (
       <GameLayout>
-        <GameLayoutContent centered>
+        <div className="absolute inset-0 flex items-center justify-center p-8">
           <div className="text-center max-w-md">
             <AlertTriangle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-2">ยังไม่มีทีม!</h2>
@@ -158,126 +158,188 @@ export function WorldView({
               </Link>
             </div>
           </div>
-        </GameLayoutContent>
+        </div>
       </GameLayout>
     );
   }
 
-  // Get locations to display
-  const locationsToShow = currentLocation
-    ? viewModel.locations.filter((loc) => loc.parentId === currentLocation.id)
-    : viewModel.rootLocations;
+  // Get all locations (flatten hierarchy for map display)
+  const allLocations = viewModel.locations;
 
-  // Check if current location has children
-  const hasChildren = locationsToShow.length > 0;
+  // Get discovered locations
+  const discoveredLocations = allLocations.filter((loc) => loc.isDiscoverable);
+
+  // Generate positions for locations (simple grid layout for now)
+  const locationsWithPositions = discoveredLocations.map((loc, index) => {
+    // Simple grid: 4 columns
+    const col = index % 4;
+    const row = Math.floor(index / 4);
+    
+    // Calculate position (centered with spacing)
+    const x = 20 + col * 23; // % from left
+    const y = 20 + row * 25; // % from top
+    
+    return {
+      ...loc,
+      x,
+      y,
+    };
+  });
 
   return (
     <GameLayout>
-      <GameLayoutContent>
-        <div className="max-w-7xl mx-auto">
-
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Map className="w-10 h-10 text-purple-400" />
-            <h1 className="text-4xl font-bold text-white">
-              {currentLocation ? currentLocation.name : "แผนที่โลก"}
-            </h1>
-          </div>
-          <p className="text-gray-400 text-lg">
-            {currentLocation
-              ? currentLocation.description
-              : "สำรวจโลกแฟนตาซีกว้างใหญ่"}
-          </p>
+      {/* Full Screen Map Container */}
+      <div className="absolute inset-0">
+        {/* Map Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+          {/* Grid Pattern Overlay */}
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(147, 51, 234, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(147, 51, 234, 0.3) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px',
+            }}
+          />
+          
+          {/* Radial Glow */}
+          <div className="absolute inset-0 bg-gradient-radial from-purple-600/10 via-transparent to-transparent" />
         </div>
 
-        {/* Breadcrumb */}
-        {breadcrumb.length > 0 && <Breadcrumb path={breadcrumb} />}
+        {/* Location Markers */}
+        <div className="absolute inset-0">
+          {locationsWithPositions.map((location) => {
+            const isCurrentLocation = location.id === currentLocationId;
+            const isCityOrTown = location.type === 'city' || location.type === 'town';
+            
+            return (
+              <button
+                key={location.id}
+                onClick={() => setSelectedLocation(location)}
+                className="absolute group transform -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${location.x}%`,
+                  top: `${location.y}%`,
+                }}
+              >
+                {/* Connection Lines (optional - to parent) */}
+                
+                {/* Marker Glow */}
+                <div className={`absolute inset-0 rounded-full blur-xl transition-all ${
+                  isCurrentLocation 
+                    ? 'bg-amber-400/50 w-24 h-24 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2' 
+                    : 'bg-purple-400/30 w-16 h-16 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:bg-purple-400/50'
+                }`} />
+                
+                {/* Marker Icon */}
+                <div className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
+                  isCurrentLocation
+                    ? 'bg-amber-500 border-amber-300 scale-125'
+                    : 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500'
+                }`}>
+                  <span className="text-2xl">
+                    {isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'}
+                  </span>
+                  
+                  {/* Current Location Indicator */}
+                  {isCurrentLocation && (
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      <div className="px-2 py-1 bg-amber-500 text-white text-xs font-bold rounded shadow-lg animate-pulse">
+                        YOU ARE HERE
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Location Name */}
+                <div className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap ${
+                  isCurrentLocation ? 'scale-110' : ''
+                }`}>
+                  <div className={`px-3 py-1 rounded-lg text-sm font-semibold shadow-lg transition-all ${
+                    isCurrentLocation
+                      ? 'bg-amber-500/90 text-white'
+                      : 'bg-slate-800/90 text-gray-200 group-hover:bg-purple-600/90 group-hover:text-white'
+                  }`}>
+                    {location.name}
+                  </div>
+                </div>
+                
+                {/* Hover Info */}
+                <div className="absolute top-full mt-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="px-3 py-2 bg-slate-900/95 border border-purple-500/50 rounded-lg text-xs text-gray-300 whitespace-nowrap shadow-xl">
+                    <div className="font-semibold text-purple-400 capitalize">{location.type}</div>
+                    <div className="text-gray-400 text-[10px] mt-1">คลิกเพื่อดูรายละเอียด</div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
-        {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Globe className="w-5 h-5 text-purple-400" />
-              <div className="text-sm text-gray-400">สถานที่ทั้งหมด</div>
-            </div>
-            <div className="text-3xl font-bold text-purple-400">
-              {viewModel.totalLocations}
-            </div>
-          </div>
-
-          <div className="bg-blue-900/30 backdrop-blur-sm border border-blue-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-blue-400" />
-              <div className="text-sm text-gray-400">ค้นพบแล้ว</div>
-            </div>
-            <div className="text-3xl font-bold text-blue-400">
-              {viewModel.discoveredCount}
-            </div>
-          </div>
-
-          <div className="bg-green-900/30 backdrop-blur-sm border border-green-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Map className="w-5 h-5 text-green-400" />
-              <div className="text-sm text-gray-400">ทวีป</div>
-            </div>
-            <div className="text-3xl font-bold text-green-400">
-              {viewModel.continentCount}
-            </div>
-          </div>
-
-          <div className="bg-amber-900/30 backdrop-blur-sm border border-amber-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Compass className="w-5 h-5 text-amber-400" />
-              <div className="text-sm text-gray-400">เมือง</div>
-            </div>
-            <div className="text-3xl font-bold text-amber-400">
-              {viewModel.cityCount}
+        {/* Map Info - Top Center */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+          <div className="px-6 py-3 bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-xl">
+            <div className="flex items-center gap-3">
+              <MapIcon className="w-6 h-6 text-purple-400" />
+              <div>
+                <h1 className="text-xl font-bold text-white">
+                  {currentLocation ? currentLocation.name : "แผนที่โลก Aethoria"}
+                </h1>
+                <p className="text-gray-400 text-xs">
+                  สถานที่: {discoveredLocations.length}/{viewModel.totalLocations} | 
+                  คลิกที่ไอคอนเพื่อดูรายละเอียด
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Child Locations Grid - แสดงถ้ามี children */}
-        {hasChildren && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-4">สถานที่ภายใน</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {locationsToShow.map((location) => (
-                <LocationCard
-                  key={location.id}
-                  location={location}
-                  currentPath={
-                    currentLocationId ? `/world/${currentLocationId}` : "/world"
-                  }
-                  isDiscovered={location.isDiscoverable}
+        {/* Minimap - Bottom Left (optional) */}
+        <div className="absolute bottom-4 left-4 z-10">
+          <div className="w-48 h-48 bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-xl p-3">
+            <div className="text-xs text-gray-400 mb-2">Minimap</div>
+            <div className="relative w-full h-full bg-slate-800/50 rounded">
+              {/* Simplified minimap dots */}
+              {locationsWithPositions.slice(0, 15).map((loc) => (
+                <div
+                  key={loc.id}
+                  className={`absolute w-2 h-2 rounded-full ${
+                    loc.id === currentLocationId ? 'bg-amber-400' : 'bg-purple-400'
+                  }`}
+                  style={{
+                    left: `${loc.x}%`,
+                    top: `${loc.y}%`,
+                  }}
                 />
               ))}
             </div>
           </div>
-        )}
-
-        {/* Location Detail - แสดงเสมอถ้ามี currentLocation */}
-        {currentLocation && currentLocationId && (
-          <LocationDetailView
-            locationId={currentLocationId}
-            hideBackButton={true}
-            hideHeader={true}
-            hideStats={true}
-            compact={true}
-          />
-        )}
-
-        {/* Error Toast */}
-        {error && viewModel && (
-          <div className="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-            <div className="flex items-center">
-              <span className="mr-2">⚠️</span>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
         </div>
-      </GameLayoutContent>
+      </div>
+
+      {/* Location Detail Modal */}
+      {selectedLocation && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-slate-900/95 border border-slate-700 rounded-xl">
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedLocation(null)}
+              className="absolute top-4 right-4 z-10 p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+
+            {/* Location Detail */}
+            <LocationDetailView
+              locationId={selectedLocation.id}
+              hideBackButton={true}
+              compact={true}
+            />
+          </div>
+        </div>
+      )}
 
       {/* HUD Overlays */}
       <GameLayoutOverlay>
@@ -401,6 +463,16 @@ export function WorldView({
             onClick={() => setShowStatsPanel(true)}
             position="bottom-right"
           />
+        )}
+
+        {/* Error Toast */}
+        {error && viewModel && (
+          <div className="absolute bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg pointer-events-auto">
+            <div className="flex items-center">
+              <span className="mr-2">⚠️</span>
+              <span>{error}</span>
+            </div>
+          </div>
         )}
       </GameLayoutOverlay>
     </GameLayout>

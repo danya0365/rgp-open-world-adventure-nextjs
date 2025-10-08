@@ -1,4 +1,4 @@
-import { WorldView } from "@/src/presentation/components/world/WorldView";
+import { WorldMapView } from "@/src/presentation/components/world/WorldMapView";
 import { WorldPresenterFactory } from "@/src/presentation/presenters/world/WorldPresenter";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -54,7 +54,7 @@ export default async function WorldPage({ params }: WorldPageProps) {
     // Get view model from presenter
     const viewModel = await presenter.getViewModel(locationId);
 
-    return <WorldView initialViewModel={viewModel} currentLocationId={locationId} />;
+    return <WorldMapView initialViewModel={viewModel} currentLocationId={locationId} />;
   } catch (error) {
     console.error("Error fetching world data:", error);
 
