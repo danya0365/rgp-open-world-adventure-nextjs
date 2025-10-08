@@ -264,3 +264,28 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     },
   },
 ];
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
+
+/**
+ * Get battle map by ID
+ */
+export function getBattleMapById(id: string): BattleMapConfig | undefined {
+  return BATTLE_MAPS_MASTER.find((map) => map.id === id);
+}
+
+/**
+ * Get battle maps by size
+ */
+export function getBattleMapsBySize(size: string): BattleMapConfig[] {
+  return BATTLE_MAPS_MASTER.filter((map) => map.size === size);
+}
+
+/**
+ * Get random battle map
+ */
+export function getRandomBattleMap(): BattleMapConfig {
+  return BATTLE_MAPS_MASTER[Math.floor(Math.random() * BATTLE_MAPS_MASTER.length)];
+}

@@ -1,4 +1,8 @@
-import { mockLocations, buildLocationTree, getLocationPath } from "@/src/data/mock";
+import { 
+  LOCATIONS_MASTER, 
+  buildLocationTree, 
+  getLocationPath 
+} from "@/src/data/master/locations.master";
 import { Location } from "@/src/domain/types/location.types";
 
 /**
@@ -26,26 +30,25 @@ export interface LocationDetailViewModel {
 
 /**
  * World Presenter
- * Handles business logic for world map navigation using mock data
+ * Handles business logic for world map navigation using master data
  */
 export class WorldPresenter {
   /**
    * Get view model for world map page
-   * @param currentLocationId - Optional current location ID to show its children
    */
-  async getViewModel(currentLocationId?: string): Promise<WorldViewModel> {
+  async getViewModel(): Promise<WorldViewModel> {
     try {
-      const locationTree = buildLocationTree(mockLocations);
+      const locationTree = buildLocationTree(LOCATIONS_MASTER);
       const rootLocations = locationTree.filter((loc) => !loc.parentId);
       
-      const continents = mockLocations.filter((loc) => loc.type === "continent");
-      const cities = mockLocations.filter((loc) => loc.type === "city");
-      const discovered = mockLocations.filter((loc) => loc.isDiscoverable);
+      const continents = LOCATIONS_MASTER.filter((loc) => loc.type === "continent");
+      const cities = LOCATIONS_MASTER.filter((loc) => loc.type === "city");
+      const discovered = LOCATIONS_MASTER.filter((loc) => loc.isDiscoverable);
 
       return {
-        locations: mockLocations,
+        locations: LOCATIONS_MASTER,
         rootLocations,
-        totalLocations: mockLocations.length,
+        totalLocations: LOCATIONS_MASTER.length,
         discoveredCount: discovered.length,
         continentCount: continents.length,
         cityCount: cities.length,
@@ -61,14 +64,14 @@ export class WorldPresenter {
    */
   async getLocationDetail(locationId: string): Promise<LocationDetailViewModel> {
     try {
-      const location = mockLocations.find((loc) => loc.id === locationId);
+      const location = LOCATIONS_MASTER.find((loc) => loc.id === locationId);
       
       if (!location) {
         throw new Error(`Location not found: ${locationId}`);
       }
 
       const path = getLocationPath(locationId);
-      const children = mockLocations.filter((loc) => loc.parentId === locationId);
+      const children = LOCATIONS_MASTER.filter((loc) => loc.parentId === locationId);
       const connections: Location[] = []; // TODO: Implement connections from metadata
 
       return {
@@ -90,7 +93,7 @@ export class WorldPresenter {
    */
   async generateMetadata(currentLocationId?: string) {
     if (currentLocationId) {
-      const location = mockLocations.find((loc) => loc.id === currentLocationId);
+      const location = LOCATIONS_MASTER.find((loc) => loc.id === currentLocationId);
       if (location) {
         return {
           title: `${location.name} | แผนที่โลก | RPG Open World Adventure`,
@@ -112,7 +115,7 @@ export class WorldPresenter {
    */
   async generateLocationMetadata(locationId: string) {
     try {
-      const location = mockLocations.find((loc) => loc.id === locationId);
+      const location = LOCATIONS_MASTER.find((loc) => loc.id === locationId);
       
       if (!location) {
         return {
@@ -137,7 +140,7 @@ export class WorldPresenter {
    */
   async getLocationById(id: string): Promise<Location | undefined> {
     try {
-      return mockLocations.find((loc) => loc.id === id);
+      return LOCATIONS_MASTER.find((loc) => loc.id === id);
     } catch (error) {
       console.error("Error getting location by ID:", error);
       throw error;
@@ -149,7 +152,7 @@ export class WorldPresenter {
    */
   async getChildrenLocations(parentId: string): Promise<Location[]> {
     try {
-      return mockLocations.filter((loc) => loc.parentId === parentId);
+      return LOCATIONS_MASTER.filter((loc) => loc.parentId === parentId);
     } catch (error) {
       console.error("Error getting children locations:", error);
       throw error;
@@ -161,7 +164,7 @@ export class WorldPresenter {
    */
   async getRootLocations(): Promise<Location[]> {
     try {
-      return mockLocations.filter((loc) => !loc.parentId);
+      return LOCATIONS_MASTER.filter((loc) => !loc.parentId);
     } catch (error) {
       console.error("Error getting root locations:", error);
       throw error;

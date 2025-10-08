@@ -316,3 +316,39 @@ export const ENEMIES_MASTER: Enemy[] = [
     resistances: ["water", "wind", "dark", "earth"],
   },
 ];
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
+
+/**
+ * Get enemy by ID
+ */
+export function getEnemyById(id: string): Enemy | undefined {
+  return ENEMIES_MASTER.find((enemy) => enemy.id === id);
+}
+
+/**
+ * Get enemies by type
+ */
+export function getEnemiesByType(type: Enemy["type"]): Enemy[] {
+  return ENEMIES_MASTER.filter((enemy) => enemy.type === type);
+}
+
+/**
+ * Get enemies by level range
+ */
+export function getEnemiesByLevel(minLevel: number, maxLevel: number): Enemy[] {
+  return ENEMIES_MASTER.filter(
+    (enemy) => enemy.level >= minLevel && enemy.level <= maxLevel
+  );
+}
+
+/**
+ * Get boss enemies
+ */
+export function getBossEnemies(): Enemy[] {
+  return ENEMIES_MASTER.filter(
+    (enemy) => enemy.type === "boss" || enemy.type === "legendary"
+  );
+}

@@ -1,8 +1,8 @@
-import { mockBattleMaps } from "@/src/data/mock/battleMaps.mock";
-import { mockCharacters } from "@/src/data/mock/characters.mock";
-import { mockEnemies } from "@/src/data/mock/enemies.mock";
-import { mockLocations } from "@/src/data/mock/locations.mock";
-import { mockQuests } from "@/src/data/mock/quests.mock";
+import { BATTLE_MAPS_MASTER } from "@/src/data/master/battleMaps.master";
+import { CHARACTERS_MASTER } from "@/src/data/master/characters.master";
+import { ENEMIES_MASTER } from "@/src/data/master/enemies.master";
+import { LOCATIONS_MASTER } from "@/src/data/master/locations.master";
+import { QUESTS_MASTER } from "@/src/data/master/quests.master";
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
 import { Character, Enemy } from "@/src/domain/types/character.types";
 import { Location } from "@/src/domain/types/location.types";
@@ -102,7 +102,7 @@ export class LocationDetailPresenter {
     battleMaps.forEach((map) => {
       map.enemies.forEach((enemyId) => enemyIds.add(enemyId));
     });
-    const enemies = mockEnemies.filter((enemy) => enemyIds.has(enemy.id));
+    const enemies = ENEMIES_MASTER.filter((enemy) => enemyIds.has(enemy.id));
 
     // Determine services (mock: based on location type)
     const services = {
@@ -175,26 +175,26 @@ export class LocationDetailPresenter {
  */
 export class LocationDetailPresenterFactory {
   /**
-   * Create presenter for client-side (uses mock data)
+   * Create presenter for client-side (uses master data)
    */
   static async createClient(): Promise<LocationDetailPresenter> {
     return new LocationDetailPresenter(
-      mockLocations,
-      mockCharacters,
-      mockQuests,
-      mockBattleMaps
+      LOCATIONS_MASTER,
+      CHARACTERS_MASTER,
+      QUESTS_MASTER,
+      BATTLE_MAPS_MASTER
     );
   }
 
   /**
-   * Create presenter for server-side (uses mock data for now)
+   * Create presenter for server-side (uses master data)
    */
   static async createServer(): Promise<LocationDetailPresenter> {
     return new LocationDetailPresenter(
-      mockLocations,
-      mockCharacters,
-      mockQuests,
-      mockBattleMaps
+      LOCATIONS_MASTER,
+      CHARACTERS_MASTER,
+      QUESTS_MASTER,
+      BATTLE_MAPS_MASTER
     );
   }
 }

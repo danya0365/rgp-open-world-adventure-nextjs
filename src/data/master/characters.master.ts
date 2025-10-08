@@ -307,3 +307,42 @@ export const CHARACTERS_MASTER: Character[] = [
     recruitQuestId: "quest-015",
   },
 ];
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
+
+/**
+ * Get character by ID
+ */
+export function getCharacterById(id: string): Character | undefined {
+  return CHARACTERS_MASTER.find((char) => char.id === id);
+}
+
+/**
+ * Get playable characters
+ */
+export function getPlayableCharacters(): Character[] {
+  return CHARACTERS_MASTER.filter((char) => char.isPlayable);
+}
+
+/**
+ * Get recruitable characters
+ */
+export function getRecruitableCharacters(): Character[] {
+  return CHARACTERS_MASTER.filter((char) => char.isRecruitable);
+}
+
+/**
+ * Get characters by class
+ */
+export function getCharactersByClass(className: string): Character[] {
+  return CHARACTERS_MASTER.filter((char) => char.class === className);
+}
+
+/**
+ * Get characters by rarity
+ */
+export function getCharactersByRarity(rarity: Character["rarity"]): Character[] {
+  return CHARACTERS_MASTER.filter((char) => char.rarity === rarity);
+}

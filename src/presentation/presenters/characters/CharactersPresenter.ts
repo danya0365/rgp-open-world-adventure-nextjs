@@ -1,4 +1,4 @@
-import { mockCharacters } from "@/src/data/mock";
+import { CHARACTERS_MASTER } from "@/src/data/master/characters.master";
 import { Character } from "@/src/domain/types/character.types";
 
 /**
@@ -15,7 +15,7 @@ export interface CharactersViewModel {
 
 /**
  * Characters Presenter
- * Handles business logic for characters management using mock data
+ * Handles business logic for characters management using master data
  */
 export class CharactersPresenter {
   /**
@@ -23,16 +23,16 @@ export class CharactersPresenter {
    */
   async getViewModel(): Promise<CharactersViewModel> {
     try {
-      const playableChars = mockCharacters.filter((c) => c.isPlayable);
-      const recruitableChars = mockCharacters.filter((c) => c.isRecruitable);
-      const legendaryChars = mockCharacters.filter(
+      const playableChars = CHARACTERS_MASTER.filter((c) => c.isPlayable);
+      const recruitableChars = CHARACTERS_MASTER.filter((c) => c.isRecruitable);
+      const legendaryChars = CHARACTERS_MASTER.filter(
         (c) => c.rarity === "legendary" || c.rarity === "mythic"
       );
-      const classes = Array.from(new Set(mockCharacters.map((c) => c.class)));
+      const classes = Array.from(new Set(CHARACTERS_MASTER.map((c) => c.class)));
 
       return {
-        characters: mockCharacters,
-        totalCharacters: mockCharacters.length,
+        characters: CHARACTERS_MASTER,
+        totalCharacters: CHARACTERS_MASTER.length,
         playableCount: playableChars.length,
         recruitableCount: recruitableChars.length,
         legendaryCount: legendaryChars.length,
@@ -60,7 +60,7 @@ export class CharactersPresenter {
    */
   async getCharacterById(id: string): Promise<Character | undefined> {
     try {
-      return mockCharacters.find((c) => c.id === id);
+      return CHARACTERS_MASTER.find((c) => c.id === id);
     } catch (error) {
       console.error("Error getting character by ID:", error);
       throw error;
@@ -73,9 +73,9 @@ export class CharactersPresenter {
   async filterByClass(className: string): Promise<Character[]> {
     try {
       if (className === "all") {
-        return mockCharacters;
+        return CHARACTERS_MASTER;
       }
-      return mockCharacters.filter((c) => c.class === className);
+      return CHARACTERS_MASTER.filter((c) => c.class === className);
     } catch (error) {
       console.error("Error filtering characters by class:", error);
       throw error;
@@ -87,7 +87,7 @@ export class CharactersPresenter {
    */
   async getPlayableCharacters(): Promise<Character[]> {
     try {
-      return mockCharacters.filter((c) => c.isPlayable);
+      return CHARACTERS_MASTER.filter((c) => c.isPlayable);
     } catch (error) {
       console.error("Error getting playable characters:", error);
       throw error;

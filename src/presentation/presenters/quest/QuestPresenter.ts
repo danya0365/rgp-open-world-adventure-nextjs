@@ -1,4 +1,4 @@
-import { mockQuests } from "@/src/data/mock/quests.mock";
+import { QUESTS_MASTER } from "@/src/data/master/quests.master";
 import { Quest, QuestStatus, QuestType } from "@/src/domain/types/quest.types";
 
 /**
@@ -147,16 +147,16 @@ export class QuestPresenter {
  */
 export class QuestPresenterFactory {
   /**
-   * Create presenter for client-side (uses mock data)
+   * Create presenter for client-side (uses master data)
    */
   static async createClient(): Promise<QuestPresenter> {
-    return new QuestPresenter(mockQuests);
+    return new QuestPresenter(QUESTS_MASTER);
   }
 
   /**
-   * Create presenter for server-side (uses mock data for now)
+   * Create presenter for server-side (uses master data)
    */
   static async createServer(): Promise<QuestPresenter> {
-    return new QuestPresenter(mockQuests);
+    return new QuestPresenter(QUESTS_MASTER);
   }
 }

@@ -1,4 +1,4 @@
-import { mockCharacters, getPlayableCharacters } from "@/src/data/mock";
+import { CHARACTERS_MASTER, getPlayableCharacters } from "@/src/data/master/characters.master";
 import { Character } from "@/src/domain/types/character.types";
 
 /**
@@ -16,7 +16,7 @@ export interface PartyViewModel {
 /**
  * Party Presenter
  * Handles business logic for party management
- * Separates master data (mock) from game state
+ * Separates master data from game state
  */
 export class PartyPresenter {
   /**
@@ -46,15 +46,15 @@ export class PartyPresenter {
         );
       }
       
-      const recruitableChars = mockCharacters.filter((c) => c.isRecruitable);
-      const legendaryChars = mockCharacters.filter(
+      const recruitableChars = CHARACTERS_MASTER.filter((c) => c.isRecruitable);
+      const legendaryChars = CHARACTERS_MASTER.filter(
         (c) => c.rarity === "legendary" || c.rarity === "mythic"
       );
 
       return {
-        availableCharacters: mockCharacters, // Master data (for reference)
+        availableCharacters: CHARACTERS_MASTER, // Master data (for reference)
         playableCharacters: availablePlayableChars, // Filtered by game state
-        totalCharacters: mockCharacters.length,
+        totalCharacters: CHARACTERS_MASTER.length,
         playableCount: availablePlayableChars.length,
         recruitableCount: recruitableChars.length,
         legendaryCount: legendaryChars.length,
@@ -93,7 +93,7 @@ export class PartyPresenter {
    */
   async getCharacterById(id: string): Promise<Character | undefined> {
     try {
-      return mockCharacters.find((c) => c.id === id);
+      return CHARACTERS_MASTER.find((c) => c.id === id);
     } catch (error) {
       console.error("Error getting character by ID:", error);
       throw error;

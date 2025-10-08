@@ -599,3 +599,92 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     coordinates: { x: 110, y: 70 },
   },
 ];
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
+
+/**
+ * Build hierarchical location tree
+ */
+export function buildLocationTree(locations: Location[]): Location[] {
+  const locationMap = new Map<string, Location>();
+  const rootLocations: Location[] = [];
+
+  // Create map of all locations
+  locations.forEach((loc) => {
+    locationMap.set(loc.id, { ...loc, children: [] });
+  });
+
+  // Build tree structure
+  locations.forEach((loc) => {
+    const location = locationMap.get(loc.id)!;
+    if (loc.parentId) {
+      const parent = locationMap.get(loc.parentId);
+      if (parent) {
+        parent.children = parent.children || [];
+        parent.children.push(location);
+      }
+    } else {
+      rootLocations.push(location);
+    }
+  });
+
+  return rootLocations;
+}
+
+/**
+ * Get location by ID
+ */
+export function getLocationById(id: string): Location | undefined {
+  return LOCATIONS_MASTER.find((loc) => loc.id === id);
+}
+
+/**
+ * Get children of a location
+ */
+export function getLocationChildren(parentId: string): Location[] {
+  return LOCATIONS_MASTER.filter((loc) => loc.parentId === parentId);
+}
+
+/**
+ * Get location path (breadcrumb)
+ */
+export function getLocationPath(locationId: string): Location[] {
+  const location = getLocationById(locationId);
+  if (!location) return [];
+
+  const path: Location[] = [location];
+  let currentParentId = location.parentId;
+
+  while (currentParentId) {
+    const parent = getLocationById(currentParentId);
+    if (parent) {
+      path.unshift(parent);
+      currentParentId = parent.parentId;
+    } else {
+      break;
+    }
+  }
+
+  return path;
+}
+
+/**
+ * Get connection by ID
+ */
+export function getConnectionById(id: string): LocationConnection | undefined {
+  return LOCATION_CONNECTIONS_MASTER.find((conn) => conn.id === id);
+}
+
+/**
+ * Get connections for a location
+ */
+export function getLocationConnections(locationId: string): LocationConnection[] {
+  return LOCATION_CONNECTIONS_MASTER.filter(
+    (conn) => conn.fromLocationId === locationId || conn.toLocationId === locationId
+  );
+}
+
+// Export hierarchical tree
+export const LOCATION_TREE_MASTER = buildLocationTree(LOCATIONS_MASTER);

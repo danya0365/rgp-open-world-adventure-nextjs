@@ -393,3 +393,53 @@ export const QUESTS_MASTER: Quest[] = [
     status: "available",
   },
 ];
+
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
+
+/**
+ * Get quest by ID
+ */
+export function getQuestById(id: string): Quest | undefined {
+  return QUESTS_MASTER.find((quest) => quest.id === id);
+}
+
+/**
+ * Get quests by type
+ */
+export function getQuestsByType(type: Quest["type"]): Quest[] {
+  return QUESTS_MASTER.filter((quest) => quest.type === type);
+}
+
+/**
+ * Get quests by status
+ */
+export function getQuestsByStatus(status: Quest["status"]): Quest[] {
+  return QUESTS_MASTER.filter((quest) => quest.status === status);
+}
+
+/**
+ * Get available quests for player level
+ */
+export function getAvailableQuests(playerLevel: number): Quest[] {
+  return QUESTS_MASTER.filter(
+    (quest) =>
+      quest.requiredLevel <= playerLevel &&
+      (quest.status === "available" || quest.status === "locked")
+  );
+}
+
+/**
+ * Get main quests
+ */
+export function getMainQuests(): Quest[] {
+  return QUESTS_MASTER.filter((quest) => quest.type === "main");
+}
+
+/**
+ * Get side quests
+ */
+export function getSideQuests(): Quest[] {
+  return QUESTS_MASTER.filter((quest) => quest.type === "side");
+}

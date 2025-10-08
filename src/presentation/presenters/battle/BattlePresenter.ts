@@ -1,6 +1,6 @@
-import { mockBattleMaps } from "@/src/data/mock/battleMaps.mock";
-import { mockCharacters } from "@/src/data/mock/characters.mock";
-import { mockEnemies } from "@/src/data/mock/enemies.mock";
+import { BATTLE_MAPS_MASTER } from "@/src/data/master/battleMaps.master";
+import { CHARACTERS_MASTER } from "@/src/data/master/characters.master";
+import { ENEMIES_MASTER } from "@/src/data/master/enemies.master";
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
 import { Character, Enemy } from "@/src/domain/types/character.types";
 
@@ -49,13 +49,13 @@ export class BattlePresenter {
   async getViewModel(mapId: string): Promise<BattleViewModel> {
     try {
       // Get battle map
-      const battleMap = mockBattleMaps.find((map) => map.id === mapId);
+      const battleMap = BATTLE_MAPS_MASTER.find((map) => map.id === mapId);
       if (!battleMap) {
         throw new Error(`Battle map not found: ${mapId}`);
       }
 
-      // Get ally units (from active party - mock for now)
-      const allyCharacters = mockCharacters.filter((c) => c.isPlayable).slice(0, 4);
+      // Get ally units (from active party - master data)
+      const allyCharacters = CHARACTERS_MASTER.filter((c) => c.isPlayable).slice(0, 4);
       const allyUnits: BattleUnit[] = battleMap.startPositions.ally.map((pos, index) => {
         const character = allyCharacters[index];
         if (!character) return null;
@@ -71,9 +71,9 @@ export class BattlePresenter {
         };
       }).filter(Boolean) as BattleUnit[];
 
-      // Get enemy units from battleMap.enemies (Master Data)
+      // Get enemy units from battleMap.enemies
       const enemyIds = battleMap.enemies || [];
-      const enemies = mockEnemies.filter((enemy) => enemyIds.includes(enemy.id));
+      const enemies = ENEMIES_MASTER.filter((enemy) => enemyIds.includes(enemy.id));
       
       console.log("🎮 Battle Setup:", {
         mapId,
@@ -135,7 +135,7 @@ export class BattlePresenter {
    */
   async generateMetadata(mapId: string) {
     try {
-      const battleMap = mockBattleMaps.find((map) => map.id === mapId);
+      const battleMap = BATTLE_MAPS_MASTER.find((map) => map.id === mapId);
       
       return {
         title: battleMap 
