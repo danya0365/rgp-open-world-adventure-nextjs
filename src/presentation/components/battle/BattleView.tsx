@@ -12,7 +12,6 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BattleTileView from "./BattleTileView";
 
@@ -26,27 +25,29 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
 
   // Presenter - handles ALL state and business logic
   const {
-    viewModel: presenterViewModel,
+    battleStateId,
+    battleMap,
     loading,
     error,
     allyUnits: storeAllyUnits,
     enemyUnits: storeEnemyUnits,
     turn,
     phase,
-    currentUnitId,
     rewards,
     currentUnit,
     aliveTurnOrder,
     handleTileClick,
+    handlePlayEnemyTurn,
     handleEndTurn,
     handleResetBattle,
+    handleRestartBattle,
     getUnitAtPosition,
     isTileInMovementRange,
     isTileInAttackRange,
   } = useBattlePresenter(mapId, initialViewModel);
 
   // Show loading state
-  if (loading && !presenterViewModel) {
+  if (loading && !battleMap) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
@@ -57,90 +58,12 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
     );
   }
 
-  // Show error state
-  if (error && !presenterViewModel) {
+  if (!battleMap) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <p className="text-red-400 font-medium mb-2">เกิดข้อผิดพลาด</p>
-          <p className="text-gray-400 mb-4">{error}</p>
-          <Link
-            href="/world"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors inline-block"
-          >
-            กลับแผนที่โลก
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Show not found state
-  if (!presenterViewModel) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-gray-400 text-6xl mb-4">⚔️</div>
-          <p className="text-gray-400 font-medium mb-4">ไม่พบสนามรบ</p>
-          <Link
-            href="/world"
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            กลับแผนที่โลก
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const { battleMap } = presenterViewModel;
-
-  // Validate: Check if there are enemies
-  if (presenterViewModel.enemies.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-yellow-700 rounded-xl p-8 text-center">
-          <div className="text-yellow-400 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-white mb-2">ไม่มีศัตรู</h1>
-          <p className="text-gray-400 mb-6">
-            สนามรบนี้ไม่มีศัตรูให้ต่อสู้ กรุณาเลือกสนามรบอื่น
-          </p>
-          <div className="space-y-3">
-            <Link
-              href="/world"
-              className="block w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
-            >
-              กลับแผนที่โลก
-            </Link>
-            <button
-              onClick={() => window.location.reload()}
-              className="block w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-            >
-              โหลดใหม่
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Validate: Check if there are allies
-  if (presenterViewModel.characters.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-red-700 rounded-xl p-8 text-center">
-          <div className="text-red-400 text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-white mb-2">ไม่มีพันธมิตร</h1>
-          <p className="text-gray-400 mb-6">
-            คุณต้องมีพันธมิตรในทีมก่อนเข้าสู่การต่อสู้
-          </p>
-          <Link
-            href="/party"
-            className="block w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold"
-          >
-            จัดการทีม
-          </Link>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-400">กำลังเตรียมสนามรบ</p>
         </div>
       </div>
     );
@@ -369,7 +292,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                     // Always show ranges for current unit
                     const isInMoveRange = isTileInMovementRange(x, y);
                     const isInAttackRange = isTileInAttackRange(x, y);
-                    const isCurrent = unit?.id === currentUnitId;
+                    const isCurrent = unit?.id === currentUnit?.id;
 
                     return (
                       <BattleTileView
@@ -474,6 +397,16 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                   </div>
 
                   {/* Actions */}
+                  {!currentUnit.isAlly && (
+                    <div className="space-y-2 pt-2 border-t border-slate-700">
+                      <button
+                        onClick={handlePlayEnemyTurn}
+                        className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
+                      >
+                        Play Enemy Turn
+                      </button>
+                    </div>
+                  )}
                   {currentUnit.isAlly && (
                     <div className="space-y-2 pt-2 border-t border-slate-700">
                       {!currentUnit.hasActed && (
@@ -491,6 +424,16 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                       </button>
                     </div>
                   )}
+                  {battleStateId && (
+                    <div className="space-y-2 pt-2 border-t border-slate-700">
+                      <button
+                        onClick={handleRestartBattle}
+                        className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
+                      >
+                        Restart
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -503,7 +446,7 @@ export function BattleView({ mapId, initialViewModel }: BattleViewProps) {
                   <div
                     key={unit.id}
                     className={`flex items-center gap-2 p-2 rounded-lg ${
-                      unit.id === currentUnitId
+                      unit.id === currentUnit?.id
                         ? "bg-green-900/30 border border-green-500/30"
                         : "bg-slate-800/50"
                     }`}

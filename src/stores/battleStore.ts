@@ -220,6 +220,7 @@ interface BattleActions {
   endBattle: (victory: boolean, rewards?: BattleState["rewards"]) => void;
   // Reset
   resetBattle: () => void;
+  playEnemyTurn: () => Promise<void>;
 }
 
 /**
@@ -402,6 +403,8 @@ export const useBattleStore = create<BattleStore>()(
             selectedUnitId: null,
           };
         });
+
+        //get().endTurn();
 
         // Check victory/defeat after attack
         setTimeout(() => {
@@ -658,16 +661,93 @@ export const useBattleStore = create<BattleStore>()(
           rewards: rewards || null,
         });
       },
-
       /**
        * Reset Battle
        */
       resetBattle: () => {
         set(initialState);
       },
+      /**
+       * Play enemy turn - AI logic for enemy turns
+       */
+      playEnemyTurn: async () => {
+        const state = get();
+        const currentUnit = state.getCurrentUnit();
+        const { allyUnits, enemyUnits, battleMap } = state;
+
+        if (!currentUnit || currentUnit.isAlly || !battleMap) {
+          return;
+        }
+
+        // Wait for a short delay for better UX
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Find nearest ally
+        let nearestAlly = null;
+        let minDistance = Infinity;
+
+        for (const ally of allyUnits) {
+          const distance =
+            Math.abs(ally.position.x - currentUnit.position.x) +
+            Math.abs(ally.position.y - currentUnit.position.y);
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestAlly = ally;
+          }
+        }
+
+        if (!nearestAlly) {
+          state.endTurn();
+          return;
+        }
+
+        // Check if in attack range
+        const attackRangeValue = 2; // Should match the attack range in useBattlePresenter
+        if (minDistance <= attackRangeValue) {
+          // Calculate damage (can be enhanced with attack formulas)
+          const damage = Math.max(
+            1,
+            currentUnit.character.stats.atk - nearestAlly.character.stats.def
+          );
+          
+          // Execute attack
+          state.attackUnit(currentUnit.id, nearestAlly.id, damage);
+          
+          // Wait a bit before ending turn
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          state.endTurn();
+        } else {
+          // Move toward nearest ally
+          const dx = nearestAlly.position.x - currentUnit.position.x;
+          const dy = nearestAlly.position.y - currentUnit.position.y;
+
+          let newX = currentUnit.position.x;
+          let newY = currentUnit.position.y;
+
+          // Move in the direction with the larger difference
+          if (Math.abs(dx) > Math.abs(dy)) {
+            newX += dx > 0 ? 1 : -1;
+          } else {
+            newY += dy > 0 ? 1 : -1;
+          }
+
+          // Check if tile is occupied
+          const occupied = [...allyUnits, ...enemyUnits].some(
+            (u) => u.position.x === newX && u.position.y === newY && u.id !== currentUnit.id
+          );
+
+          if (!occupied) {
+            state.moveUnit(currentUnit.id, newX, newY);
+          }
+
+          // Wait a bit before ending turn
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          state.endTurn();
+        }
+      }
     }),
     {
-      name: "battle-store",
+      name: 'battle-store',
       storage: createBrowserStorage(),
     }
   )

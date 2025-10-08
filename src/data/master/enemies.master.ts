@@ -21,7 +21,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 10,
       wis: 5,
       agi: 8,
-      mov: 5,
+      mov: 3,
     },
     elements: ["water"],
     elementalAffinities: [
@@ -55,7 +55,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 20,
       wis: 10,
       agi: 40,
-      mov: 15,
+      mov: 3,
     },
     elements: ["water"],
     elementalAffinities: [
@@ -89,7 +89,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 15,
       wis: 8,
       agi: 30,
-      mov: 10,
+      mov: 3,
     },
     elements: ["earth"],
     elementalAffinities: [
@@ -124,7 +124,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 60,
       wis: 30,
       agi: 20,
-      mov: 25,
+      mov: 3,
     },
     elements: ["water"],
     elementalAffinities: [
@@ -159,7 +159,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 100,
       wis: 20,
       agi: 15,
-      mov: 10,
+      mov: 3,
     },
     elements: ["water", "earth"],
     elementalAffinities: [
@@ -196,7 +196,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 120,
       wis: 100,
       agi: 60,
-      mov: 50,
+      mov: 5,
     },
     elements: ["water", "wind"],
     elementalAffinities: [
@@ -238,7 +238,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 100,
       wis: 140,
       agi: 50,
-      mov: 40,
+      mov: 5,
     },
     elements: ["dark", "water"],
     elementalAffinities: [
@@ -283,7 +283,7 @@ export const ENEMIES_MASTER: Enemy[] = [
       def: 180,
       wis: 200,
       agi: 100,
-      mov: 80,
+      mov: 5,
     },
     elements: ["water", "wind", "dark"],
     elementalAffinities: [

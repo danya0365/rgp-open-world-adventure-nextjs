@@ -6,18 +6,18 @@ import { BattleMapConfig } from "@/src/domain/types/battle.types";
  */
 
 export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
-  // Small Maps (5x5)
+  // Small Maps (8x16)
   {
     id: "map-forest-clearing",
     name: "Forest Clearing",
     description: "A small clearing in the forest, perfect for quick battles",
     size: "small",
-    width: 5,
-    height: 5,
+    width: 8,
+    height: 16,
     shape: "rectangular",
-    tiles: Array.from({ length: 25 }, (_, i) => ({
-      x: i % 5,
-      y: Math.floor(i / 5),
+    tiles: Array.from({ length: 8 * 16 }, (_, i) => ({
+      x: i % 8,
+      y: Math.floor(i / 8),
       type: "grass" as const,
       isWalkable: true,
       height: 0,
@@ -25,15 +25,16 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-001", "enemy-003"],
     startPositions: {
       ally: [
-        { x: 0, y: 2 },
-        { x: 1, y: 1 },
-        { x: 1, y: 3 },
-        { x: 0, y: 1 },
+        { x: 3, y: 15 }, { x: 4, y: 15 },
+        { x: 2, y: 14 }, { x: 5, y: 14 },
+        { x: 3, y: 14 }, { x: 4, y: 14 },
+        { x: 2, y: 15 }, { x: 5, y: 15 }
       ],
       enemy: [
-        { x: 4, y: 2 },
-        { x: 3, y: 1 },
-        { x: 3, y: 3 },
+        { x: 3, y: 0 }, { x: 4, y: 0 },
+        { x: 2, y: 1 }, { x: 5, y: 1 },
+        { x: 3, y: 1 }, { x: 4, y: 1 },
+        { x: 1, y: 0 }, { x: 6, y: 0 }
       ],
     },
   },
@@ -43,12 +44,12 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     name: "Cave Entrance",
     description: "Dark cave entrance with limited visibility",
     size: "small",
-    width: 5,
-    height: 5,
+    width: 8,
+    height: 16,
     shape: "rectangular",
-    tiles: Array.from({ length: 25 }, (_, i) => ({
-      x: i % 5,
-      y: Math.floor(i / 5),
+    tiles: Array.from({ length: 8 * 16 }, (_, i) => ({
+      x: i % 8,
+      y: Math.floor(i / 8),
       type: "mountain" as const,
       isWalkable: true,
       height: 0,
@@ -56,31 +57,32 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-001", "enemy-002"],
     startPositions: {
       ally: [
-        { x: 0, y: 2 },
-        { x: 1, y: 2 },
-        { x: 0, y: 1 },
-        { x: 0, y: 3 },
+        { x: 3, y: 15 }, { x: 4, y: 15 },
+        { x: 2, y: 14 }, { x: 5, y: 14 },
+        { x: 3, y: 14 }, { x: 4, y: 14 },
+        { x: 2, y: 15 }, { x: 5, y: 15 }
       ],
       enemy: [
-        { x: 4, y: 2 },
-        { x: 4, y: 1 },
-        { x: 4, y: 3 },
+        { x: 3, y: 0 }, { x: 4, y: 0 },
+        { x: 2, y: 1 }, { x: 5, y: 1 },
+        { x: 3, y: 1 }, { x: 4, y: 1 },
+        { x: 1, y: 0 }, { x: 6, y: 0 }
       ],
     },
   },
 
-  // Medium Maps (7x7)
+  // Medium Maps (12x24)
   {
     id: "map-plains-battlefield",
     name: "Plains Battlefield",
     description: "Open plains battlefield with tactical positioning",
     size: "medium",
-    width: 7,
-    height: 7,
+    width: 12,
+    height: 24,
     shape: "rectangular",
-    tiles: Array.from({ length: 49 }, (_, i) => ({
-      x: i % 7,
-      y: Math.floor(i / 7),
+    tiles: Array.from({ length: 12 * 24 }, (_, i) => ({
+      x: i % 12,
+      y: Math.floor(i / 12),
       type: "grass" as const,
       isWalkable: true,
       height: 0,
@@ -88,16 +90,16 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-002", "enemy-003", "enemy-011"],
     startPositions: {
       ally: [
-        { x: 0, y: 3 },
-        { x: 1, y: 2 },
-        { x: 1, y: 4 },
-        { x: 0, y: 2 },
+        { x: 5, y: 23 }, { x: 6, y: 23 },
+        { x: 4, y: 22 }, { x: 7, y: 22 },
+        { x: 5, y: 22 }, { x: 6, y: 22 },
+        { x: 3, y: 23 }, { x: 8, y: 23 }
       ],
       enemy: [
-        { x: 6, y: 3 },
-        { x: 5, y: 2 },
-        { x: 5, y: 4 },
-        { x: 6, y: 2 },
+        { x: 5, y: 0 }, { x: 6, y: 0 },
+        { x: 4, y: 1 }, { x: 7, y: 1 },
+        { x: 5, y: 1 }, { x: 6, y: 1 },
+        { x: 3, y: 0 }, { x: 8, y: 0 }
       ],
     },
   },
@@ -107,12 +109,12 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     name: "Dungeon Corridor",
     description: "Narrow dungeon corridor for strategic combat",
     size: "medium",
-    width: 7,
-    height: 7,
+    width: 12,
+    height: 24,
     shape: "rectangular",
-    tiles: Array.from({ length: 49 }, (_, i) => ({
-      x: i % 7,
-      y: Math.floor(i / 7),
+    tiles: Array.from({ length: 12 * 24 }, (_, i) => ({
+      x: i % 12,
+      y: Math.floor(i / 12),
       type: "mountain" as const,
       isWalkable: true,
       height: 0,
@@ -120,32 +122,32 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-003", "enemy-011"],
     startPositions: {
       ally: [
-        { x: 0, y: 3 },
-        { x: 1, y: 3 },
-        { x: 0, y: 2 },
-        { x: 0, y: 4 },
+        { x: 5, y: 23 }, { x: 6, y: 23 },
+        { x: 4, y: 22 }, { x: 7, y: 22 },
+        { x: 5, y: 22 }, { x: 6, y: 22 },
+        { x: 3, y: 23 }, { x: 8, y: 23 }
       ],
       enemy: [
-        { x: 6, y: 3 },
-        { x: 5, y: 3 },
-        { x: 6, y: 2 },
-        { x: 6, y: 4 },
+        { x: 5, y: 0 }, { x: 6, y: 0 },
+        { x: 4, y: 1 }, { x: 7, y: 1 },
+        { x: 5, y: 1 }, { x: 6, y: 1 },
+        { x: 3, y: 0 }, { x: 8, y: 0 }
       ],
     },
   },
 
-  // Large Maps (9x9)
+  // Large Maps (15x20)
   {
     id: "map-ancient-ruins",
     name: "Ancient Ruins",
     description: "Vast ancient ruins with multiple tactical options",
     size: "large",
-    width: 9,
-    height: 9,
+    width: 15,
+    height: 20,
     shape: "rectangular",
-    tiles: Array.from({ length: 81 }, (_, i) => ({
-      x: i % 9,
-      y: Math.floor(i / 9),
+    tiles: Array.from({ length: 15 * 20 }, (_, i) => ({
+      x: i % 15,
+      y: Math.floor(i / 15),
       type: "grass" as const,
       isWalkable: true,
       height: 0,
@@ -153,17 +155,14 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-011", "enemy-012"],
     startPositions: {
       ally: [
-        { x: 0, y: 4 },
-        { x: 1, y: 3 },
-        { x: 1, y: 5 },
-        { x: 0, y: 3 },
+        { x: 6, y: 19 }, { x: 7, y: 19 }, { x: 8, y: 19 },
+        { x: 5, y: 18 }, { x: 6, y: 18 }, { x: 7, y: 18 }, { x: 8, y: 18 }, { x: 9, y: 18 },
+        { x: 4, y: 19 }, { x: 5, y: 19 }, { x: 9, y: 19 }, { x: 10, y: 19 }
       ],
       enemy: [
-        { x: 8, y: 4 },
-        { x: 7, y: 3 },
-        { x: 7, y: 5 },
-        { x: 8, y: 3 },
-        { x: 8, y: 5 },
+        { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 },
+        { x: 5, y: 1 }, { x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 },
+        { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }
       ],
     },
   },
@@ -173,12 +172,12 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     name: "Volcano Chamber",
     description: "Dangerous volcano chamber with lava hazards",
     size: "large",
-    width: 9,
-    height: 9,
+    width: 15,
+    height: 20,
     shape: "irregular",
-    tiles: Array.from({ length: 81 }, (_, i) => ({
-      x: i % 9,
-      y: Math.floor(i / 9),
+    tiles: Array.from({ length: 15 * 20 }, (_, i) => ({
+      x: i % 15,
+      y: Math.floor(i / 15),
       type: "lava" as const,
       isWalkable: true,
       height: 0,
@@ -187,32 +186,30 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-012"],
     startPositions: {
       ally: [
-        { x: 1, y: 4 },
-        { x: 2, y: 3 },
-        { x: 2, y: 5 },
-        { x: 1, y: 3 },
+        { x: 6, y: 19 }, { x: 7, y: 19 }, { x: 8, y: 19 },
+        { x: 5, y: 18 }, { x: 6, y: 18 }, { x: 7, y: 18 }, { x: 8, y: 18 }, { x: 9, y: 18 },
+        { x: 4, y: 19 }, { x: 5, y: 19 }, { x: 9, y: 19 }, { x: 10, y: 19 }
       ],
       enemy: [
-        { x: 7, y: 4 },
-        { x: 6, y: 3 },
-        { x: 6, y: 5 },
-        { x: 7, y: 3 },
+        { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 },
+        { x: 5, y: 1 }, { x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 },
+        { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }
       ],
     },
   },
 
-  // Boss Maps (10x10+)
+  // Boss Maps (10x20)
   {
     id: "map-throne-room",
     name: "Throne Room",
     description: "Grand throne room for epic boss battles",
     size: "boss",
     width: 10,
-    height: 10,
+    height: 20,
     shape: "rectangular",
-    tiles: Array.from({ length: 100 }, (_, i) => ({
-      x: i % 10,
-      y: Math.floor(i / 10),
+    tiles: Array.from({ length: 15 * 20 }, (_, i) => ({
+      x: i % 15,
+      y: Math.floor(i / 15),
       type: "ice" as const,
       isWalkable: true,
       height: 0,
@@ -220,15 +217,16 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-101", "enemy-011"],
     startPositions: {
       ally: [
-        { x: 1, y: 5 },
-        { x: 2, y: 4 },
-        { x: 2, y: 6 },
-        { x: 1, y: 4 },
+        { x: 4, y: 19 }, { x: 5, y: 19 },
+        { x: 3, y: 19 }, { x: 6, y: 19 },
+        { x: 4, y: 18 }, { x: 5, y: 18 },
+        { x: 3, y: 18 }, { x: 6, y: 18 }
       ],
       enemy: [
-        { x: 8, y: 5 },
-        { x: 7, y: 4 },
-        { x: 7, y: 6 },
+        { x: 4, y: 0 }, { x: 5, y: 0 },
+        { x: 3, y: 0 }, { x: 6, y: 0 },
+        { x: 4, y: 1 }, { x: 5, y: 1 },
+        { x: 3, y: 1 }, { x: 6, y: 1 }
       ],
     },
   },
@@ -238,12 +236,12 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     name: "Dragon's Lair",
     description: "Massive dragon's lair for legendary encounters",
     size: "boss",
-    width: 12,
-    height: 10,
+    width: 10,
+    height: 20,
     shape: "irregular",
-    tiles: Array.from({ length: 120 }, (_, i) => ({
-      x: i % 12,
-      y: Math.floor(i / 12),
+    tiles: Array.from({ length: 15 * 20 }, (_, i) => ({
+      x: i % 15,
+      y: Math.floor(i / 15),
       type: "ice" as const,
       isWalkable: true,
       height: 0,
@@ -251,15 +249,16 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
     enemies: ["enemy-201"],
     startPositions: {
       ally: [
-        { x: 1, y: 5 },
-        { x: 2, y: 4 },
-        { x: 2, y: 6 },
-        { x: 1, y: 4 },
+        { x: 4, y: 19 }, { x: 5, y: 19 },
+        { x: 3, y: 19 }, { x: 6, y: 19 },
+        { x: 4, y: 18 }, { x: 5, y: 18 },
+        { x: 3, y: 18 }, { x: 6, y: 18 }
       ],
       enemy: [
-        { x: 10, y: 5 },
-        { x: 9, y: 4 },
-        { x: 9, y: 6 },
+        { x: 4, y: 0 }, { x: 5, y: 0 },
+        { x: 3, y: 0 }, { x: 6, y: 0 },
+        { x: 4, y: 1 }, { x: 5, y: 1 },
+        { x: 3, y: 1 }, { x: 6, y: 1 }
       ],
     },
   },

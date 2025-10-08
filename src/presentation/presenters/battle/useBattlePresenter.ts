@@ -1,5 +1,6 @@
 "use client";
 
+import { BattleMapConfig } from "@/src/domain/types/battle.types";
 import { BattleUnitState, useBattleStore } from "@/src/stores/battleStore";
 import { useGameStore } from "@/src/stores/gameStore";
 import { useCallback, useEffect, useState } from "react";
@@ -11,7 +12,8 @@ import {
 
 export interface BattlePresenterHook {
   // State
-  viewModel: BattleViewModel | null;
+  battleStateId: string | null;
+  battleMap: BattleMapConfig | null;
   loading: boolean;
   error: string | null;
 
@@ -33,7 +35,9 @@ export interface BattlePresenterHook {
 
   // Actions (delegate to store)
   handleTileClick: (x: number, y: number) => void;
+  handlePlayEnemyTurn: () => void;
   handleEndTurn: () => void;
+  handleRestartBattle: () => void;
   handleResetBattle: () => void;
   getUnitAtPosition: (x: number, y: number) => BattleUnitState | undefined;
   isTileInMovementRange: (x: number, y: number) => boolean;
@@ -84,8 +88,6 @@ export function useBattlePresenter(
     rewards,
     originalPosition,
     initBattle,
-    moveUnit: storeMoveUnit,
-    attackUnit: storeAttackUnit,
     endTurn: storeEndTurn,
     resetBattle,
     setMovementRange,
@@ -125,15 +127,11 @@ export function useBattlePresenter(
   // Initialize battle when presenter data is ready
   // Override allyUnits and enemyUnits from store
   useEffect(() => {
-    console.log("viewModel?.battleMap", viewModel?.battleMap);
-    console.log("activePartyMembers", activePartyMembers);
-
     if (
       viewModel?.battleMap &&
       !store.battleStateId &&
       activePartyMembers.length > 0
     ) {
-      console.log("initBattle store.battleStateId", store.battleStateId);
       initBattle(
         viewModel.battleMap,
         viewModel.characters,
@@ -321,78 +319,9 @@ export function useBattlePresenter(
     )
       return;
 
-    const playEnemyTurn = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-
-      // Find nearest ally
-      let nearestAlly = null;
-      let minDistance = Infinity;
-
-      for (const ally of allyUnits) {
-        const distance =
-          Math.abs(ally.position.x - currentUnit.position.x) +
-          Math.abs(ally.position.y - currentUnit.position.y);
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestAlly = ally;
-        }
-      }
-
-      if (!nearestAlly) {
-        storeEndTurn();
-        return;
-      }
-
-      // Check if in attack range
-      const attackRangeValue = 2;
-      if (minDistance <= attackRangeValue) {
-        // Attack!
-        const damage = Math.max(
-          1,
-          currentUnit.character.stats.atk - nearestAlly.character.stats.def
-        );
-        storeAttackUnit(currentUnit.id, nearestAlly.id, damage);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        storeEndTurn();
-      } else {
-        // Move toward ally
-        const dx = nearestAlly.position.x - currentUnit.position.x;
-        const dy = nearestAlly.position.y - currentUnit.position.y;
-
-        let newX = currentUnit.position.x;
-        let newY = currentUnit.position.y;
-
-        // Move in the direction of the ally
-        if (Math.abs(dx) > Math.abs(dy)) {
-          newX += dx > 0 ? 1 : -1;
-        } else {
-          newY += dy > 0 ? 1 : -1;
-        }
-
-        // Check if tile is occupied
-        const occupied = [...allyUnits, ...enemyUnits].some(
-          (u) => u.position.x === newX && u.position.y === newY
-        );
-
-        if (!occupied) {
-          storeMoveUnit(currentUnit.id, newX, newY);
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        storeEndTurn();
-      }
-    };
-
-    playEnemyTurn();
-  }, [
-    currentUnit,
-    allyUnits,
-    enemyUnits,
-    store.battleMap,
-    storeMoveUnit,
-    storeAttackUnit,
-    storeEndTurn,
-  ]);
+    // Use the playEnemyTurn method from the store
+    //store.playEnemyTurn();
+  }, [currentUnit, store, store.playEnemyTurn]);
 
   // Action handlers - delegate to store
   const handleTileClick = useCallback(
@@ -402,6 +331,10 @@ export function useBattlePresenter(
     [store]
   );
 
+  const handlePlayEnemyTurn = useCallback(() => {
+    store.playEnemyTurn();
+  }, [store]);
+
   const handleEndTurn = useCallback(() => {
     storeEndTurn();
   }, [storeEndTurn]);
@@ -410,9 +343,20 @@ export function useBattlePresenter(
     resetBattle();
   }, [resetBattle]);
 
+  const handleRestartBattle = useCallback(() => {
+    if (!viewModel) return;
+    initBattle(
+      viewModel.battleMap,
+      viewModel.characters,
+      viewModel.enemies,
+      activePartyMembers
+    );
+  }, [resetBattle, viewModel]);
+
   return {
+    battleStateId: store.battleStateId,
+    battleMap: store.battleMap,
     // State
-    viewModel,
     loading,
     error,
 
@@ -430,7 +374,9 @@ export function useBattlePresenter(
 
     // Actions - delegate to store
     handleTileClick,
+    handlePlayEnemyTurn,
     handleEndTurn,
+    handleRestartBattle,
     handleResetBattle,
     getUnitAtPosition: store.getUnitAtPosition,
     isTileInMovementRange: store.isTileInMovementRange,
