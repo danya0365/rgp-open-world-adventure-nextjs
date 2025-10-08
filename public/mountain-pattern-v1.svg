@@ -1,0 +1,72 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="mountain" width="100" height="100" patternUnits="userSpaceOnUse">
+      <!-- Base color -->
+      <rect width="100" height="100" fill="#78909c" />
+      
+      <!-- Mountain range 1 (farthest) -->
+      <path d="M0,70 L20,50 L40,60 L60,30 L80,50 L100,40 L100,100 L0,100 Z" 
+            fill="#546e7a" 
+            opacity="0.8" />
+      
+      <!-- Mountain range 2 (middle) -->
+      <path d="M-20,80 L10,50 L30,70 L50,40 L70,60 L90,30 L120,60 L120,100 L-20,100 Z" 
+            fill="#455a64" 
+            opacity="0.9" />
+      
+      <!-- Mountain range 3 (closest) -->
+      <path d="M-40,90 L0,40 L30,80 L60,30 L90,60 L110,30 L140,70 L140,100 L-40,100 Z" 
+            fill="#37474f" />
+      
+      <!-- Snow caps -->
+      <path d="M20,50 L40,30 L60,50 Z" 
+            fill="#ffffff" 
+            opacity="0.9" />
+      <path d="M70,60 L90,30 L110,60 Z" 
+            fill="#ffffff" 
+            opacity="0.8" />
+      <path d="M0,40 L20,30 L40,50 Z" 
+            fill="#ffffff" 
+            opacity="0.7" />
+      
+      <!-- Rock details -->
+      <path d="M30,80 L25,75 L30,70 Z" 
+            fill="#263238" 
+            opacity="0.5" />
+      <path d="M80,50 L85,45 L90,50 Z" 
+            fill="#263238" 
+            opacity="0.5" />
+      <path d="M50,40 L55,35 L60,40 Z" 
+            fill="#263238" 
+            opacity="0.5" />
+    </pattern>
+    
+    <!-- Gradient overlay -->
+    <linearGradient id="mountain-overlay" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#78909c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#455a64;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Base pattern -->
+  <rect width="100%" height="100%" fill="url(#mountain)" />
+  
+  <!-- Gradient overlay -->
+  <rect width="100%" height="100%" fill="url(#mountain-overlay)" opacity="0.7" />
+  
+  <!-- Subtle noise for texture -->
+  <rect width="100%" height="100%" fill="url(#noise)" opacity="0.05" />
+  
+  <defs>
+    <filter id="noiseFilter" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="0.5" intercept="0"/>
+        <feFuncG type="linear" slope="0.5" intercept="0"/>
+        <feFuncB type="linear" slope="0.5" intercept="0"/>
+      </feComponentTransfer>
+    </filter>
+    <rect id="noise" width="100%" height="100%" filter="url(#noiseFilter)" />
+  </defs>
+</svg>

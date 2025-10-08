@@ -1,0 +1,50 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="stone" width="30" height="30" patternUnits="userSpaceOnUse">
+      <!-- Base stone color -->
+      <rect width="30" height="30" fill="#9e9e9e" />
+      
+      <!-- Stone texture -->
+      <path d="M5,5 L25,5 L25,25 L5,25 Z" 
+            fill="#bdbdbd" 
+            stroke="#757575" 
+            stroke-width="0.8" 
+            opacity="0.7" />
+      
+      <path d="M10,10 L20,10 L20,20 L10,20 Z" 
+            fill="#757575" 
+            stroke="#616161" 
+            stroke-width="0.5" 
+            opacity="0.8" />
+            
+      <path d="M15,15 L25,15 L25,25 L15,25 Z" 
+            fill="#bdbdbd" 
+            stroke="#9e9e9e" 
+            stroke-width="0.5" 
+            opacity="0.9" />
+            
+      <!-- Stone cracks -->
+      <path d="M8,5 L8,25 M5,12 L11,12 M20,5 L20,25 M15,18 L25,18" 
+            stroke="#616161" 
+            stroke-width="0.3" 
+            stroke-linecap="round" 
+            opacity="0.6" />
+    </pattern>
+    
+    <!-- Gradient overlay -->
+    <linearGradient id="stone-overlay" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9e9e9e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#757575;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="100%" height="100%" fill="url(#stone)" />
+  <rect width="100%" height="100%" fill="url(#stone-overlay)" opacity="0.6" />
+  
+  <!-- Random stone highlights -->
+  <rect x="10" y="10" width="5" height="5" fill="#e0e0e0" opacity="0.3" />
+  <rect x="30" y="20" width="4" height="4" fill="#e0e0e0" opacity="0.3" />
+  <rect x="50" y="15" width="6" height="6" fill="#e0e0e0" opacity="0.3" />
+  <rect x="70" y="25" width="5" height="5" fill="#e0e0e0" opacity="0.3" />
+  <rect x="90" y="10" width="4" height="4" fill="#e0e0e0" opacity="0.3" />
+</svg>

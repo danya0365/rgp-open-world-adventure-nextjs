@@ -95,8 +95,6 @@ const BattleTileView = ({
   const getTileIcon = () => {
     if (!tile) return null;
     switch (tile.type) {
-      case "grass":
-        return "🌿";
       case "water":
         return "💧";
       case "mountain":
@@ -140,18 +138,30 @@ const BattleTileView = ({
       className={`aspect-square relative transition-all duration-300 ${getTileStyle()}`}
       disabled={isObstacle || isUnwalkable}
     >
-      {/* Range Overlays */}
-      {renderRangeOverlay()}
-
       {/* Tile Pattern Overlay */}
-      <div className="absolute inset-0 opacity-20">
+      <div className="absolute inset-0">
         {tile?.type === "grass" && (
-          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20"></div>
+          <div className="absolute inset-0 bg-[url('/grass-pattern.svg')]"></div>
         )}
         {tile?.type === "water" && (
-          <div className="absolute inset-0 bg-[url('/wave-pattern.svg')] opacity-30 animate-float"></div>
+          <div className="absolute inset-0 bg-[url('/water-pattern.svg')] animate-float"></div>
+        )}
+        {tile?.type === "mountain" && (
+          <div className="absolute inset-0 bg-[url('/mountain-pattern.svg')] animate-float"></div>
+        )}
+        {tile?.type === "lava" && (
+          <div className="absolute inset-0 bg-[url('/lava-pattern.svg')] animate-float"></div>
+        )}
+        {tile?.type === "ice" && (
+          <div className="absolute inset-0 bg-[url('/ice-pattern.svg')] animate-float"></div>
+        )}
+        {tile?.type === "poison" && (
+          <div className="absolute inset-0 bg-[url('/poison-pattern.svg')] animate-float"></div>
         )}
       </div>
+
+      {/* Range Overlays */}
+      {renderRangeOverlay()}
 
       {/* Tile Icon */}
       {!unit && getTileIcon() && (

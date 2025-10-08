@@ -1,0 +1,59 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="mountain" width="20" height="20" patternUnits="userSpaceOnUse">
+      <!-- Base color -->
+      <rect width="20" height="20" fill="#9e9e9e" />
+      
+      <!-- Main mountain shape (top-down view) -->
+      <path d="M10,2 L18,18 L2,18 Z" 
+            fill="#757575" 
+            stroke="#616161" 
+            stroke-width="0.5" />
+      
+      <!-- Mountain ridges -->
+      <path d="M10,6 L14,14 L6,14 Z" 
+            fill="#bdbdbd" 
+            stroke="#9e9e9e" 
+            stroke-width="0.3" />
+            
+      <path d="M10,10 L12,14 L8,14 Z" 
+            fill="#e0e0e0" 
+            stroke="#bdbdbd" 
+            stroke-width="0.2" />
+      
+      <!-- Rock details -->
+      <circle cx="10" cy="14" r="1" fill="#616161" />
+      <circle cx="7" cy="16" r="0.7" fill="#757575" />
+      <circle cx="13" cy="16" r="0.5" fill="#757575" />
+      
+      <!-- Snow cap -->
+      <path d="M8,4 L12,4 L10,2 Z" fill="#ffffff" />
+    </pattern>
+    
+    <!-- Shadow effect -->
+    <filter id="mountain-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,0.3)" />
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#9e9e9e" />
+  
+  <!-- Mountain pattern -->
+  <rect width="100%" height="100%" fill="url(#mountain)" filter="url(#mountain-shadow)" />
+  
+  <!-- Subtle noise for texture -->
+  <rect width="100%" height="100%" fill="url(#noise)" opacity="0.1" />
+  
+  <defs>
+    <filter id="noise" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch" />
+      <feColorMatrix type="saturate" values="0" />
+      <feComponentTransfer>
+        <feFuncR type="linear" slope="0.5" intercept="0"/>
+        <feFuncG type="linear" slope="0.5" intercept="0"/>
+        <feFuncB type="linear" slope="0.5" intercept="0"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+</svg>
