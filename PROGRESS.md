@@ -1046,17 +1046,46 @@
 
 ---
 
-### **🗺️ Priority 3: World Map Enhancements** (Day 26-27)
-- [ ] Player position tracking
-- [ ] Path visualization (A* pathfinding)
-- [ ] Movement cost display
-- [ ] Fog of war system
-- [ ] Weather system
-- [ ] Day/night cycle
+### **🗺️ Priority 3: Virtual World Map (Grid-Based)** (Day 26-28) ⭐ NEW!
+**ตัวอย่าง Code**: `/src/presentation/components/battle/BattleFullView.tsx`
+
+#### **Phase 1: Grid-Based Map Rendering** (Day 26)
+- [ ] Create `VirtualWorldMapView` component
+- [ ] Grid-based rendering system (like Battle Grid)
+- [ ] Render map with real size (grid tiles)
+- [ ] Tile system (walkable/non-walkable)
+- [ ] Location boundaries on grid
+- [ ] Map data structure (width, height, tiles)
+- [ ] Reference Battle Grid rendering code
+
+#### **Phase 2: Player Position & Movement** (Day 27)
+- [ ] Player position icon (real-time)
+- [ ] Update player position on map
+- [ ] Player movement tracking
+- [ ] Position state management
+- [ ] Movement validation (walkable tiles)
+- [ ] Smooth position transitions
+
+#### **Phase 3: Map Visualization** (Day 28)
+- [ ] Real map visualization (not abstract pins)
+- [ ] Terrain types display
+- [ ] Location markers on grid
+- [ ] NPC positions on grid
+- [ ] Exit/entrance points on grid
+- [ ] Mini-map integration
 
 ---
 
-### **✨ Priority 4: Final Polish** (Day 28-30)
+### **🗺️ Priority 4: Advanced Map Features** (Day 29-30)
+- [ ] Path visualization (A* pathfinding)
+- [ ] Movement cost display
+- [ ] Fog of war system
+- [ ] Weather system overlay
+- [ ] Day/night cycle visual
+
+---
+
+### **✨ Priority 5: Final Polish** (Day 31-33)
 - [ ] Performance optimization
 - [ ] Animation polish across all pages
 - [ ] Sound & music integration
@@ -1066,4 +1095,6 @@
 
 ---
 
-**Next Focus: Battle System Skill Integration & Advanced Features!** ⚔️✨
+**Next Focus:**
+1. **Battle System** - Skill Integration & Advanced Features ⚔️
+2. **Virtual World Map** - Grid-Based Real Map Rendering 🗺️⭐

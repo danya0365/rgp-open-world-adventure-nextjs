@@ -157,6 +157,15 @@
   - [x] **HUD Panel System** ✅ (closable panels, toggle buttons)
   - [x] **Map Controls** ✅ (Pan, Zoom, Center Map button)
   - [x] **Interactive Map** ✅ (Full-screen, Pan & Zoom)
+  - [ ] **Virtual World Map (Grid-Based)** - New Feature!
+    - [ ] Render actual map with real grid size (like Battle Grid)
+    - [ ] Player position icon (real-time tracking)
+    - [ ] Update player position on movement
+    - [ ] Grid-based rendering (reference: BattleFullView.tsx)
+    - [ ] Tile-based map system
+    - [ ] Walkable/non-walkable tiles
+    - [ ] Location boundaries visualization
+    - [ ] Real map visualization (not abstract pins)
   - [ ] Player position & movement (pathfinding)
   - [ ] Fog of war system
   - [ ] Dynamic weather overlay
