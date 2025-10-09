@@ -1194,16 +1194,46 @@
     - [x] Hierarchical location system (World → City → Building)
     - [x] Uses `mapData.tiles` if defined
     - [x] Falls back to procedural generation
-  - [x] **Dynamic Routing:** `/virtual-world/[[...path]]` ⭐ NEW
+  - [x] **Dynamic Routing:** `/virtual-world/[[...path]]`
     - [x] URL changes when teleporting to location
     - [x] Direct URL access (e.g., `/virtual-world/city-silverhold`)
     - [x] Breadcrumb navigation updates URL
     - [x] Location list panel updates URL
     - [x] Router integration with `useRouter()`
     - [x] Metadata generation per location
+  - [x] **Player Persistence:** Sync with GameStore ⭐ NEW (2025-10-09 10:20)
+    - [x] Added `playerWorldPosition` to `GameProgress`
+    - [x] `setPlayerWorldPosition()` action
+    - [x] `getPlayerWorldPosition()` action
+    - [x] Auto-sync from virtualMapStore → gameStore
+    - [x] Position saved to localStorage (via persist)
+    - [x] Reload page → player stays at same position
+  - [x] **Movement System:** A* Pathfinding + Animation ⭐ (2025-10-09 10:20)
+    - [x] A* Pathfinding algorithm (`/src/utils/pathfinding.ts`)
+    - [x] `findPath()` - Find shortest path between tiles
+    - [x] `hasPath()` - Check if path exists
+    - [x] `getPathDistance()` - Calculate path length
+    - [x] Movement state (isMoving, currentPath, speed)
+    - [x] `startMovementToTile()` - Click tile → find path → walk
+    - [x] `stopMovement()` - Cancel movement
+    - [x] `updateMovement()` - Animation loop (60fps)
+    - [x] `useMovementAnimation` hook - requestAnimationFrame
+    - [x] Smooth tile-by-tile movement
+    - [x] Auto-update facing direction while moving
+    - [x] Camera follows player smoothly
+    - [x] Movement speed: 3 tiles/second (configurable)
+  - [x] **Keyboard Controls:** WASD + Arrow Keys ⭐ NEW (2025-10-09 10:25)
+    - [x] `useKeyboardMovement` hook (`/src/hooks/useKeyboardMovement.ts`)
+    - [x] WASD keys support (W=North, A=West, S=South, D=East)
+    - [x] Arrow keys support (↑↓←→)
+    - [x] Hold key = continuous movement
+    - [x] Release key = stop
+    - [x] Prevent page scroll when pressing arrows
+    - [x] Only move when not already moving (smooth)
+    - [x] Auto-pathfinding when holding key
+    - [x] Keyboard hint UI component
+    - [x] Enable/disable controls via prop
   - [x] **Build Success:** SSR-safe, no undefined errors ✅
-- [ ] Movement validation (walkable tiles)
-- [ ] Smooth position transitions
 
 #### **Phase 3: Map Visualization** (Day 28)
 - [ ] Real map visualization (not abstract pins)
@@ -1234,6 +1264,50 @@
 
 ---
 
+---
+
+## 🐛 Bug Fixes - Virtual Map System (2025-10-09 10:50)
+
+### ✅ Fixed Master Data Issues
+- ✅ **Added `gridSize` to all locations** - Consistent grid dimensions
+- ✅ **Reduced map sizes** - More manageable viewport (8x8 to 30x30 tiles)
+- ✅ **Added 2 new test locations:**
+  - `field-starting-plains` - Starting area for new players (30x25)
+  - `town-riverside` - Small town in Eastern Continent (18x15)
+- ✅ **Fixed coordinates** - All locations now have proper coordinates
+- ✅ **Added connections** - Connected new locations to hierarchy
+
+### ✅ Fixed Viewport Calculation Bugs
+- ✅ **Small map handling** - Show entire map if smaller than viewport
+- ✅ **Viewport bounds** - Proper calculation for maps smaller than 20x15
+- ✅ **Actual viewport size** - Use real viewport dimensions, not max
+- ✅ **Location marker positioning** - Adjusted for viewport offset
+- ✅ **Marker culling** - Only render markers within viewport bounds
+- ✅ **Player position** - Fixed default coordinates (center of map)
+
+### ✅ Improvements
+- ✅ **Performance** - Only render visible tiles and markers
+- ✅ **Consistency** - All locations use gridSize property
+- ✅ **Scalability** - System works with any map size (8x8 to 50x50)
+
+### 📝 Master Data Summary
+**Total Locations**: 24
+- World: 1 (50x50)
+- Continents: 2 (30x30)
+- Regions: 2 (25x25)
+- Areas: 1 (20x20)
+- Cities: 2 (20x15)
+- Towns: 1 (18x15)
+- Fields: 1 (30x25)
+- Buildings: 2 (15x15)
+- Floors: 3 (10-15 tiles)
+- Rooms: 2 (8-10 tiles)
+- Dungeons: 1 (25x25)
+
+**Connections**: 12 (fully connected hierarchy)
+
+---
+
 **Next Focus:**
-1. **Battle System** - Skill Integration & Advanced Features ⚔️
-2. **Virtual World Map** - Grid-Based Real Map Rendering 🗺️⭐
+1. **Virtual Map Testing** - Test navigation and movement 🗺️⭐
+2. **Battle System** - Skill Integration & Advanced Features ⚔️

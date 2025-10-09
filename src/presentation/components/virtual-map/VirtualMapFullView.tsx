@@ -6,7 +6,10 @@ import { Location } from "@/src/domain/types/location.types";
 import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
 import { VirtualMapGrid } from "./VirtualMapGrid";
+import { KeyboardHint } from "./KeyboardHint";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { useMovementAnimation } from "@/src/hooks/useMovementAnimation";
+import { useKeyboardMovement } from "@/src/hooks/useKeyboardMovement";
 import {
   getLocationPath,
 } from "@/src/data/master/locations.master";
@@ -30,6 +33,12 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
     refreshCachedData,
   } = useVirtualMapStore();
 
+  // Enable movement animation
+  useMovementAnimation();
+
+  // Enable keyboard controls (WASD + Arrow Keys)
+  useKeyboardMovement(true);
+
   // UI State
   const [showLocationListPanel, setShowLocationListPanel] = useState(true);
   const [showBreadcrumbPanel, setShowBreadcrumbPanel] = useState(true);
@@ -39,8 +48,31 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
 
   // Initialize store from URL on mount
   useEffect(() => {
+    console.log(`[VirtualMapFullView] Initializing...`);
+    console.log(`  - initialLocationId:`, initialLocationId);
+    console.log(`  - currentLocationData:`, currentLocationData?.id);
+    
+    const currentPos = useVirtualMapStore.getState().playerPosition;
+    console.log(`  - Current player position:`, currentPos);
+    
     if (initialLocationId) {
-      teleportToLocation(initialLocationId);
+      // Teleport player to this location if they're not already here
+      if (currentPos.locationId !== initialLocationId) {
+        console.log(`  ✓ Teleporting player to ${initialLocationId}`);
+        teleportToLocation(initialLocationId);
+      } else {
+        console.log(`  ✓ Player already at ${initialLocationId}`);
+      }
+    } else if (currentLocationData) {
+      // If no URL param, teleport to current location in store
+      if (currentPos.locationId !== currentLocationData.id) {
+        console.log(`  ✓ Teleporting player to current location: ${currentLocationData.id}`);
+        teleportToLocation(currentLocationData.id);
+      } else {
+        console.log(`  ✓ Player already at ${currentLocationData.id}`);
+      }
+    } else {
+      console.log(`  ✗ No location data available!`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
@@ -207,25 +239,27 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
             position="top-left"
           />
         )}
+
+        {/* Help Text - Bottom Center */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+          <HUDPanel>
+            <p className="text-xs text-gray-400 text-center">
+              🖱️ Click on location markers to navigate • ⚡ Fast travel available
+            </p>
+          </HUDPanel>
+        </div>
+
+        {/* Keyboard Controls Hint */}
+        <KeyboardHint />
       </GameLayoutOverlay>
 
-      {/* Help Text - Bottom Center */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
-        <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2">
-          <p className="text-xs text-gray-400 text-center">
-            🖱️ Click on location markers to navigate • ⚡ Fast travel available
-          </p>
-        </div>
-      </div>
-
-      {/* Back to Main Menu */}
-      <div className="fixed bottom-4 right-4 z-40">
+      {/* Main Menu Button - Bottom Left */}
+      <div className="fixed bottom-4 left-4 z-40">
         <Link
           href="/"
           className="px-4 py-2 bg-slate-900/80 hover:bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm flex items-center gap-2"
         >
           <Home className="w-4 h-4" />
-          <span className="hidden sm:inline">Main Menu</span>
         </Link>
       </div>
     </GameLayout>

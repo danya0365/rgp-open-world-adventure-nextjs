@@ -137,6 +137,8 @@ interface GameState {
   // ==================== Progress Actions ====================
 
   setCurrentLocation: (locationId: string) => void;
+  setPlayerWorldPosition: (position: PlayerWorldPosition) => void;
+  getPlayerWorldPosition: () => PlayerWorldPosition | null;
   discoverLocation: (locationId: string) => void;
   isLocationDiscovered: (locationId: string) => boolean;
   
@@ -299,9 +301,6 @@ export const useGameStore = create<GameState>()(
           },
         }));
 
-        // Auto-discover location
-        get().discoverLocation(locationId);
-
         // Add event
         get().addEvent({
           type: "discovery",
@@ -310,6 +309,21 @@ export const useGameStore = create<GameState>()(
             locationId,
           },
         });
+      },
+
+      setPlayerWorldPosition: (position: PlayerWorldPosition) => {
+        set((state) => ({
+          progress: {
+            ...state.progress,
+            playerWorldPosition: position,
+            currentLocationId: position.locationId,
+            lastSaveTime: new Date().toISOString(),
+          },
+        }));
+      },
+
+      getPlayerWorldPosition: () => {
+        return get().progress.playerWorldPosition;
       },
 
       discoverLocation: (locationId: string) => {

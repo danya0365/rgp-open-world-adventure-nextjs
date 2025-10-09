@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Coordinates, Location } from "@/src/domain/types/location.types";
+import { Coordinates, Location, MapTile } from "@/src/domain/types/location.types";
 import {
   LOCATIONS_MASTER,
   getLocationById,
   getLocationChildren,
 } from "@/src/data/master/locations.master";
+import { useGameStore } from "./gameStore";
+import { findPath } from "@/src/utils/pathfinding";
 
 /**
  * Virtual Map Store - Player Position & Map State
@@ -23,15 +25,18 @@ export interface PlayerPosition {
   facing: "north" | "south" | "east" | "west"; // Direction player is facing
 }
 
-export interface VirtualMapState {
+export interface MovementState {
+  isMoving: boolean;
+  currentPath: Coordinates[];
+  currentPathIndex: number;
+  movementSpeed: number; // tiles per second
+}
+
+interface VirtualMapState {
   // ========================================
   // User State (Persisted)
   // ========================================
-  
-  // Player Position
   playerPosition: PlayerPosition;
-  
-  // Discovered Locations (Fog of War)
   discoveredLocations: Set<string>; // Location IDs that have been discovered
   
   // Visited Tiles (for detailed exploration tracking)
@@ -44,6 +49,11 @@ export interface VirtualMapState {
   // UI State
   showMinimap: boolean;
   showLocationInfo: boolean;
+  
+  // ========================================
+  // Movement State (Not Persisted)
+  // ========================================
+  movementState: MovementState;
   
   // ========================================
   // Cached/Computed Data (Not Persisted)
@@ -71,20 +81,31 @@ export interface VirtualMapState {
   movePlayer: (coordinates: Coordinates) => void;
   setPlayerFacing: (facing: "north" | "south" | "east" | "west") => void;
   teleportToLocation: (locationId: string, coordinates?: Coordinates) => void;
-  discoverLocation: (locationId: string) => void;
   visitTile: (locationId: string, coordinates: Coordinates) => void;
   setCameraPosition: (position: Coordinates) => void;
   setZoom: (zoom: number) => void;
   toggleMinimap: () => void;
   toggleLocationInfo: () => void;
+
+  // Movement Actions (with pathfinding)
+  startMovementToTile: (targetX: number, targetY: number) => void;
+  stopMovement: () => void;
+  updateMovement: (deltaTime: number) => void; // Call from animation loop
+
+  // Discovery
+  discoverLocation: (locationId: string) => void;
+
+  // Reset
   resetMapState: () => void;
-  refreshCachedData: () => void; // Recompute cached data
+  
+  // Refresh cached data
+  refreshCachedData: () => void;
 }
 
 // Default player starting position
 const DEFAULT_PLAYER_POSITION: PlayerPosition = {
   locationId: "city-silverhold", // Start at Silverhold City
-  coordinates: { x: 100, y: 50 },
+  coordinates: { x: 400, y: 300 }, // Center of 20x15 grid (10*40, 7.5*40)
   facing: "south",
 };
 
@@ -164,6 +185,16 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showLocationInfo: true,
 
         // ========================================
+        // Movement State
+        // ========================================
+        movementState: {
+          isMoving: false,
+          currentPath: [],
+          currentPathIndex: 0,
+          movementSpeed: 3, // 3 tiles per second
+        },
+
+        // ========================================
         // Cached Data
         // ========================================
         ...initialCachedData,
@@ -179,6 +210,14 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         get().setCameraPosition(position.coordinates);
         // Refresh cached data
         get().refreshCachedData();
+        
+        // ✅ Sync to gameStore
+        useGameStore.getState().setPlayerWorldPosition({
+          locationId: position.locationId,
+          x: position.coordinates.x,
+          y: position.coordinates.y,
+          facing: position.facing,
+        });
       },
 
       movePlayer: (coordinates) => {
@@ -193,6 +232,14 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         get().visitTile(currentPosition.locationId, coordinates);
         // Update camera
         get().setCameraPosition(coordinates);
+        
+        // ✅ Sync to gameStore
+        useGameStore.getState().setPlayerWorldPosition({
+          locationId: currentPosition.locationId,
+          x: coordinates.x,
+          y: coordinates.y,
+          facing: currentPosition.facing,
+        });
       },
 
       setPlayerFacing: (facing) => {
@@ -206,7 +253,20 @@ export const useVirtualMapStore = create<VirtualMapState>()(
       },
 
       teleportToLocation: (locationId, coordinates) => {
-        const newCoords = coordinates || { x: 50, y: 50 }; // Default center if not specified
+        // Calculate center of map if coordinates not specified
+        let newCoords = coordinates;
+        if (!newCoords) {
+          const location = getLocationById(locationId);
+          const mapWidth = location?.mapData?.gridSize || location?.mapData?.width || 20;
+          const mapHeight = location?.mapData?.gridSize || location?.mapData?.height || 15;
+          const pixelSize = 40; // tile size in pixels
+          // Center of map
+          newCoords = { 
+            x: Math.floor(mapWidth / 2) * pixelSize, 
+            y: Math.floor(mapHeight / 2) * pixelSize 
+          };
+        }
+        
         set({
           playerPosition: {
             locationId,
@@ -217,6 +277,14 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         });
         get().discoverLocation(locationId);
         get().refreshCachedData();
+        
+        // ✅ Sync to gameStore
+        useGameStore.getState().setPlayerWorldPosition({
+          locationId,
+          x: newCoords.x,
+          y: newCoords.y,
+          facing: "south",
+        });
       },
 
       discoverLocation: (locationId) => {
@@ -257,6 +325,152 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 
       toggleLocationInfo: () => {
         set((state) => ({ showLocationInfo: !state.showLocationInfo }));
+      },
+
+      // ========================================
+      // Movement Actions (with Pathfinding)
+      // ========================================
+      startMovementToTile: (targetX: number, targetY: number) => {
+        const state = get();
+        const currentPos = state.playerPosition;
+        
+        // Get current tile position
+        const currentTileX = Math.floor(currentPos.coordinates.x / 40); // gridSize = 40
+        const currentTileY = Math.floor(currentPos.coordinates.y / 40);
+        
+        // Get map tiles from current location
+        const currentLocation = state.currentLocationData;
+        if (!currentLocation?.mapData?.tiles) return;
+        
+        const tiles = currentLocation.mapData.tiles;
+        const mapWidth = currentLocation.mapData.gridSize || currentLocation.mapData.width || 20;
+        const mapHeight = currentLocation.mapData.gridSize || currentLocation.mapData.height || 15;
+        
+        // Find path using A*
+        const path = findPath(
+          currentTileX,
+          currentTileY,
+          targetX,
+          targetY,
+          tiles,
+          mapWidth,
+          mapHeight
+        );
+        
+        if (path.length === 0) {
+          console.log("No path found!");
+          return;
+        }
+        
+        // Remove first tile (current position)
+        const pathToWalk = path.slice(1);
+        
+        if (pathToWalk.length === 0) {
+          console.log("Already at destination!");
+          return;
+        }
+        
+        // Start movement
+        set({
+          movementState: {
+            isMoving: true,
+            currentPath: pathToWalk.map((p) => ({ x: p.x * 40, y: p.y * 40 })),
+            currentPathIndex: 0,
+            movementSpeed: state.movementState.movementSpeed,
+          },
+        });
+        
+        console.log(`Starting movement along path with ${pathToWalk.length} tiles`);
+      },
+
+      stopMovement: () => {
+        set({
+          movementState: {
+            isMoving: false,
+            currentPath: [],
+            currentPathIndex: 0,
+            movementSpeed: 3,
+          },
+        });
+      },
+
+      updateMovement: (deltaTime: number) => {
+        const state = get();
+        const movement = state.movementState;
+        
+        if (!movement.isMoving || movement.currentPath.length === 0) return;
+        
+        const targetPos = movement.currentPath[movement.currentPathIndex];
+        const currentPos = state.playerPosition.coordinates;
+        
+        // Calculate direction to target
+        const dx = targetPos.x - currentPos.x;
+        const dy = targetPos.y - currentPos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Calculate movement speed (pixels per second)
+        const pixelsPerSecond = movement.movementSpeed * 40; // tiles/sec * pixels/tile
+        const moveDistance = pixelsPerSecond * deltaTime;
+        
+        if (distance <= moveDistance) {
+          // Reached target tile
+          get().movePlayer(targetPos);
+          
+          // Update facing direction
+          if (Math.abs(dx) > Math.abs(dy)) {
+            get().setPlayerFacing(dx > 0 ? "east" : "west");
+          } else {
+            get().setPlayerFacing(dy > 0 ? "south" : "north");
+          }
+          
+          // Move to next tile in path
+          const nextIndex = movement.currentPathIndex + 1;
+          if (nextIndex >= movement.currentPath.length) {
+            // Finished path
+            get().stopMovement();
+            console.log("Reached destination!");
+          } else {
+            // Continue to next tile
+            set({
+              movementState: {
+                ...movement,
+                currentPathIndex: nextIndex,
+              },
+            });
+          }
+        } else {
+          // Move towards target
+          const ratio = moveDistance / distance;
+          const newX = currentPos.x + dx * ratio;
+          const newY = currentPos.y + dy * ratio;
+          
+          set({
+            playerPosition: {
+              ...state.playerPosition,
+              coordinates: { x: newX, y: newY },
+            },
+          });
+          
+          // Update facing direction
+          if (Math.abs(dx) > Math.abs(dy)) {
+            set({
+              playerPosition: {
+                ...get().playerPosition,
+                facing: dx > 0 ? "east" : "west",
+              },
+            });
+          } else {
+            set({
+              playerPosition: {
+                ...get().playerPosition,
+                facing: dy > 0 ? "south" : "north",
+              },
+            });
+          }
+          
+          // Update camera to follow player
+          get().setCameraPosition({ x: newX, y: newY });
+        }
       },
 
       resetMapState: () => {

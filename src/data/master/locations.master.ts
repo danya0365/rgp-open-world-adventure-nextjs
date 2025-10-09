@@ -19,13 +19,15 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria"],
     slug: "aethoria",
     description: "โลกแฟนตาซีที่เต็มไปด้วยเวทมนตร์และการผจญภัย",
+    coordinates: { x: 500, y: 500 },
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 1000,
-      height: 1000,
+      width: 50,
+      height: 50,
+      gridSize: 50,
     },
   },
 
@@ -49,8 +51,9 @@ export const LOCATIONS_MASTER: Location[] = [
     currentWeather: "snow",
     timeEnabled: true,
     mapData: {
-      width: 400,
-      height: 400,
+      width: 30,
+      height: 30,
+      gridSize: 30,
     },
   },
 
@@ -71,8 +74,9 @@ export const LOCATIONS_MASTER: Location[] = [
     currentWeather: "sunny",
     timeEnabled: true,
     mapData: {
-      width: 400,
-      height: 400,
+      width: 30,
+      height: 30,
+      gridSize: 30,
     },
   },
 
@@ -99,8 +103,9 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/frostpeak.mp3",
     ambientSound: "/audio/ambient/wind.mp3",
     mapData: {
-      width: 200,
-      height: 200,
+      width: 25,
+      height: 25,
+      gridSize: 25,
     },
   },
 
@@ -124,8 +129,9 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/elven-forest.mp3",
     ambientSound: "/audio/ambient/forest.mp3",
     mapData: {
-      width: 200,
-      height: 200,
+      width: 25,
+      height: 25,
+      gridSize: 25,
     },
   },
 
@@ -156,8 +162,9 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: true,
     encounterTableId: "encounter-ice-monsters",
     mapData: {
-      width: 100,
-      height: 100,
+      width: 20,
+      height: 20,
+      gridSize: 20,
     },
     metadata: {
       encounters: ["ice-wolf", "frost-giant", "ice-elemental"],
@@ -195,8 +202,9 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/city-theme.mp3",
     ambientSound: "/audio/ambient/city.mp3",
     mapData: {
-      width: 80,
-      height: 80,
+      width: 20,
+      height: 15,
+      gridSize: 20,
     },
     metadata: {
       npcs: ["npc-mayor", "npc-blacksmith", "npc-merchant"],
@@ -231,8 +239,9 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/elven-city.mp3",
     ambientSound: "/audio/ambient/nature.mp3",
     mapData: {
-      width: 100,
-      height: 100,
+      width: 20,
+      height: 15,
+      gridSize: 20,
     },
     metadata: {
       npcs: ["npc-elder", "npc-archer-trainer", "npc-herbalist"],
@@ -268,8 +277,9 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: false,
     backgroundMusic: "/audio/bgm/guild.mp3",
     mapData: {
-      width: 30,
-      height: 30,
+      width: 15,
+      height: 15,
+      gridSize: 15,
     },
     metadata: {
       npcs: ["npc-guild-master", "npc-receptionist", "npc-quest-board"],
@@ -301,8 +311,9 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: false,
     backgroundMusic: "/audio/bgm/magic-tower.mp3",
     mapData: {
-      width: 20,
-      height: 20,
+      width: 15,
+      height: 15,
+      gridSize: 15,
     },
     metadata: {
       npcs: ["npc-archmage", "npc-librarian", "npc-apprentice"],
@@ -336,8 +347,9 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 30,
-      height: 15,
+      width: 15,
+      height: 10,
+      gridSize: 15,
     },
     metadata: {
       npcs: ["npc-receptionist", "npc-quest-board"],
@@ -369,8 +381,9 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 30,
-      height: 15,
+      width: 15,
+      height: 10,
+      gridSize: 15,
     },
     metadata: {
       npcs: ["npc-party-leader"],
@@ -400,8 +413,9 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 20,
-      height: 20,
+      width: 12,
+      height: 12,
+      gridSize: 12,
     },
     metadata: {
       npcs: ["npc-librarian"],
@@ -440,6 +454,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 10,
       height: 8,
+      gridSize: 10,
     },
     metadata: {
       npcs: ["npc-guild-master"],
@@ -475,6 +490,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 8,
       height: 8,
+      gridSize: 8,
     },
     metadata: {
       services: ["party-formation"],
@@ -510,13 +526,78 @@ export const LOCATIONS_MASTER: Location[] = [
     ambientSound: "/audio/ambient/dungeon.mp3",
     encounterTableId: "encounter-frozen-depths",
     mapData: {
-      width: 50,
-      height: 50,
+      width: 25,
+      height: 25,
+      gridSize: 25,
     },
     metadata: {
       encounters: ["ice-golem", "frost-dragon", "frozen-undead"],
       treasures: ["legendary-chest-1"],
       secrets: ["secret-boss-room"],
+    },
+  },
+
+  // ========================================
+  // ADDITIONAL LOCATIONS FOR TESTING
+  // ========================================
+  {
+    id: "field-starting-plains",
+    parentId: "continent-northern",
+    name: "ทุ่งหญ้าเริ่มต้น",
+    nameEn: "Starting Plains",
+    type: "field",
+    level: 2,
+    path: ["world-aethoria", "continent-northern", "field-starting-plains"],
+    slug: "starting-plains",
+    description: "ทุ่งหญ้ากว้างใหญ่สำหรับผู้เริ่มต้นการผจญภัย",
+    coordinates: { x: 250, y: 150 },
+    isDiscoverable: true,
+    isFastTravelPoint: true,
+    requiredLevel: 1,
+    weatherEnabled: true,
+    currentWeather: "sunny",
+    timeEnabled: true,
+    backgroundMusic: "/audio/bgm/plains.mp3",
+    encounterTableId: "encounter-plains",
+    mapData: {
+      width: 30,
+      height: 25,
+      gridSize: 30,
+    },
+    metadata: {
+      encounters: ["slime", "goblin", "wild-boar"],
+      npcs: ["npc-tutorial-guide"],
+      battleMaps: ["map-plains-battle"],
+    },
+  },
+
+  {
+    id: "town-riverside",
+    parentId: "continent-eastern",
+    name: "เมืองริมน้ำ",
+    nameEn: "Riverside Town",
+    type: "town",
+    level: 2,
+    path: ["world-aethoria", "continent-eastern", "town-riverside"],
+    slug: "riverside-town",
+    description: "เมืองเล็กๆ ริมฝั่งแม่น้ำที่เงียบสงบ",
+    coordinates: { x: 550, y: 350 },
+    isDiscoverable: true,
+    isFastTravelPoint: true,
+    requiredLevel: 5,
+    weatherEnabled: true,
+    currentWeather: "sunny",
+    timeEnabled: true,
+    backgroundMusic: "/audio/bgm/town.mp3",
+    mapData: {
+      width: 18,
+      height: 15,
+      gridSize: 18,
+    },
+    metadata: {
+      npcs: ["npc-fisherman", "npc-trader"],
+      shops: ["shop-general", "shop-fish"],
+      services: ["inn", "dock"],
     },
   },
 ];
@@ -706,6 +787,29 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     requiredItemId: "item-crystal-key",
     isTwoWay: true,
     coordinates: { x: 110, y: 70 },
+  },
+
+  // ========================================
+  // ADDITIONAL CONNECTIONS
+  // ========================================
+  {
+    id: "conn-9",
+    fromLocationId: "continent-northern",
+    toLocationId: "field-starting-plains",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 250, y: 150 },
+  },
+
+  {
+    id: "conn-10",
+    fromLocationId: "continent-eastern",
+    toLocationId: "town-riverside",
+    connectionType: "gate",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 550, y: 350 },
   },
 ];
 
