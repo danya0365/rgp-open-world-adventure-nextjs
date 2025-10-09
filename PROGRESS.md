@@ -1058,23 +1058,35 @@
     - [x] Real-time filtered count in Stats Panel
   - [x] Clean Architecture maintained
   
-- [x] **Party Page** (`/party`) ✅ COMPLETED (2025-10-09 08:39)
-  - [x] Refactor to full-screen map layout with Pan & Zoom
+- [x] **Party Page** (`/party`) ✅ COMPLETED (2025-10-09 08:46)
+  - [x] **Party-Focused Redesign** - Focus on party members, not available characters
   - [x] Component-based architecture (separated into sub-components)
   - [x] **Sub-Components Created:**
-    - [x] `PartyCharacterMarker` - Individual character marker with badges
-    - [x] `PartySlots` - 4-slot party management grid
+    - [x] `PartyMemberMarker` - Large party member display with leader badge
+    - [x] `PartyEmptySlot` - Interactive empty slot with + icon
+    - [x] `PartyFormationView` - Formation-based layout (Front/Back rows)
     - [x] `PartyStatsPanel` - Team statistics display
-    - [x] `PartyMapView` - Full-screen map container
     - [x] `PartyView` - Main orchestrator component
-  - [x] HUD Panels (Party Panel - Left, Stats Panel - Right)
-  - [x] Closable panels with toggle buttons
+  - [x] **Formation System** - 2x2 grid (Front Row, Back Row)
+    - [x] Position 0, 1 - Front Row (bottom 65%)
+    - [x] Position 2, 3 - Back Row (top 35%)
+    - [x] Visual formation lines with labels
+  - [x] **Party Members on Map** - Focus on showing party members
+    - [x] Larger markers (24-32px) with detailed info
+    - [x] Leader badge (crown icon)
+    - [x] Position numbers (1-4)
+    - [x] Stats preview on hover
+    - [x] Click to remove confirmation
+  - [x] **Empty Slots on Map** - Interactive empty positions
+    - [x] Dashed border with + icon
+    - [x] Click to open character selection modal
+    - [x] Hover hints
+  - [x] HUD Panels (Party Management - Left, Stats - Right)
   - [x] Pan & Zoom controls (mouse wheel, drag, reset button)
-  - [x] Available characters as markers on map
-  - [x] Click character to add to first empty slot
+  - [x] Available characters shown in modal (not on map)
   - [x] Party Slider for multiple party management
   - [x] Team Synergy display
-  - [x] Mobile responsive (3 columns mobile, 5 desktop)
+  - [x] Mobile responsive
   - [x] Clean Architecture maintained
 
 - [ ] **Quest Page** (`/quests`)

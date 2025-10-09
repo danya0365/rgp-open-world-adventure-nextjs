@@ -6,8 +6,7 @@ import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/H
 import { CreatePartyModal } from "./CreatePartyModal";
 import { PartySlider } from "./PartySlider";
 import { RenamePartyModal } from "./RenamePartyModal";
-import { PartyMapView } from "./PartyMapView";
-import { PartySlots } from "./PartySlots";
+import { PartyFormationView } from "./PartyFormationView";
 import { PartyStatsPanel } from "./PartyStatsPanel";
 import { Modal } from "@/src/presentation/components/ui";
 import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
@@ -268,22 +267,8 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
       return isRecruited && !isInActiveParty;
     }) || [];
 
-  // Generate positions for characters
-  const charactersWithPositions = availableChars.map((char, index) => {
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    const columns = isMobile ? 3 : 5;
-    const col = index % columns;
-    const row = Math.floor(index / columns);
-    const spacingX = isMobile ? 25 : 18;
-    const spacingY = isMobile ? 25 : 20;
-    const startX = isMobile ? 10 : 15;
-    const startY = isMobile ? 30 : 35;
-    
-    const x = startX + col * spacingX;
-    const y = startY + row * spacingY;
-
-    return { ...char, x, y };
-  });
+  // No need to generate positions for available characters
+  // They will be shown in modal when selecting
 
   // Handlers
   const handleSlotClick = (position: number) => {
@@ -307,24 +292,20 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     }
   };
 
-  const handleCharacterClick = (character: Character) => {
-    if (activePartyMembers.length >= 4) {
-      alert("ทีมเต็มแล้ว! (4/4)");
-      return;
-    }
-    const occupiedPositions = activePartyMembers.map((m) => m.position);
-    const emptyPosition = [0, 1, 2, 3].find((pos) => !occupiedPositions.includes(pos));
-    if (emptyPosition !== undefined && activePartyId) {
-      addToPartyV2(activePartyId, character.id, emptyPosition);
+  const handleMemberClick = (characterId: string) => {
+    // When clicking on a party member, ask to remove
+    if (confirm("ต้องการลบสมาชิกคนนี้ออกจากทีมหรือไม่?")) {
+      handleRemove(characterId);
     }
   };
 
   return (
     <GameLayout>
-      {/* Map View */}
-      <PartyMapView
-        characters={charactersWithPositions}
-        onCharacterClick={handleCharacterClick}
+      {/* Party Formation View */}
+      <PartyFormationView
+        members={activePartyCharacters}
+        onSlotClick={handleSlotClick}
+        onMemberClick={handleMemberClick}
         zoom={zoom}
         setZoom={setZoom}
         pan={pan}
@@ -334,7 +315,6 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onResetView={handleResetView}
-        hasMembers={activePartyMembers.length > 0}
       />
 
       {/* HUD Overlays */}
@@ -360,15 +340,21 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
                 onCopyParty={handleCopyParty}
                 onDeleteParty={handleDeleteParty}
               />
-              <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-3">
-                  สมาชิกทีม ({activePartyMembers.length}/4)
+              
+              {/* Team Summary */}
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+                <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  สมาชิกทีม
                 </h3>
-                <PartySlots
-                  members={activePartyCharacters}
-                  onSlotClick={handleSlotClick}
-                  onRemove={handleRemove}
-                />
+                <div className="text-2xl font-bold text-purple-400 mb-1">
+                  {activePartyMembers.length}/4
+                </div>
+                <p className="text-xs text-gray-400">
+                  {activePartyMembers.length === 0
+                    ? "คลิกช่องว่างบนแผนที่เพื่อเพิ่มสมาชิก"
+                    : `${4 - activePartyMembers.length} ช่องว่างเหลืออยู่`}
+                </p>
               </div>
               {synergies.length > 0 && (
                 <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg p-3">
