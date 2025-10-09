@@ -1,26 +1,22 @@
 "use client";
 
 import { Character } from "@/src/domain/types/character.types";
-import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
-import { CreatePartyModal } from "@/src/presentation/components/party/CreatePartyModal";
-import { PartySlider } from "@/src/presentation/components/party/PartySlider";
-import { PartySlot } from "@/src/presentation/components/party/PartySlot";
-import { RenamePartyModal } from "@/src/presentation/components/party/RenamePartyModal";
+import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
+import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
+import { CreatePartyModal } from "./CreatePartyModal";
+import { PartySlider } from "./PartySlider";
+import { RenamePartyModal } from "./RenamePartyModal";
+import { PartyMapView } from "./PartyMapView";
+import { PartySlots } from "./PartySlots";
+import { PartyStatsPanel } from "./PartyStatsPanel";
 import { Modal } from "@/src/presentation/components/ui";
+import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
 import { PartyViewModel } from "@/src/presentation/presenters/party/PartyPresenter";
 import { usePartyPresenter } from "@/src/presentation/presenters/party/usePartyPresenter";
 import { getPartyStats, getPartySynergy } from "@/src/stores/gameStore";
-import {
-  AlertCircle,
-  Heart,
-  Map,
-  Shield,
-  Sparkles,
-  Users,
-  Zap,
-} from "lucide-react";
+import { AlertCircle, Map, Shield, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface PartyViewProps {
   initialViewModel?: PartyViewModel;
@@ -31,7 +27,6 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     viewModel,
     loading,
     error,
-    // Multiple Party System (ผ่าน presenter)
     parties,
     activePartyId,
     createParty,
@@ -44,15 +39,78 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     removeFromPartyV2,
   } = usePartyPresenter(initialViewModel);
 
-  // Local state for modal
+  // UI State
+  const [showPartyPanel, setShowPartyPanel] = useState(true);
+  const [showStatsPanel, setShowStatsPanel] = useState(true);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<number | null>(null);
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [renamePartyId, setRenamePartyId] = useState<string>("");
   const [renamePartyName, setRenamePartyName] = useState<string>("");
 
+  // Pan & Zoom state
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("partyMapZoom");
+      return saved ? parseFloat(saved) : 1;
+    }
+    return 1;
+  });
+  const [pan, setPan] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("partyMapPan");
+      return saved ? JSON.parse(saved) : { x: 0, y: 0 };
+    }
+    return { x: 0, y: 0 };
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Save zoom/pan to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("partyMapZoom", zoom.toString());
+    }
+  }, [zoom]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("partyMapPan", JSON.stringify(pan));
+    }
+  }, [pan]);
+
+  // Pan & Zoom handlers
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom((prev) => Math.max(0.5, Math.min(3, prev + delta)));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPan({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleResetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  // Party handlers
   const handleCreateParty = (name: string) => {
     const newParty = createParty(name);
     setActiveParty(newParty.id);
@@ -71,10 +129,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   };
 
   const handleCopyParty = (partyId: string, currentName: string) => {
-    const newName = prompt(
-      `Copy "${currentName}" as:`,
-      `${currentName} (Copy)`
-    );
+    const newName = prompt(`Copy "${currentName}" as:`, `${currentName} (Copy)`);
     if (newName && newName.trim()) {
       copyParty(partyId, newName.trim());
     }
@@ -85,53 +140,89 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
       alert("ไม่สามารถลบ Party สุดท้ายได้!");
       return;
     }
-
     const party = parties.find((p) => p.id === partyId);
     if (party && confirm(`ต้องการลบ "${party.name}" หรือไม่?`)) {
       deleteParty(partyId);
     }
   };
 
-  // Show loading only on initial load
+  // Loading state
   if (loading && !viewModel) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-400">กำลังโหลดข้อมูลทีม...</p>
+      <GameLayout>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-400">กำลังโหลดข้อมูลทีม...</p>
+          </div>
         </div>
-      </div>
+      </GameLayout>
     );
   }
 
-  // Show error state if there's an error but we have no data
+  // Error state
   if (error && !viewModel) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <p className="text-red-400 font-medium mb-2">เกิดข้อผิดพลาด</p>
-          <p className="text-gray-400 mb-4">{error}</p>
-          <Link
-            href="/"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors inline-block"
-          >
-            กลับหน้าแรก
-          </Link>
+      <GameLayout>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <p className="text-red-400 font-medium mb-2">เกิดข้อผิดพลาด</p>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <Link
+              href="/"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors inline-block"
+            >
+              กลับหน้าแรก
+            </Link>
+          </div>
         </div>
-      </div>
+      </GameLayout>
     );
   }
 
-  // If we have no view model and not loading, show empty state
+  // Empty state
   if (!viewModel) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-gray-400 text-6xl mb-4">👥</div>
-          <p className="text-gray-400 font-medium mb-2">ยังไม่มีข้อมูลทีม</p>
+      <GameLayout>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-gray-400 text-6xl mb-4">👥</div>
+            <p className="text-gray-400 font-medium mb-2">ยังไม่มีข้อมูลทีม</p>
+          </div>
         </div>
-      </div>
+      </GameLayout>
+    );
+  }
+
+  // No recruited characters
+  if (progress.recruitedCharacters.length === 0) {
+    return (
+      <GameLayout>
+        <div className="absolute inset-0 flex items-center justify-center p-8">
+          <div className="text-center max-w-md pointer-events-auto">
+            <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-2">ยังไม่มีตัวละคร!</h2>
+            <p className="text-gray-400 mb-6">
+              คุณต้องรีครูทตัวละครก่อนจึงจะสามารถจัดทีมได้
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/characters"
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
+              >
+                ไปรีครูทตัวละคร
+              </Link>
+              <Link
+                href="/"
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              >
+                กลับหน้าแรก
+              </Link>
+            </div>
+          </div>
+        </div>
+      </GameLayout>
     );
   }
 
@@ -139,20 +230,17 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   const activeParty = parties.find((p) => p.id === activePartyId);
   const activePartyMembers = activeParty?.members || [];
 
-  // Get character objects from recruited characters
+  // Get character objects
   const activePartyCharacters = activePartyMembers
     .map((member) => {
       const recruited = progress.recruitedCharacters.find(
         (rc) => rc.characterId === member.characterId
       );
       if (!recruited) return null;
-
-      // Find character from master data
       const character = viewModel?.playableCharacters.find(
         (c) => c.id === recruited.characterId
       );
       if (!character) return null;
-
       return {
         character,
         position: member.position,
@@ -168,7 +256,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   const stats = getPartyStats(activePartyCharacters);
   const synergies = getPartySynergy(activePartyCharacters);
 
-  // Available characters = recruited but not in active party
+  // Available characters
   const availableChars =
     viewModel?.playableCharacters.filter((c) => {
       const isRecruited = progress.recruitedCharacters.some(
@@ -180,71 +268,36 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
       return isRecruited && !isInActiveParty;
     }) || [];
 
-  // Show warning if no recruited characters
-  if (progress.recruitedCharacters.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center p-8">
-        <div className="text-center max-w-md">
-          <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">
-            ยังไม่มีตัวละคร!
-          </h2>
-          <p className="text-gray-400 mb-6">
-            คุณต้องรีครูทตัวละครก่อนจึงจะสามารถจัดทีมได้
-            <br />
-            <span className="text-sm text-gray-500 mt-2 block">
-              (ไปหน้าตัวละคร → คลิกตัวละคร → รีครูท)
-            </span>
-          </p>
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/characters"
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
-            >
-              ไปรีครูทตัวละคร
-            </Link>
-            <Link
-              href="/"
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-            >
-              กลับหน้าแรก
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Generate positions for characters
+  const charactersWithPositions = availableChars.map((char, index) => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    const columns = isMobile ? 3 : 5;
+    const col = index % columns;
+    const row = Math.floor(index / columns);
+    const spacingX = isMobile ? 25 : 18;
+    const spacingY = isMobile ? 25 : 20;
+    const startX = isMobile ? 10 : 15;
+    const startY = isMobile ? 30 : 35;
+    
+    const x = startX + col * spacingX;
+    const y = startY + row * spacingY;
 
+    return { ...char, x, y };
+  });
+
+  // Handlers
   const handleSlotClick = (position: number) => {
     setSelectedPosition(position);
     setIsSelectModalOpen(true);
   };
 
   const handleCharacterSelect = (character: Character) => {
-    console.log("🎮 handleCharacterSelect", {
-      character: character.name,
-      characterId: character.id,
-      selectedPosition,
-      activePartyId,
-    });
-
     if (selectedPosition !== null && activePartyId) {
-      // Add to active party using V2 API
-      const success = addToPartyV2(
-        activePartyId,
-        character.id,
-        selectedPosition
-      );
-      console.log("✅ addToPartyV2 result:", success);
-
+      const success = addToPartyV2(activePartyId, character.id, selectedPosition);
       if (success) {
         setIsSelectModalOpen(false);
         setSelectedPosition(null);
-      } else {
-        console.error("❌ Failed to add to party");
       }
-    } else {
-      console.error("❌ Missing data:", { selectedPosition, activePartyId });
     }
   };
 
@@ -254,236 +307,182 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
     }
   };
 
+  const handleCharacterClick = (character: Character) => {
+    if (activePartyMembers.length >= 4) {
+      alert("ทีมเต็มแล้ว! (4/4)");
+      return;
+    }
+    const occupiedPositions = activePartyMembers.map((m) => m.position);
+    const emptyPosition = [0, 1, 2, 3].find((pos) => !occupiedPositions.includes(pos));
+    if (emptyPosition !== undefined && activePartyId) {
+      addToPartyV2(activePartyId, character.id, emptyPosition);
+    }
+  };
+
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Users className="w-10 h-10 text-purple-400" />
-            <h1 className="text-4xl font-bold text-white">จัดการทีม</h1>
-          </div>
-          <p className="text-gray-400 text-lg">
-            จัดการหลาย Party พร้อมระบบ Team Synergy
-          </p>
-        </div>
+    <GameLayout>
+      {/* Map View */}
+      <PartyMapView
+        characters={charactersWithPositions}
+        onCharacterClick={handleCharacterClick}
+        zoom={zoom}
+        setZoom={setZoom}
+        pan={pan}
+        isDragging={isDragging}
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onResetView={handleResetView}
+        hasMembers={activePartyMembers.length > 0}
+      />
 
-        {/* Party Slider */}
-        <div className="mb-8">
-          <PartySlider
-            parties={parties}
-            activePartyId={activePartyId}
-            onPartyChange={setActiveParty}
-            onCreateParty={() => setIsCreateModalOpen(true)}
-            onRenameParty={handleRenameParty}
-            onCopyParty={handleCopyParty}
-            onDeleteParty={handleDeleteParty}
-          />
-        </div>
-
-        {/* Party Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-purple-900/30 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="w-5 h-5 text-purple-400" />
-              <div className="text-sm text-gray-400">สมาชิก</div>
-            </div>
-            <div className="text-3xl font-bold text-purple-400">
-              {stats.memberCount}/4
-            </div>
-          </div>
-
-          <div className="bg-red-900/30 backdrop-blur-sm border border-red-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Heart className="w-5 h-5 text-red-400" />
-              <div className="text-sm text-gray-400">Total HP</div>
-            </div>
-            <div className="text-3xl font-bold text-red-400">
-              {stats.totalHp.toLocaleString()}
-            </div>
-          </div>
-
-          <div className="bg-cyan-900/30 backdrop-blur-sm border border-cyan-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-5 h-5 text-cyan-400" />
-              <div className="text-sm text-gray-400">Total MP</div>
-            </div>
-            <div className="text-3xl font-bold text-cyan-400">
-              {stats.totalMp.toLocaleString()}
-            </div>
-          </div>
-
-          <div className="bg-amber-900/30 backdrop-blur-sm border border-amber-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-5 h-5 text-amber-400" />
-              <div className="text-sm text-gray-400">Avg Level</div>
-            </div>
-            <div className="text-3xl font-bold text-amber-400">
-              {stats.avgLevel}
-            </div>
-          </div>
-        </div>
-
-        {/* Synergies */}
-        {synergies.length > 0 && (
-          <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl p-6 mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-6 h-6 text-purple-400" />
-              <h2 className="text-xl font-bold text-white">Team Synergy</h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {synergies.map((synergy) => (
-                <span
-                  key={synergy}
-                  className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-semibold"
-                >
-                  ✨ {synergy}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Party Slots */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            ทีมของคุณ {activeParty ? `- ${activeParty.name}` : ""}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[0, 1, 2, 3].map((position) => {
-              const member =
-                activePartyCharacters.find((m) => m.position === position) ||
-                null;
-              return (
-                <PartySlot
-                  key={position}
-                  position={position}
-                  member={member}
+      {/* HUD Overlays */}
+      <GameLayoutOverlay>
+        {/* Party Panel */}
+        {showPartyPanel ? (
+          <HUDPanel
+            title={`ทีม: ${activeParty?.name || "N/A"}`}
+            icon={<Users className="w-5 h-5" />}
+            position="top-left"
+            closable
+            onClose={() => setShowPartyPanel(false)}
+            maxHeight="500px"
+            maxWidth="min(400px, 90vw)"
+          >
+            <div className="space-y-4">
+              <PartySlider
+                parties={parties}
+                activePartyId={activePartyId}
+                onPartyChange={setActiveParty}
+                onCreateParty={() => setIsCreateModalOpen(true)}
+                onRenameParty={handleRenameParty}
+                onCopyParty={handleCopyParty}
+                onDeleteParty={handleDeleteParty}
+              />
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 mb-3">
+                  สมาชิกทีม ({activePartyMembers.length}/4)
+                </h3>
+                <PartySlots
+                  members={activePartyCharacters}
+                  onSlotClick={handleSlotClick}
                   onRemove={handleRemove}
-                  onSelect={handleSlotClick}
                 />
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Available Characters */}
-        {availableChars.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              ตัวละครที่สามารถเลือกได้ ({availableChars.length})
-            </h2>
-            <p className="text-gray-400 mb-4">
-              คลิกช่องว่างด้านบนเพื่อเลือกตัวละครเข้าทีม
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {availableChars.map((character) => (
-                <div key={character.id}>
-                  <CharacterCard character={character} showStats={false} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Start Adventure Button */}
-        {activePartyMembers.length > 0 && (
-          <div className="mt-8 p-6 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-sm border border-purple-500/30 rounded-xl">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Map className="w-8 h-8 text-purple-400" />
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    พร้อมออกผจญภัย!
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    {activeParty?.name} มี {activePartyMembers.length} คน
-                    พร้อมสำรวจโลกแล้ว
-                  </p>
-                </div>
               </div>
-              <Link
-                href="/world"
-                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 transition-all duration-300 hover:scale-105"
-              >
-                <span className="relative z-10 flex items-center gap-2">
+              {synergies.length > 0 && (
+                <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <h3 className="text-sm font-semibold text-white">Synergy</h3>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {synergies.map((synergy) => (
+                      <span
+                        key={synergy}
+                        className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs"
+                      >
+                        ✨ {synergy}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {activePartyMembers.length > 0 && (
+                <Link
+                  href="/world"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all font-semibold shadow-lg text-center flex items-center justify-center gap-2"
+                >
                   <Map className="w-5 h-5" />
                   เริ่มผจญภัย
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Link>
+                </Link>
+              )}
             </div>
-          </div>
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label="ทีม"
+            icon={<Users className="w-4 h-4" />}
+            onClick={() => setShowPartyPanel(true)}
+            position="top-left"
+          />
         )}
 
-        {/* Empty State */}
-        {activePartyMembers.length === 0 && (
-          <div className="text-center py-16">
-            <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg mb-4">ยังไม่มีสมาชิกในทีม</p>
-            <p className="text-gray-500 mb-4">
-              คลิกที่ช่องว่างหรือเลือกตัวละครด้านล่างเพื่อเพิ่มเข้าทีม
-            </p>
-            <div className="flex items-center justify-center gap-2 text-amber-400">
-              <AlertCircle className="w-5 h-5" />
-              <p className="text-sm">ต้องมีอย่างน้อย 1 คนเพื่อเริ่มผจญภัย</p>
+        {/* Stats Panel */}
+        {showStatsPanel ? (
+          <HUDPanel
+            title="สถิติทีม"
+            icon={<Shield className="w-5 h-5" />}
+            position="top-right"
+            closable
+            onClose={() => setShowStatsPanel(false)}
+            maxHeight="300px"
+            maxWidth="280px"
+          >
+            <PartyStatsPanel stats={stats} availableCount={availableChars.length} />
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label="สถิติ"
+            icon={<Shield className="w-4 h-4" />}
+            onClick={() => setShowStatsPanel(true)}
+            position="top-right"
+          />
+        )}
+      </GameLayoutOverlay>
+
+      {/* Character Selection Modal */}
+      <Modal
+        isOpen={isSelectModalOpen}
+        onClose={() => {
+          setIsSelectModalOpen(false);
+          setSelectedPosition(null);
+        }}
+        title={`เลือกตัวละครสำหรับ Slot ${(selectedPosition || 0) + 1}`}
+        size="xl"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {availableChars.map((character) => (
+            <div
+              key={character.id}
+              onClick={() => handleCharacterSelect(character)}
+              className="cursor-pointer"
+            >
+              <CharacterCard character={character} />
             </div>
+          ))}
+        </div>
+        {availableChars.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-400">ไม่มีตัวละครที่สามารถเลือกได้</p>
           </div>
         )}
+      </Modal>
 
-        {/* Character Selection Modal */}
-        <Modal
-          isOpen={isSelectModalOpen}
-          onClose={() => {
-            setIsSelectModalOpen(false);
-            setSelectedPosition(null);
-          }}
-          title={`เลือกตัวละครสำหรับ Slot ${(selectedPosition || 0) + 1}`}
-          size="xl"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableChars.map((character) => (
-              <div
-                key={character.id}
-                onClick={() => handleCharacterSelect(character)}
-                className="cursor-pointer"
-              >
-                <CharacterCard character={character} />
-              </div>
-            ))}
+      {/* Create Party Modal */}
+      <CreatePartyModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateParty}
+      />
+
+      {/* Rename Party Modal */}
+      <RenamePartyModal
+        isOpen={isRenameModalOpen}
+        onClose={() => setIsRenameModalOpen(false)}
+        onRename={handleRenameConfirm}
+        currentName={renamePartyName}
+      />
+
+      {/* Error Toast */}
+      {error && viewModel && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+          <div className="flex items-center">
+            <span className="mr-2">⚠️</span>
+            <span>{error}</span>
           </div>
-          {availableChars.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-400">ไม่มีตัวละครที่สามารถเลือกได้</p>
-            </div>
-          )}
-        </Modal>
-
-        {/* Error Toast */}
-        {error && viewModel && (
-          <div className="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">
-            <div className="flex items-center">
-              <span className="mr-2">⚠️</span>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Create Party Modal */}
-        <CreatePartyModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onCreate={handleCreateParty}
-        />
-
-        {/* Rename Party Modal */}
-        <RenamePartyModal
-          isOpen={isRenameModalOpen}
-          onClose={() => setIsRenameModalOpen(false)}
-          onRename={handleRenameConfirm}
-          currentName={renamePartyName}
-        />
-      </div>
-    </div>
+        </div>
+      )}
+    </GameLayout>
   );
 }

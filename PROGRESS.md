@@ -1058,11 +1058,24 @@
     - [x] Real-time filtered count in Stats Panel
   - [x] Clean Architecture maintained
   
-- [ ] **Party Page** (`/party`)
-  - [ ] Refactor to full-screen layout
-  - [ ] HUD Panels (closable)
-  - [ ] Remove old layout
-  - [ ] Consistent with World Map style
+- [x] **Party Page** (`/party`) ✅ COMPLETED (2025-10-09 08:39)
+  - [x] Refactor to full-screen map layout with Pan & Zoom
+  - [x] Component-based architecture (separated into sub-components)
+  - [x] **Sub-Components Created:**
+    - [x] `PartyCharacterMarker` - Individual character marker with badges
+    - [x] `PartySlots` - 4-slot party management grid
+    - [x] `PartyStatsPanel` - Team statistics display
+    - [x] `PartyMapView` - Full-screen map container
+    - [x] `PartyView` - Main orchestrator component
+  - [x] HUD Panels (Party Panel - Left, Stats Panel - Right)
+  - [x] Closable panels with toggle buttons
+  - [x] Pan & Zoom controls (mouse wheel, drag, reset button)
+  - [x] Available characters as markers on map
+  - [x] Click character to add to first empty slot
+  - [x] Party Slider for multiple party management
+  - [x] Team Synergy display
+  - [x] Mobile responsive (3 columns mobile, 5 desktop)
+  - [x] Clean Architecture maintained
 
 - [ ] **Quest Page** (`/quests`)
   - [ ] Refactor to full-screen layout
