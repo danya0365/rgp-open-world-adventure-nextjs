@@ -42,6 +42,7 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
   // UI State
   const [showLocationListPanel, setShowLocationListPanel] = useState(true);
   const [showBreadcrumbPanel, setShowBreadcrumbPanel] = useState(true);
+  const [showMinimap, setShowMinimap] = useState(true);
 
   // Get breadcrumb from master data (not cached as it's lightweight)
   const breadcrumb = currentLocationData ? getLocationPath(currentLocationData.id) : [];
@@ -125,6 +126,7 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
           currentLocation={currentLocationData}
           childLocations={childLocations}
           onLocationClick={handleLocationClick}
+          showMinimap={showMinimap}
         />
       </div>
 
@@ -251,6 +253,22 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
 
         {/* Keyboard Controls Hint */}
         <KeyboardHint />
+
+        {/* Minimap Toggle - Top Right */}
+        <div className="fixed top-4 right-4 z-40">
+          <button
+            onClick={() => setShowMinimap(!showMinimap)}
+            className={`px-3 py-2 backdrop-blur-sm border rounded-lg transition-colors text-white text-sm flex items-center gap-2 ${
+              showMinimap
+                ? "bg-purple-900/80 border-purple-500 hover:bg-purple-800/80"
+                : "bg-slate-900/80 border-slate-700 hover:bg-slate-800/80"
+            }`}
+            title={showMinimap ? "Hide Minimap" : "Show Minimap"}
+          >
+            <Map className="w-4 h-4" />
+            <span className="hidden sm:inline">{showMinimap ? "Hide" : "Show"} Map</span>
+          </button>
+        </div>
       </GameLayoutOverlay>
 
       {/* Main Menu Button - Bottom Left */}

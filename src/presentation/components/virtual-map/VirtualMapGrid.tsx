@@ -2,6 +2,7 @@ import { Location, MapTile as MapTileType } from "@/src/domain/types/location.ty
 import { PlayerMarker } from "./PlayerMarker";
 import { LocationMarker } from "./LocationMarker";
 import { MapTile } from "./MapTile";
+import { Minimap } from "./Minimap";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { generateDefaultTiles, generateProceduralMap } from "@/src/utils/mapGenerator";
 import { useMemo, useState, useEffect } from "react";
@@ -11,6 +12,7 @@ interface VirtualMapGridProps {
   childLocations: Location[];
   onLocationClick: (location: Location) => void;
   gridSize?: number;
+  showMinimap?: boolean;
 }
 
 export function VirtualMapGrid({
@@ -18,6 +20,7 @@ export function VirtualMapGrid({
   childLocations,
   onLocationClick,
   gridSize = 40,
+  showMinimap = true,
 }: VirtualMapGridProps) {
   const { playerPosition, discoveredLocations, startMovementToTile, visitedTiles } = useVirtualMapStore();
 
@@ -315,6 +318,24 @@ export function VirtualMapGrid({
         <div className="absolute bottom-1 right-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
           ({viewportEndX}, {viewportEndY})
         </div>
+
+        {/* Minimap - Top Right */}
+        {showMinimap && (
+          <div className="absolute top-4 right-4 z-50 pointer-events-auto">
+            <Minimap
+              currentLocation={currentLocation}
+              tiles={tiles}
+              gridWidth={gridWidth}
+              gridHeight={gridHeight}
+              viewportStartX={viewportStartX}
+              viewportStartY={viewportStartY}
+              viewportEndX={viewportEndX}
+              viewportEndY={viewportEndY}
+              childLocations={childLocations}
+              gridSize={gridSize}
+            />
+          </div>
+        )}
       </div>
 
       {/* Empty State */}
