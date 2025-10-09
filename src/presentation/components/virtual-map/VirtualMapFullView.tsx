@@ -17,9 +17,9 @@ import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { ChevronRight, Home, Map, MapPin, Navigation } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { KeyboardHint } from "./KeyboardHint";
-import { VirtualMapGrid } from "./VirtualMapGrid";
+import { MinimapView, MinimapViewProps, VirtualMapGrid } from "./VirtualMapGrid";
 
 interface VirtualMapFullViewProps {
   initialLocationId?: string;
@@ -41,9 +41,14 @@ export function VirtualMapFullView({
     // UI State from store (persisted)
     showLocationListPanel,
     showBreadcrumbPanel,
+    showMinimapPanel,
     setShowLocationListPanel,
     setShowBreadcrumbPanel,
+    setShowMinimapPanel,
   } = useVirtualMapStore();
+
+  // Local state for minimap data
+  const [minimapData, setMinimapData] = useState<MinimapViewProps | null>(null);
 
   // Enable movement animation
   useMovementAnimation();
@@ -203,7 +208,7 @@ export function VirtualMapFullView({
           currentLocation={currentLocationData}
           childLocations={childLocations}
           onLocationClick={handleLocationClick}
-          showMinimap={false}
+          onMinimapDataReady={setMinimapData}
         />
       </div>
 
@@ -296,6 +301,23 @@ export function VirtualMapFullView({
 
         {/* Keyboard Controls Hint */}
         <KeyboardHint />
+
+        {/* Minimap Panel - Top Right */}
+        {showMinimapPanel && minimapData ? (
+          <div className="absolute top-4 right-4 z-50">
+            <MinimapView
+              {...minimapData}
+              onClose={() => setShowMinimapPanel(false)}
+            />
+          </div>
+        ) : (
+          <HUDPanelToggle
+            label="Minimap"
+            icon={<Map className="w-4 h-4" />}
+            onClick={() => setShowMinimapPanel(true)}
+            position="top-right"
+          />
+        )}
       </GameLayoutOverlay>
 
       {/* Breadcrumb Panel - Top Center */}

@@ -72,6 +72,7 @@ interface VirtualMapState {
   showLocationInfo: boolean;
   showLocationListPanel: boolean;
   showBreadcrumbPanel: boolean;
+  showMinimapPanel: boolean;
 
   // Viewport State (Not Persisted)
   viewportSize: { width: number; height: number };
@@ -119,8 +120,10 @@ interface VirtualMapState {
   toggleLocationInfo: () => void;
   setShowLocationListPanel: (show: boolean) => void;
   setShowBreadcrumbPanel: (show: boolean) => void;
+  setShowMinimapPanel: (show: boolean) => void;
   toggleLocationListPanel: () => void;
   toggleBreadcrumbPanel: () => void;
+  toggleMinimapPanel: () => void;
 
   // Movement Actions (with pathfinding)
   startMovementToTile: (targetX: number, targetY: number) => void;
@@ -255,6 +258,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showLocationInfo: true,
         showLocationListPanel: false, // Default to closed to avoid blocking screen
         showBreadcrumbPanel: false, // Default to closed to avoid blocking screen
+        showMinimapPanel: true, // Default to open for easy access
 
         // ========================================
         // Viewport State
@@ -461,6 +465,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({ showBreadcrumbPanel: show });
         },
 
+        setShowMinimapPanel: (show) => {
+          set({ showMinimapPanel: show });
+        },
+
         toggleLocationListPanel: () => {
           set((state) => ({
             showLocationListPanel: !state.showLocationListPanel,
@@ -469,6 +477,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 
         toggleBreadcrumbPanel: () => {
           set((state) => ({ showBreadcrumbPanel: !state.showBreadcrumbPanel }));
+        },
+
+        toggleMinimapPanel: () => {
+          set((state) => ({ showMinimapPanel: !state.showMinimapPanel }));
         },
 
         // ========================================
@@ -853,6 +865,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showLocationInfo: state.showLocationInfo,
         showLocationListPanel: state.showLocationListPanel,
         showBreadcrumbPanel: state.showBreadcrumbPanel,
+        showMinimapPanel: state.showMinimapPanel,
       }),
       merge: (persistedState: unknown, currentState) => {
         const persisted = persistedState as Partial<VirtualMapState> & {

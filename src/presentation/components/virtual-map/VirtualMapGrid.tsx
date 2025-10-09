@@ -14,7 +14,21 @@ interface VirtualMapGridProps {
   childLocations: Location[];
   onLocationClick: (location: Location) => void;
   gridSize?: number;
-  showMinimap?: boolean;
+  onMinimapDataReady?: (data: MinimapViewProps | null) => void;
+}
+
+export interface MinimapViewProps {
+  currentLocation: Location;
+  tiles: MapTileType[];
+  gridWidth: number;
+  gridHeight: number;
+  viewportStartX: number;
+  viewportStartY: number;
+  viewportEndX: number;
+  viewportEndY: number;
+  childLocations: Location[];
+  gridSize: number;
+  onClose: () => void;
 }
 
 export function VirtualMapGrid({
@@ -22,7 +36,7 @@ export function VirtualMapGrid({
   childLocations,
   onLocationClick,
   gridSize = 40,
-  showMinimap = true,
+  onMinimapDataReady,
 }: VirtualMapGridProps) {
   const {
     playerPosition,
@@ -102,6 +116,30 @@ export function VirtualMapGrid({
     if (!viewport) return [];
     return getVisibleLocations(childLocations, viewport, gridSize);
   }, [childLocations, viewport, gridSize, getVisibleLocations]);
+
+  // Notify parent component when minimap data is ready
+  useEffect(() => {
+    if (!viewport || !tiles || tiles.length === 0) {
+      onMinimapDataReady?.(null);
+      return;
+    }
+
+    const minimapData: MinimapViewProps = {
+      currentLocation,
+      tiles,
+      gridWidth,
+      gridHeight,
+      viewportStartX: viewport.viewportStartX,
+      viewportStartY: viewport.viewportStartY,
+      viewportEndX: viewport.viewportEndX,
+      viewportEndY: viewport.viewportEndY,
+      childLocations,
+      gridSize,
+      onClose: () => {},
+    };
+
+    onMinimapDataReady?.(minimapData);
+  }, [viewport, tiles, currentLocation, childLocations, gridWidth, gridHeight, gridSize, onMinimapDataReady]);
 
   // Handle tile click - start pathfinding movement
   const handleTileClick = (tile: MapTileType) => {
@@ -324,32 +362,38 @@ export function VirtualMapGrid({
         <div className="absolute bottom-1 right-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
           ({viewportEndX}, {viewportEndY})
         </div>
-
-        {/* Minimap - Top Right */}
-        {showMinimap && (
-          <div className="absolute top-4 right-4 z-50 pointer-events-auto">
-            <Minimap
-              currentLocation={currentLocation}
-              tiles={tiles}
-              gridWidth={gridWidth}
-              gridHeight={gridHeight}
-              viewportStartX={viewportStartX}
-              viewportStartY={viewportStartY}
-              viewportEndX={viewportEndX}
-              viewportEndY={viewportEndY}
-              childLocations={childLocations}
-              gridSize={gridSize}
-              onClose={() => {
-                // Toggle minimap via parent component
-                const parentToggle = document.querySelector(
-                  "[data-minimap-toggle]"
-                ) as HTMLButtonElement;
-                parentToggle?.click();
-              }}
-            />
-          </div>
-        )}
       </div>
     </div>
+  );
+}
+
+// Separate Minimap View component for parent to render
+export function MinimapView({
+  currentLocation,
+  tiles,
+  gridWidth,
+  gridHeight,
+  viewportStartX,
+  viewportStartY,
+  viewportEndX,
+  viewportEndY,
+  childLocations,
+  gridSize,
+  onClose,
+}: MinimapViewProps) {
+  return (
+    <Minimap
+      currentLocation={currentLocation}
+      tiles={tiles}
+      gridWidth={gridWidth}
+      gridHeight={gridHeight}
+      viewportStartX={viewportStartX}
+      viewportStartY={viewportStartY}
+      viewportEndX={viewportEndX}
+      viewportEndY={viewportEndY}
+      childLocations={childLocations}
+      gridSize={gridSize}
+      onClose={onClose}
+    />
   );
 }
