@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { VirtualMapFullView } from "./VirtualMapFullView";
 
-export function ClientVirtualMapFullView() {
+interface ClientVirtualMapFullViewProps {
+  initialLocationId?: string;
+}
+
+export function ClientVirtualMapFullView({ initialLocationId }: ClientVirtualMapFullViewProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -14,5 +18,5 @@ export function ClientVirtualMapFullView() {
     return null;
   }
 
-  return <VirtualMapFullView />;
+  return <VirtualMapFullView initialLocationId={initialLocationId} />;
 }

@@ -1194,7 +1194,13 @@
     - [x] Hierarchical location system (World → City → Building)
     - [x] Uses `mapData.tiles` if defined
     - [x] Falls back to procedural generation
-  - [x] Page created: `/virtual-world`
+  - [x] **Dynamic Routing:** `/virtual-world/[[...path]]` ⭐ NEW
+    - [x] URL changes when teleporting to location
+    - [x] Direct URL access (e.g., `/virtual-world/city-silverhold`)
+    - [x] Breadcrumb navigation updates URL
+    - [x] Location list panel updates URL
+    - [x] Router integration with `useRouter()`
+    - [x] Metadata generation per location
   - [x] **Build Success:** SSR-safe, no undefined errors ✅
 - [ ] Movement validation (walkable tiles)
 - [ ] Smooth position transitions

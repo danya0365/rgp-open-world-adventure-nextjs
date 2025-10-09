@@ -67,8 +67,16 @@ export interface RecruitedCharacter {
   lastUpdated: string;
 }
 
+export interface PlayerWorldPosition {
+  locationId: string;
+  x: number;
+  y: number;
+  facing: "north" | "south" | "east" | "west";
+}
+
 export interface GameProgress {
   currentLocationId: string | null;
+  playerWorldPosition: PlayerWorldPosition | null; // Player position in virtual world map
   discoveredLocations: string[]; // Location IDs
   completedQuests: string[]; // Quest IDs
   activeQuests: string[]; // Quest IDs
@@ -167,6 +175,7 @@ interface GameState {
 
 const initialProgress: GameProgress = {
   currentLocationId: null,
+  playerWorldPosition: null,
   discoveredLocations: [],
   completedQuests: [],
   activeQuests: [],

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Location } from "@/src/domain/types/location.types";
 import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
@@ -12,7 +13,12 @@ import {
 import { Map, Navigation, MapPin, Home, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-export function VirtualMapFullView() {
+interface VirtualMapFullViewProps {
+  initialLocationId?: string;
+}
+
+export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProps) {
+  const router = useRouter();
   const {
     discoveredLocations,
     teleportToLocation,
@@ -31,6 +37,14 @@ export function VirtualMapFullView() {
   // Get breadcrumb from master data (not cached as it's lightweight)
   const breadcrumb = currentLocationData ? getLocationPath(currentLocationData.id) : [];
 
+  // Initialize store from URL on mount
+  useEffect(() => {
+    if (initialLocationId) {
+      teleportToLocation(initialLocationId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   // Auto-discover current location on mount & refresh cached data
   useEffect(() => {
     if (currentLocationData) {
@@ -39,15 +53,22 @@ export function VirtualMapFullView() {
     refreshCachedData();
   }, [currentLocationData, discoverLocation, refreshCachedData]);
 
-  // Handle location click
+  // Handle location click - teleport + update URL
   const handleLocationClick = (location: Location) => {
-    // Teleport to location
+    // Teleport to location (updates store)
     teleportToLocation(location.id, location.coordinates);
+    
+    // Update URL
+    router.push(`/virtual-world/${location.id}`);
   };
 
-  // Handle breadcrumb click
+  // Handle breadcrumb click - teleport + update URL
   const handleBreadcrumbClick = (location: Location) => {
+    // Teleport to location (updates store)
     teleportToLocation(location.id, location.coordinates);
+    
+    // Update URL
+    router.push(`/virtual-world/${location.id}`);
   };
 
   // Loading state
