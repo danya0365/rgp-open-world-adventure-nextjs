@@ -1098,11 +1098,34 @@
   - [x] Mobile responsive
   - [x] Clean Architecture maintained
 
-- [ ] **Quest Page** (`/quests`)
-  - [ ] Refactor to full-screen layout
-  - [ ] HUD Panels (closable)
-  - [ ] Quest log as HUD panel
-  - [ ] Consistent design
+- [x] **Quest Page** (`/quests`) ✅ COMPLETED (2025-10-09 09:12)
+  - [x] **Full-Screen Layout** - Quest map with Pan & Zoom
+  - [x] Component-based architecture (separated into sub-components)
+  - [x] **Sub-Components Created:**
+    - [x] `QuestMarker` - Individual quest marker with type/status indicators
+    - [x] `QuestMapView` - Full-screen quest map container
+    - [x] `QuestStatsPanel` - Quest statistics display
+    - [x] `QuestFullView` - Main orchestrator component
+  - [x] **Quest Markers** - Color-coded by type and status
+    - [x] Main quests (Gold/Crown) - larger markers
+    - [x] Side quests (Blue/Target)
+    - [x] Event quests (Pink/Scroll)
+    - [x] Daily quests (Green/Calendar)
+    - [x] Bounty quests (Red/Swords)
+  - [x] **Quest Status Indicators**
+    - [x] Active (! badge + pulse glow)
+    - [x] Completed (✓ badge + green)
+    - [x] Locked (🔒 badge + gray)
+    - [x] Available (normal glow)
+  - [x] **HUD Panels**
+    - [x] Active Quests Panel (Left) - Shows active quests with progress
+    - [x] Statistics Panel (Right) - Total, Active, Completed, Available
+    - [x] Filters Panel (Bottom Left) - Type & Status filters
+  - [x] Pan & Zoom controls (mouse wheel, drag, reset button)
+  - [x] Quest Detail Modal (click marker to open)
+  - [x] Mobile responsive (3 columns mobile, 5 desktop)
+  - [x] Clean Architecture maintained
+  - [x] Created new file: `QuestFullView.tsx` (preserved original `QuestView.tsx`)
 
 ---
 

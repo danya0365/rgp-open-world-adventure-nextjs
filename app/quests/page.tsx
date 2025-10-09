@@ -1,5 +1,5 @@
 import { QuestPresenterFactory } from "@/src/presentation/presenters/quest/QuestPresenter";
-import { QuestView } from "@/src/presentation/components/quest/QuestView";
+import { QuestFullView } from "@/src/presentation/components/quest/QuestFullView";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 /**
  * Quests Page (Server Component)
  * Follows Clean Architecture pattern
+ * Uses Full-Screen Layout with Quest Map
  */
 export default async function QuestsPage() {
   // Get presenter instance (server-side)
@@ -18,5 +19,5 @@ export default async function QuestsPage() {
   // Get initial view model (with empty progress for now)
   const initialViewModel = await presenter.getViewModel([], []);
 
-  return <QuestView initialViewModel={initialViewModel} />;
+  return <QuestFullView initialViewModel={initialViewModel} />;
 }
