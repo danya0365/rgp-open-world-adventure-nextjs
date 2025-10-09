@@ -5,6 +5,17 @@ import { Location, LocationConnection } from "@/src/domain/types/location.types"
  * Structure: World → Continent → Region → Area → City → Building → Floor → Room
  */
 
+// Helper function to generate walkable tiles
+const generateWalkableTiles = (width: number, height: number) => {
+  return Array.from({ length: width * height }, (_, i) => ({
+    x: i % width,
+    y: Math.floor(i / width),
+    type: "grass" as const,
+    isWalkable: true,
+    height: 0,
+  }));
+};
+
 export const LOCATIONS_MASTER: Location[] = [
   // ========================================
   // LEVEL 0: WORLD
@@ -28,6 +39,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 50,
       height: 50,
       gridSize: 50,
+      tiles: generateWalkableTiles(50, 50),
     },
   },
 
@@ -54,6 +66,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 30,
       height: 30,
       gridSize: 30,
+      tiles: generateWalkableTiles(30, 30),
     },
   },
 
@@ -77,6 +90,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 30,
       height: 30,
       gridSize: 30,
+      tiles: generateWalkableTiles(30, 30),
     },
   },
 
@@ -106,6 +120,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 25,
       height: 25,
       gridSize: 25,
+      tiles: generateWalkableTiles(25, 25),
     },
   },
 
@@ -132,6 +147,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 25,
       height: 25,
       gridSize: 25,
+      tiles: generateWalkableTiles(25, 25),
     },
   },
 
@@ -165,6 +181,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 20,
       height: 20,
       gridSize: 20,
+      tiles: generateWalkableTiles(20, 20),
     },
     metadata: {
       encounters: ["ice-wolf", "frost-giant", "ice-elemental"],
@@ -296,6 +313,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 15,
       height: 15,
       gridSize: 15,
+      tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
       npcs: ["npc-guild-master", "npc-receptionist", "npc-quest-board"],
@@ -330,6 +348,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 15,
       height: 15,
       gridSize: 15,
+      tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
       npcs: ["npc-archmage", "npc-librarian", "npc-apprentice"],
@@ -366,6 +385,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 15,
       height: 10,
       gridSize: 15,
+      tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
       npcs: ["npc-receptionist", "npc-quest-board"],
@@ -400,6 +420,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 15,
       height: 10,
       gridSize: 15,
+      tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
       npcs: ["npc-party-leader"],
@@ -432,6 +453,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 12,
       height: 12,
       gridSize: 12,
+      tiles: generateWalkableTiles(12, 12),
     },
     metadata: {
       npcs: ["npc-librarian"],
@@ -471,6 +493,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 10,
       height: 8,
       gridSize: 10,
+      tiles: generateWalkableTiles(10, 8),
     },
     metadata: {
       npcs: ["npc-guild-master"],
@@ -507,6 +530,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 8,
       height: 8,
       gridSize: 8,
+      tiles: generateWalkableTiles(8, 8),
     },
     metadata: {
       services: ["party-formation"],
@@ -545,6 +569,7 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 25,
       height: 25,
       gridSize: 25,
+      tiles: generateWalkableTiles(25, 25),
     },
     metadata: {
       encounters: ["ice-golem", "frost-dragon", "frozen-undead"],
