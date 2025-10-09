@@ -15,12 +15,27 @@ interface POIAtPlayerPosition {
   data: NPCMarker | ShopMarker | ServiceMarker | BattleMarker | TreasureMarker | null;
 }
 
+interface POIModalsState {
+  npcDialogue: { isOpen: boolean; npc: NPCMarker | null };
+  shop: { isOpen: boolean; shop: ShopMarker | null };
+  service: { isOpen: boolean; service: ServiceMarker | null };
+  treasure: { isOpen: boolean; treasure: TreasureMarker | null };
+}
+
 export function usePOIInteraction(currentLocation: Location, gridSize: number) {
   const router = useRouter();
   const { playerPosition } = useVirtualMapStore();
   const [currentPOI, setCurrentPOI] = useState<POIAtPlayerPosition>({
     type: null,
     data: null,
+  });
+
+  // Modal states
+  const [modals, setModals] = useState<POIModalsState>({
+    npcDialogue: { isOpen: false, npc: null },
+    shop: { isOpen: false, shop: null },
+    service: { isOpen: false, service: null },
+    treasure: { isOpen: false, treasure: null },
   });
 
   // Check if player is at any POI
@@ -87,20 +102,29 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
     // Interaction handlers (defined inside useEffect)
     const handleNPCInteraction = (npc: NPCMarker) => {
       console.log("🗣️ Talking to NPC:", npc);
-      // TODO: Open NPC dialogue modal
-      alert(`Talking to ${npc.name || "NPC"}!\n\n${npc.hasQuest ? "This NPC has a quest for you!" : "Hello, traveler!"}`);
+      // Open NPC dialogue modal
+      setModals((prev) => ({
+        ...prev,
+        npcDialogue: { isOpen: true, npc },
+      }));
     };
 
     const handleShopInteraction = (shop: ShopMarker) => {
       console.log("🏪 Entering shop:", shop);
-      // TODO: Navigate to shop page or open shop modal
-      alert(`Entering ${shop.name || "Shop"}!\n\nShop Type: ${shop.shopType || "general"}`);
+      // Open shop modal
+      setModals((prev) => ({
+        ...prev,
+        shop: { isOpen: true, shop },
+      }));
     };
 
     const handleServiceInteraction = (service: ServiceMarker) => {
       console.log("🏛️ Using service:", service);
-      // TODO: Open service modal
-      alert(`Using ${service.name || service.serviceType}!\n\nService: ${service.serviceType}`);
+      // Open service modal
+      setModals((prev) => ({
+        ...prev,
+        service: { isOpen: true, service },
+      }));
     };
 
     const handleBattleInteraction = (battle: BattleMarker) => {
@@ -110,15 +134,12 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
     };
 
     const handleTreasureInteraction = (treasure: TreasureMarker) => {
-      if (treasure.isDiscovered) {
-        console.log("💎 Treasure already opened:", treasure);
-        alert("This treasure chest has already been opened.");
-        return;
-      }
-
       console.log("💎 Opening treasure:", treasure);
-      // TODO: Open treasure modal and mark as discovered
-      alert(`Opening ${treasure.name || "Treasure"}!\n\nYou found some items!`);
+      // Open treasure modal
+      setModals((prev) => ({
+        ...prev,
+        treasure: { isOpen: true, treasure },
+      }));
     };
 
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -154,8 +175,42 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [currentPOI, router]);
 
+  // Modal close handlers
+  const closeNPCDialogue = () => {
+    setModals((prev) => ({
+      ...prev,
+      npcDialogue: { isOpen: false, npc: null },
+    }));
+  };
+
+  const closeShop = () => {
+    setModals((prev) => ({
+      ...prev,
+      shop: { isOpen: false, shop: null },
+    }));
+  };
+
+  const closeService = () => {
+    setModals((prev) => ({
+      ...prev,
+      service: { isOpen: false, service: null },
+    }));
+  };
+
+  const closeTreasure = () => {
+    setModals((prev) => ({
+      ...prev,
+      treasure: { isOpen: false, treasure: null },
+    }));
+  };
+
   return {
     currentPOI,
     hasInteractablePOI: currentPOI.type !== null,
+    modals,
+    closeNPCDialogue,
+    closeShop,
+    closeService,
+    closeTreasure,
   };
 }

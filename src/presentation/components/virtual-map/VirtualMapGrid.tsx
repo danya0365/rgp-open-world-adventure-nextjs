@@ -13,6 +13,11 @@ import { ShopMarker } from "./ShopMarker";
 import { ServiceMarker } from "./ServiceMarker";
 import { BattleMarkerComponent } from "./BattleMarkerComponent";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
+import { NPCDialogueModal } from "./NPCDialogueModal";
+import { TreasureModal } from "./TreasureModal";
+import { InnModal } from "./InnModal";
+import { ServiceModal } from "./ServiceModal";
+import { ShopModal } from "./ShopModal";
 import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
 
 interface VirtualMapGridProps {
@@ -75,7 +80,7 @@ export function VirtualMapGrid({
   } = useVirtualMapStore();
 
   // POI Interaction Hook - handles SPACE key press for interactions
-  usePOIInteraction(currentLocation, gridSize);
+  const { modals, closeNPCDialogue, closeTreasure, closeService, closeShop } = usePOIInteraction(currentLocation, gridSize);
 
   // Calculate grid dimensions based on location mapData
   const gridColumns = currentLocation.mapData?.dimensions.columns || 20;
@@ -488,6 +493,71 @@ export function VirtualMapGrid({
           ({viewportEndX}, {viewportEndY})
         </div>
       </div>
+
+      {/* POI Modals */}
+      {modals.npcDialogue.isOpen && modals.npcDialogue.npc && (
+        <NPCDialogueModal
+          npc={modals.npcDialogue.npc}
+          isOpen={modals.npcDialogue.isOpen}
+          onClose={closeNPCDialogue}
+          onAcceptQuest={(questId) => {
+            console.log("Quest accepted:", questId);
+            // TODO: Add quest to player's quest log
+          }}
+        />
+      )}
+
+      {modals.treasure.isOpen && modals.treasure.treasure && (
+        <TreasureModal
+          treasure={modals.treasure.treasure}
+          isOpen={modals.treasure.isOpen}
+          onClose={closeTreasure}
+          onCollect={(treasureId) => {
+            console.log("Treasure collected:", treasureId);
+            // TODO: Add items to player inventory and mark treasure as discovered
+          }}
+        />
+      )}
+
+      {modals.service.isOpen && modals.service.service && (
+        <>
+          {/* Inn uses dedicated InnModal */}
+          {modals.service.service.serviceType === "inn" ? (
+            <InnModal
+              service={modals.service.service}
+              isOpen={modals.service.isOpen}
+              onClose={closeService}
+              onRest={(cost) => {
+                console.log("Rested at inn, cost:", cost);
+                // TODO: Deduct gold, restore HP/MP
+              }}
+            />
+          ) : (
+            /* Other services use ServiceModal */
+            <ServiceModal
+              service={modals.service.service}
+              isOpen={modals.service.isOpen}
+              onClose={closeService}
+              onAction={(actionType, data) => {
+                console.log("Service action:", actionType, data);
+                // TODO: Handle service actions
+              }}
+            />
+          )}
+        </>
+      )}
+
+      {modals.shop.isOpen && modals.shop.shop && (
+        <ShopModal
+          shop={modals.shop.shop}
+          isOpen={modals.shop.isOpen}
+          onClose={closeShop}
+          onBuy={(itemId, quantity, totalCost) => {
+            console.log(`Bought ${quantity}x ${itemId} for ${totalCost} gold`);
+            // TODO: Deduct gold, add items to inventory
+          }}
+        />
+      )}
     </div>
   );
 }

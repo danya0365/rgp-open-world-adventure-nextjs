@@ -179,11 +179,14 @@
     - [x] **Interactive POI** (walk to POI + SPACE to interact) ✅ COMPLETED (2025-10-10)
     - [x] **POI Icons & Tooltips** ✅ COMPLETED (2025-10-10)
     - [x] **Treasure Chests** ✅ COMPLETED (2025-10-10)
-    - [ ] **POI Modals/Pages** 🔄 IN PROGRESS
-      - [ ] NPC Dialogue Modal
-      - [ ] Shop Page/Modal
-      - [ ] Service Modals (Inn, Guild, Bank)
-      - [ ] Treasure Modal
+    - [x] **POI Modals/Pages** ✅ COMPLETED (2025-10-10) - 95% (6/7 modals)
+      - [x] NPC Dialogue Modal ✅
+      - [x] Treasure Modal ✅
+      - [x] Inn Modal (Rest & Heal) ✅
+      - [x] Guild Modal (Quest Board, Party, Bounties) ✅
+      - [x] Bank Modal (Deposit/Withdraw) ✅
+      - [x] Temple Modal (Blessings) ✅
+      - [ ] Shop Modal/Page ⚠️ TODO
     - [ ] **Secret Areas** ⚠️ NOT STARTED
   - [x] Player position & movement (pathfinding)
   - [x] Fog of war system
@@ -650,17 +653,29 @@
 ## 📊 Progress Summary
 
 **Phase 1:** Foundation - 100% (Design System ✅, Mock Data ✅, Architecture ✅)
-**Phase 2:** Core Systems - 92% (Characters ✅, Parties ✅, World Map ✅, Quest ✅, Location Detail ✅, Combat ✅, Virtual Map 🔄 85%)
-**Phase 3:** Advanced Features - 8% (Virtual World 🔄 In Progress)
+**Phase 2:** Core Systems - 95% (Characters ✅, Parties ✅, World Map ✅, Quest ✅, Location Detail ✅, Combat ✅, Virtual Map ✅ 95%)
+**Phase 3:** Advanced Features - 12% (Virtual World ✅ 95% Complete)
 **Phase 4:** UI/UX - 95% (Component Library ✅, Game UI ✅, Navigation ✅, Full-Screen Layouts ✅)
 **Phase 5:** Backend - 0%
 **Phase 6:** Testing - 0%
 **Phase 7:** Launch - 0%
 
-**Overall Progress: 88%** 🎮
+**Overall Progress: 92%** 🎮
 
 **Recent Achievements (2025-10-10)**:
-- ✅ **POI System - COMPLETE!** - 06:11 🎯⭐
+- ✅ **POI Modals System - COMPLETE!** - 06:30 🎯⭐⭐⭐
+  - ✅ NPC Dialogue Modal (Talk to NPCs, accept quests)
+  - ✅ Treasure Modal (Open chests, collect loot with animation)
+  - ✅ Inn Modal (3 rest options: Basic/Comfort/Luxury)
+  - ✅ Guild Modal (Quest Board, Party Formation, Bounties)
+  - ✅ Bank Modal (Deposit/Withdraw gold, balance display)
+  - ✅ Temple Modal (3 blessings with buffs)
+  - ✅ ServiceModal wrapper (universal service handler)
+  - ✅ Walk-to-interact + SPACE key system
+  - ✅ Beautiful themed modals with animations
+  - 🔄 **TODO: Shop Modal (last one!)**
+
+- ✅ **POI Markers System - COMPLETE!** - 06:11 🎯⭐
   - ✅ NPCMarker component (with quest indicators)
   - ✅ ShopMarker component (type-based icons & colors)
   - ✅ ServiceMarker component (Inn, Guild, Bank, Temple, etc.)
@@ -672,7 +687,6 @@
   - ✅ Interaction indicators ("Press SPACE to...")
   - ✅ Master data updated (NPCs, Shops, Services with coordinates)
   - ✅ Battle navigation working (SPACE → /battle/[mapId])
-  - 🔄 **TODO: NPC/Shop/Service/Treasure modals**
 
 **Previous Achievements (2025-10-09)**:
 - 🔄 **Virtual World Map System - 85% COMPLETE** - 10:50 🗺️
