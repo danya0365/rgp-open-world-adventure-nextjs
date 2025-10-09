@@ -15,6 +15,7 @@ interface VirtualMapGridProps {
   onLocationClick: (location: Location) => void;
   gridSize?: number;
   onMinimapDataReady?: (data: MinimapViewProps | null) => void;
+  onMapInfoDataReady?: (data: MapInfoViewProps | null) => void;
 }
 
 export interface MinimapViewProps {
@@ -30,12 +31,27 @@ export interface MinimapViewProps {
   gridSize: number;
 }
 
+export interface MapInfoViewProps {
+  currentLocation: Location;
+  gridColumns: number;
+  gridRows: number;
+  actualViewportWidth: number;
+  actualViewportHeight: number;
+  playerTileX: number;
+  playerTileY: number;
+  viewportStartX: number;
+  viewportStartY: number;
+  viewportEndX: number;
+  viewportEndY: number;
+}
+
 export function VirtualMapGrid({
   currentLocation,
   childLocations,
   onLocationClick,
   gridSize = 40,
   onMinimapDataReady,
+  onMapInfoDataReady,
 }: VirtualMapGridProps) {
   const {
     playerPosition,
@@ -146,6 +162,39 @@ export function VirtualMapGrid({
     onMinimapDataReady,
   ]);
 
+  // Notify parent component when map info data is ready
+  useEffect(() => {
+    if (!viewport) {
+      onMapInfoDataReady?.(null);
+      return;
+    }
+
+    const actualViewportWidth = viewport.viewportEndX - viewport.viewportStartX;
+    const actualViewportHeight = viewport.viewportEndY - viewport.viewportStartY;
+
+    const mapInfoData: MapInfoViewProps = {
+      currentLocation,
+      gridColumns,
+      gridRows,
+      actualViewportWidth,
+      actualViewportHeight,
+      playerTileX: viewport.playerTileX,
+      playerTileY: viewport.playerTileY,
+      viewportStartX: viewport.viewportStartX,
+      viewportStartY: viewport.viewportStartY,
+      viewportEndX: viewport.viewportEndX,
+      viewportEndY: viewport.viewportEndY,
+    };
+
+    onMapInfoDataReady?.(mapInfoData);
+  }, [
+    viewport,
+    currentLocation,
+    gridColumns,
+    gridRows,
+    onMapInfoDataReady,
+  ]);
+
   // Handle tile click - start pathfinding movement
   const handleTileClick = (tile: MapTileType) => {
     console.log(`[VirtualMapGrid] Tile clicked:`, tile);
@@ -179,8 +228,6 @@ export function VirtualMapGrid({
   }
 
   const {
-    playerTileX,
-    playerTileY,
     viewportStartX,
     viewportStartY,
     viewportEndX,
@@ -333,33 +380,6 @@ export function VirtualMapGrid({
           );
         })}
 
-        {/* Map Info Overlay - Bottom Left (moved from top) */}
-        <div className="absolute bottom-4 left-4 pointer-events-none z-50">
-          <div className="bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-lg px-3 py-2 max-w-xs">
-            <h2 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {currentLocation.name}
-            </h2>
-            <p className="text-[10px] sm:text-xs text-gray-400 line-clamp-2">
-              {currentLocation.description}
-            </p>
-            <div className="mt-1 flex items-center gap-2 text-[9px] text-gray-500">
-              <span className="capitalize">{currentLocation.type}</span>
-              <span>•</span>
-              <span>
-                {gridColumns}x{gridRows} tiles
-              </span>
-              <span>•</span>
-              <span>
-                View: {actualViewportWidth}x{actualViewportHeight}
-              </span>
-            </div>
-            <div className="mt-1 text-[8px] text-gray-600">
-              Position: ({playerTileX}, {playerTileY}) | Viewport: (
-              {viewportStartX}, {viewportStartY})
-            </div>
-          </div>
-        </div>
-
         {/* Viewport Coordinate Indicators */}
         <div className="absolute top-1 left-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
           ({viewportStartX}, {viewportStartY})
@@ -401,5 +421,50 @@ export function MinimapView({
       gridSize={gridSize}
       onClose={undefined}
     />
+  );
+}
+
+// Separate Map Info View component for parent to render
+// This is a pure component that only renders the map info content
+// Parent component is responsible for wrapping with HUDPanel if needed
+export function MapInfoView({
+  currentLocation,
+  gridColumns,
+  gridRows,
+  actualViewportWidth,
+  actualViewportHeight,
+  playerTileX,
+  playerTileY,
+  viewportStartX,
+  viewportStartY,
+}: MapInfoViewProps) {
+  return (
+    <div className="space-y-2">
+      <div>
+        <h3 className="text-base font-semibold text-white mb-1">
+          {currentLocation.name}
+        </h3>
+        <p className="text-xs text-gray-400 line-clamp-2">
+          {currentLocation.description}
+        </p>
+      </div>
+      
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <span className="capitalize">{currentLocation.type}</span>
+        <span>•</span>
+        <span>
+          {gridColumns}x{gridRows} tiles
+        </span>
+        <span>•</span>
+        <span>
+          View: {actualViewportWidth}x{actualViewportHeight}
+        </span>
+      </div>
+      
+      <div className="text-[10px] text-gray-600">
+        Position: ({playerTileX}, {playerTileY}) | Viewport: (
+        {viewportStartX}, {viewportStartY})
+      </div>
+    </div>
   );
 }

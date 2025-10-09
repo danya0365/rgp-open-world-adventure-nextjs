@@ -73,6 +73,7 @@ interface VirtualMapState {
   showLocationListPanel: boolean;
   showBreadcrumbPanel: boolean;
   showMinimapPanel: boolean;
+  showMapInfoPanel: boolean;
 
   // Viewport State (Not Persisted)
   viewportSize: { width: number; height: number };
@@ -121,9 +122,11 @@ interface VirtualMapState {
   setShowLocationListPanel: (show: boolean) => void;
   setShowBreadcrumbPanel: (show: boolean) => void;
   setShowMinimapPanel: (show: boolean) => void;
+  setShowMapInfoPanel: (show: boolean) => void;
   toggleLocationListPanel: () => void;
   toggleBreadcrumbPanel: () => void;
   toggleMinimapPanel: () => void;
+  toggleMapInfoPanel: () => void;
 
   // Movement Actions (with pathfinding)
   startMovementToTile: (targetX: number, targetY: number) => void;
@@ -259,6 +262,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showLocationListPanel: false, // Default to closed to avoid blocking screen
         showBreadcrumbPanel: false, // Default to closed to avoid blocking screen
         showMinimapPanel: true, // Default to open for easy access
+        showMapInfoPanel: true, // Default to open for map info
 
         // ========================================
         // Viewport State
@@ -467,6 +471,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({ showMinimapPanel: show });
         },
 
+        setShowMapInfoPanel: (show) => {
+          set({ showMapInfoPanel: show });
+        },
+
         toggleLocationListPanel: () => {
           set((state) => ({
             showLocationListPanel: !state.showLocationListPanel,
@@ -479,6 +487,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 
         toggleMinimapPanel: () => {
           set((state) => ({ showMinimapPanel: !state.showMinimapPanel }));
+        },
+
+        toggleMapInfoPanel: () => {
+          set((state) => ({ showMapInfoPanel: !state.showMapInfoPanel }));
         },
 
         // ========================================
@@ -858,6 +870,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showLocationListPanel: state.showLocationListPanel,
         showBreadcrumbPanel: state.showBreadcrumbPanel,
         showMinimapPanel: state.showMinimapPanel,
+        showMapInfoPanel: state.showMapInfoPanel,
       }),
       merge: (persistedState: unknown, currentState) => {
         const persisted = persistedState as Partial<VirtualMapState> & {

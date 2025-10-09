@@ -14,11 +14,17 @@ import {
   HUDPanelToggle,
 } from "@/src/presentation/components/layout/HUDPanel";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { ChevronRight, Home, Map, MapPin, Navigation } from "lucide-react";
+import { ChevronRight, Home, Info, Map, MapPin, Navigation } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { KeyboardHint } from "./KeyboardHint";
-import { MinimapView, MinimapViewProps, VirtualMapGrid } from "./VirtualMapGrid";
+import {
+  MapInfoView,
+  MapInfoViewProps,
+  MinimapView,
+  MinimapViewProps,
+  VirtualMapGrid,
+} from "./VirtualMapGrid";
 
 interface VirtualMapFullViewProps {
   initialLocationId?: string;
@@ -41,13 +47,16 @@ export function VirtualMapFullView({
     showLocationListPanel,
     showBreadcrumbPanel,
     showMinimapPanel,
+    showMapInfoPanel,
     setShowLocationListPanel,
     setShowBreadcrumbPanel,
     setShowMinimapPanel,
+    setShowMapInfoPanel,
   } = useVirtualMapStore();
 
-  // Local state for minimap data
+  // Local state for minimap data and map info data
   const [minimapData, setMinimapData] = useState<MinimapViewProps | null>(null);
+  const [mapInfoData, setMapInfoData] = useState<MapInfoViewProps | null>(null);
 
   // Enable movement animation
   useMovementAnimation();
@@ -208,6 +217,7 @@ export function VirtualMapFullView({
           childLocations={childLocations}
           onLocationClick={handleLocationClick}
           onMinimapDataReady={setMinimapData}
+          onMapInfoDataReady={setMapInfoData}
         />
       </div>
 
@@ -352,6 +362,28 @@ export function VirtualMapFullView({
             icon={<MapPin className="w-4 h-4" />}
             onClick={() => setShowBreadcrumbPanel(true)}
             position="top-center"
+          />
+        )}
+
+        {/* Map Info Panel - Bottom Left */}
+        {showMapInfoPanel && mapInfoData ? (
+          <HUDPanel
+            title="Map Info"
+            icon={<Info className="w-5 h-5" />}
+            position="bottom-left"
+            closable
+            onClose={() => setShowMapInfoPanel(false)}
+            maxHeight="auto"
+            maxWidth="auto"
+          >
+            <MapInfoView {...mapInfoData} />
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label="Map Info"
+            icon={<Info className="w-4 h-4" />}
+            onClick={() => setShowMapInfoPanel(true)}
+            position="bottom-left"
           />
         )}
       </GameLayoutOverlay>
