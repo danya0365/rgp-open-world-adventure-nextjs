@@ -8,10 +8,7 @@ import {
 import { Location } from "@/src/domain/types/location.types";
 import { useKeyboardMovement } from "@/src/hooks/useKeyboardMovement";
 import { useMovementAnimation } from "@/src/hooks/useMovementAnimation";
-import {
-  GameLayout,
-  GameLayoutOverlay,
-} from "@/src/presentation/components/layout/GameLayout";
+import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import {
   HUDPanel,
   HUDPanelToggle,
@@ -33,7 +30,6 @@ export function VirtualMapFullView({
 }: VirtualMapFullViewProps) {
   const router = useRouter();
   const {
-    playerPosition,
     discoveredLocations,
     teleportToLocation,
     discoverLocation,
@@ -45,10 +41,8 @@ export function VirtualMapFullView({
     // UI State from store (persisted)
     showLocationListPanel,
     showBreadcrumbPanel,
-    showMinimap,
     setShowLocationListPanel,
     setShowBreadcrumbPanel,
-    setShowMinimap,
   } = useVirtualMapStore();
 
   // Enable movement animation
@@ -192,19 +186,17 @@ export function VirtualMapFullView({
   // Loading state
   if (!currentLocationData) {
     return (
-      <GameLayout>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading map...</p>
-          </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading map...</p>
         </div>
-      </GameLayout>
+      </div>
     );
   }
 
   return (
-    <GameLayout>
+    <>
       {/* Virtual Map Grid */}
       <div className="absolute inset-0">
         <VirtualMapGrid
@@ -356,6 +348,6 @@ export function VirtualMapFullView({
           <Home className="w-4 h-4" />
         </Link>
       </div>
-    </GameLayout>
+    </>
   );
 }

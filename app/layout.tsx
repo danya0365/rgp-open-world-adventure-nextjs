@@ -1,4 +1,3 @@
-import { MainLayout } from "@/src/presentation/components/layout/MainLayout";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import "../public/styles/index.css";
@@ -23,7 +22,7 @@ export default function RootLayout({
     <html lang="th" suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <MainLayout>{children}</MainLayout>
+          {children}
         </ThemeProvider>
       </body>
     </html>

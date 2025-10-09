@@ -1,10 +1,7 @@
 "use client";
 
 import { Character } from "@/src/domain/types/character.types";
-import {
-  GameLayout,
-  GameLayoutOverlay,
-} from "@/src/presentation/components/layout/GameLayout";
+import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import {
   HUDPanel,
   HUDPanelToggle,
@@ -26,7 +23,8 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
   const [showFiltersPanel, setShowFiltersPanel] = useState(true);
   const [showStatsPanel, setShowStatsPanel] = useState(true);
   const [filterRarity, setFilterRarity] = useState<string>("all");
-  const [filterRecruitedStatus, setFilterRecruitedStatus] = useState<string>("all");
+  const [filterRecruitedStatus, setFilterRecruitedStatus] =
+    useState<string>("all");
   const [filterMinLevel, setFilterMinLevel] = useState<number>(1);
 
   // Pan & Zoom state - restored from localStorage
@@ -114,21 +112,21 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
   // Show loading only on initial load
   if (loading && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <p className="text-gray-400">กำลังโหลดข้อมูลตัวละคร...</p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Show error state if there's an error but we have no data
   if (error && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
@@ -142,14 +140,14 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             </Link>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // If we have no view model and not loading, show empty state
   if (!viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 text-6xl mb-4">👥</div>
@@ -158,7 +156,7 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             </p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
@@ -168,49 +166,57 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
     if (filterRarity !== "all" && char.rarity !== filterRarity) {
       return false;
     }
-    
+
     // Recruited status filter
-    if (filterRecruitedStatus === "recruited" && !isCharacterRecruited(char.id)) {
+    if (
+      filterRecruitedStatus === "recruited" &&
+      !isCharacterRecruited(char.id)
+    ) {
       return false;
     }
-    if (filterRecruitedStatus === "not-recruited" && isCharacterRecruited(char.id)) {
+    if (
+      filterRecruitedStatus === "not-recruited" &&
+      isCharacterRecruited(char.id)
+    ) {
       return false;
     }
-    
+
     // Level filter
     if (char.level < filterMinLevel) {
       return false;
     }
-    
+
     return true;
   });
 
   // Generate positions for characters (grid layout - responsive)
-  const charactersWithPositions = advancedFilteredCharacters.map((char, index) => {
-    // Responsive grid: 3 columns on mobile, 5 on desktop
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    const columns = isMobile ? 3 : 5;
-    const col = index % columns;
-    const row = Math.floor(index / columns);
+  const charactersWithPositions = advancedFilteredCharacters.map(
+    (char, index) => {
+      // Responsive grid: 3 columns on mobile, 5 on desktop
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+      const columns = isMobile ? 3 : 5;
+      const col = index % columns;
+      const row = Math.floor(index / columns);
 
-    // Calculate position (centered with spacing)
-    const spacingX = isMobile ? 25 : 18;
-    const spacingY = isMobile ? 25 : 20;
-    const startX = isMobile ? 10 : 15;
-    const startY = isMobile ? 10 : 15;
-    
-    const x = startX + col * spacingX; // % from left
-    const y = startY + row * spacingY; // % from top
+      // Calculate position (centered with spacing)
+      const spacingX = isMobile ? 25 : 18;
+      const spacingY = isMobile ? 25 : 20;
+      const startX = isMobile ? 10 : 15;
+      const startY = isMobile ? 10 : 15;
 
-    return {
-      ...char,
-      x,
-      y,
-    };
-  });
+      const x = startX + col * spacingX; // % from left
+      const y = startY + row * spacingY; // % from top
+
+      return {
+        ...char,
+        x,
+        y,
+      };
+    }
+  );
 
   return (
-    <GameLayout>
+    <>
       {/* Full Screen Map Container with Pan & Zoom */}
       <div
         className="absolute inset-0 overflow-hidden pointer-events-auto"
@@ -434,7 +440,9 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
             <div className="space-y-4">
               {/* Rarity Filter */}
               <div>
-                <span className="text-sm text-gray-400 block mb-2">ความหายาก:</span>
+                <span className="text-sm text-gray-400 block mb-2">
+                  ความหายาก:
+                </span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant={filterRarity === "all" ? "primary" : "ghost"}
@@ -506,14 +514,20 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
                 <span className="text-sm text-gray-400 block mb-2">สถานะ:</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    variant={filterRecruitedStatus === "all" ? "primary" : "ghost"}
+                    variant={
+                      filterRecruitedStatus === "all" ? "primary" : "ghost"
+                    }
                     size="sm"
                     onClick={() => setFilterRecruitedStatus("all")}
                   >
                     ทั้งหมด
                   </Button>
                   <Button
-                    variant={filterRecruitedStatus === "recruited" ? "primary" : "ghost"}
+                    variant={
+                      filterRecruitedStatus === "recruited"
+                        ? "primary"
+                        : "ghost"
+                    }
                     size="sm"
                     onClick={() => setFilterRecruitedStatus("recruited")}
                     className="text-green-400"
@@ -521,7 +535,11 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
                     ✓ รีครูทแล้ว
                   </Button>
                   <Button
-                    variant={filterRecruitedStatus === "not-recruited" ? "primary" : "ghost"}
+                    variant={
+                      filterRecruitedStatus === "not-recruited"
+                        ? "primary"
+                        : "ghost"
+                    }
                     size="sm"
                     onClick={() => setFilterRecruitedStatus("not-recruited")}
                   >
@@ -543,7 +561,7 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
                   onChange={(e) => setFilterMinLevel(parseInt(e.target.value))}
                   className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                   style={{
-                    accentColor: '#a855f7',
+                    accentColor: "#a855f7",
                   }}
                 />
               </div>
@@ -606,7 +624,9 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
                 <div className="text-2xl font-bold text-purple-400 mb-1">
                   {advancedFilteredCharacters.length}
                 </div>
-                <div className="text-xs text-gray-400">แสดงอยู่ / {viewModel.totalCharacters}</div>
+                <div className="text-xs text-gray-400">
+                  แสดงอยู่ / {viewModel.totalCharacters}
+                </div>
               </div>
               <div className="bg-blue-900/30 backdrop-blur-sm border border-blue-500/30 rounded-lg p-3">
                 <div className="text-2xl font-bold text-blue-400 mb-1">
@@ -664,7 +684,7 @@ export function CharactersView({ initialViewModel }: CharactersViewProps) {
           </div>
         </div>
       )}
-    </GameLayout>
+    </>
   );
 }
 

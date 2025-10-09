@@ -1,20 +1,23 @@
 "use client";
 
 import { Character } from "@/src/domain/types/character.types";
-import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
-import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
-import { CreatePartyModal } from "./CreatePartyModal";
-import { PartySlider } from "./PartySlider";
-import { RenamePartyModal } from "./RenamePartyModal";
-import { PartyFormationView } from "./PartyFormationView";
-import { PartyStatsPanel } from "./PartyStatsPanel";
-import { CharacterSelectModal } from "./CharacterSelectModal";
+import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
+import {
+  HUDPanel,
+  HUDPanelToggle,
+} from "@/src/presentation/components/layout/HUDPanel";
 import { PartyViewModel } from "@/src/presentation/presenters/party/PartyPresenter";
 import { usePartyPresenter } from "@/src/presentation/presenters/party/usePartyPresenter";
 import { getPartyStats, getPartySynergy } from "@/src/stores/gameStore";
 import { AlertCircle, Map, Shield, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { CharacterSelectModal } from "./CharacterSelectModal";
+import { CreatePartyModal } from "./CreatePartyModal";
+import { PartyFormationView } from "./PartyFormationView";
+import { PartySlider } from "./PartySlider";
+import { PartyStatsPanel } from "./PartyStatsPanel";
+import { RenamePartyModal } from "./RenamePartyModal";
 
 interface PartyViewProps {
   initialViewModel?: PartyViewModel;
@@ -127,7 +130,10 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   };
 
   const handleCopyParty = (partyId: string, currentName: string) => {
-    const newName = prompt(`Copy "${currentName}" as:`, `${currentName} (Copy)`);
+    const newName = prompt(
+      `Copy "${currentName}" as:`,
+      `${currentName} (Copy)`
+    );
     if (newName && newName.trim()) {
       copyParty(partyId, newName.trim());
     }
@@ -147,21 +153,21 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   // Loading state
   if (loading && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <p className="text-gray-400">กำลังโหลดข้อมูลทีม...</p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Error state
   if (error && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
@@ -175,32 +181,34 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
             </Link>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Empty state
   if (!viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 text-6xl mb-4">👥</div>
             <p className="text-gray-400 font-medium mb-2">ยังไม่มีข้อมูลทีม</p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // No recruited characters
   if (progress.recruitedCharacters.length === 0) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center p-8">
           <div className="text-center max-w-md pointer-events-auto">
             <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">ยังไม่มีตัวละคร!</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              ยังไม่มีตัวละคร!
+            </h2>
             <p className="text-gray-400 mb-6">
               คุณต้องรีครูทตัวละครก่อนจึงจะสามารถจัดทีมได้
             </p>
@@ -220,7 +228,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
             </div>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
@@ -277,7 +285,11 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
 
   const handleCharacterSelect = (character: Character) => {
     if (selectedPosition !== null && activePartyId) {
-      const success = addToPartyV2(activePartyId, character.id, selectedPosition);
+      const success = addToPartyV2(
+        activePartyId,
+        character.id,
+        selectedPosition
+      );
       if (success) {
         setIsSelectModalOpen(false);
         setSelectedPosition(null);
@@ -299,7 +311,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
   };
 
   return (
-    <GameLayout>
+    <>
       {/* Party Formation View */}
       <PartyFormationView
         members={activePartyCharacters}
@@ -339,7 +351,7 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
                 onCopyParty={handleCopyParty}
                 onDeleteParty={handleDeleteParty}
               />
-              
+
               {/* Team Summary */}
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
                 <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
@@ -359,7 +371,9 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
                 <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="w-4 h-4 text-purple-400" />
-                    <h3 className="text-sm font-semibold text-white">Synergy</h3>
+                    <h3 className="text-sm font-semibold text-white">
+                      Synergy
+                    </h3>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {synergies.map((synergy) => (
@@ -404,7 +418,10 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
             maxHeight="300px"
             maxWidth="280px"
           >
-            <PartyStatsPanel stats={stats} availableCount={availableChars.length} />
+            <PartyStatsPanel
+              stats={stats}
+              availableCount={availableChars.length}
+            />
           </HUDPanel>
         ) : (
           <HUDPanelToggle
@@ -452,6 +469,6 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
           </div>
         </div>
       )}
-    </GameLayout>
+    </>
   );
 }

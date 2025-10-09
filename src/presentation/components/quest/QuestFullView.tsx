@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Quest } from "@/src/domain/types/quest.types";
+import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
+import {
+  HUDPanel,
+  HUDPanelToggle,
+} from "@/src/presentation/components/layout/HUDPanel";
 import { QuestViewModel } from "@/src/presentation/presenters/quest/QuestPresenter";
 import { useQuestPresenter } from "@/src/presentation/presenters/quest/useQuestPresenter";
-import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
-import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
+import { BarChart3, Filter, ListChecks, Scroll } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { QuestDetailCompact } from "./QuestDetailCompact";
 import { QuestMapView } from "./QuestMapView";
 import { QuestStatsPanel } from "./QuestStatsPanel";
-import { QuestDetailCompact } from "./QuestDetailCompact";
-import { Scroll, Filter, ListChecks, BarChart3 } from "lucide-react";
-import Link from "next/link";
 
 interface QuestFullViewProps {
   initialViewModel?: QuestViewModel;
@@ -100,25 +103,27 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
   // Loading state
   if (loading && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <p className="text-gray-400">Loading quests...</p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Error state
   if (error && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <p className="text-red-400 font-medium mb-2">Failed to load quests</p>
+            <p className="text-red-400 font-medium mb-2">
+              Failed to load quests
+            </p>
             <p className="text-gray-400 mb-4">{error}</p>
             <Link
               href="/"
@@ -128,21 +133,23 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
             </Link>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Empty state
   if (!viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 text-6xl mb-4">📜</div>
-            <p className="text-gray-400 font-medium mb-2">No quests available</p>
+            <p className="text-gray-400 font-medium mb-2">
+              No quests available
+            </p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
@@ -158,10 +165,13 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
   // Generate positions for quests (responsive grid) - Improved mobile spacing
   const questsWithPositions = filteredQuests.map((quest, index) => {
     const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    const isTablet = typeof window !== "undefined" && window.innerWidth >= 768 && window.innerWidth < 1024;
-    
+    const isTablet =
+      typeof window !== "undefined" &&
+      window.innerWidth >= 768 &&
+      window.innerWidth < 1024;
+
     let columns, spacingX, spacingY, startX, startY;
-    
+
     if (isMobile) {
       columns = 2; // 2 columns on mobile (wider spacing)
       spacingX = 40;
@@ -195,7 +205,10 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
     setSelectedQuest(quest);
   };
 
-  const handleQuestAction = async (action: "start" | "complete" | "abandon", questId: string) => {
+  const handleQuestAction = async (
+    action: "start" | "complete" | "abandon",
+    questId: string
+  ) => {
     try {
       switch (action) {
         case "start":
@@ -215,7 +228,7 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
   };
 
   return (
-    <GameLayout>
+    <>
       {/* Quest Map View */}
       <QuestMapView
         quests={questsWithPositions}
@@ -260,18 +273,29 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
                         <h3 className="text-white font-semibold text-sm truncate group-hover:text-purple-300 transition-colors">
                           {quest.name}
                         </h3>
-                        <p className="text-gray-400 text-xs capitalize">{quest.type}</p>
+                        <p className="text-gray-400 text-xs capitalize">
+                          {quest.type}
+                        </p>
                         <div className="mt-1 flex items-center gap-1">
                           <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
                               style={{
-                                width: `${(quest.objectives.filter((o) => o.isCompleted).length / quest.objectives.length) * 100}%`,
+                                width: `${
+                                  (quest.objectives.filter((o) => o.isCompleted)
+                                    .length /
+                                    quest.objectives.length) *
+                                  100
+                                }%`,
                               }}
                             />
                           </div>
                           <span className="text-[10px] text-gray-500">
-                            {quest.objectives.filter((o) => o.isCompleted).length}/{quest.objectives.length}
+                            {
+                              quest.objectives.filter((o) => o.isCompleted)
+                                .length
+                            }
+                            /{quest.objectives.length}
                           </span>
                         </div>
                       </div>
@@ -282,7 +306,9 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
                 <div className="text-center py-8">
                   <Scroll className="w-12 h-12 text-gray-600 mx-auto mb-2" />
                   <p className="text-gray-400 text-sm">No active quests</p>
-                  <p className="text-gray-500 text-xs mt-1">Start a quest from the map!</p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Start a quest from the map!
+                  </p>
                 </div>
               )}
             </div>
@@ -332,9 +358,13 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
             <div className="space-y-4">
               {/* Type Filter */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-400 mb-2">Quest Type</h3>
+                <h3 className="text-xs font-semibold text-gray-400 mb-2">
+                  Quest Type
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {(["all", "main", "side", "event", "daily", "bounty"] as const).map((type) => (
+                  {(
+                    ["all", "main", "side", "event", "daily", "bounty"] as const
+                  ).map((type) => (
                     <button
                       key={type}
                       onClick={() => setSelectedType(type)}
@@ -352,9 +382,19 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
 
               {/* Status Filter */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-400 mb-2">Status</h3>
+                <h3 className="text-xs font-semibold text-gray-400 mb-2">
+                  Status
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {(["all", "available", "active", "completed", "locked"] as const).map((status) => (
+                  {(
+                    [
+                      "all",
+                      "available",
+                      "active",
+                      "completed",
+                      "locked",
+                    ] as const
+                  ).map((status) => (
                     <button
                       key={status}
                       onClick={() => setSelectedStatus(status)}
@@ -383,7 +423,6 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
             </div>
           </HUDPanel>
         )}
-
       </GameLayoutOverlay>
 
       {/* Filter Toggle Button - Outside overlay to avoid Pan/Zoom blocking */}
@@ -421,6 +460,6 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
           </div>
         </div>
       )}
-    </GameLayout>
+    </>
   );
 }

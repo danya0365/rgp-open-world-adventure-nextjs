@@ -1,37 +1,37 @@
 "use client";
 
+import { Location } from "@/src/domain/types/location.types";
+import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
+import {
+  HUDPanel,
+  HUDPanelToggle,
+} from "@/src/presentation/components/layout/HUDPanel";
 import { WorldViewModel } from "@/src/presentation/presenters/world/WorldPresenter";
 import { useWorldPresenter } from "@/src/presentation/presenters/world/useWorldPresenter";
 import { getPartyStats, useGameStore } from "@/src/stores/gameStore";
 import {
   AlertTriangle,
-  Users,
-  Shield,
   Heart,
-  Zap,
-  X,
+  Hotel,
   Map as MapIcon,
+  MapPin,
+  Maximize2,
+  Navigation,
+  Scroll,
+  Shield,
+  ShoppingBag,
+  Swords,
+  Users,
+  Users2,
+  X,
+  Zap,
   ZoomIn,
   ZoomOut,
-  Maximize2,
-  MapPin,
-  Scroll,
-  Swords,
-  ShoppingBag,
-  Hotel,
-  Users2,
-  Navigation,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LocationDetailView } from "../location/LocationDetailView";
-import {
-  GameLayout,
-  GameLayoutOverlay,
-} from "@/src/presentation/components/layout/GameLayout";
-import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
-import { Location } from "@/src/domain/types/location.types";
 
 interface WorldMapViewProps {
   initialViewModel?: WorldViewModel;
@@ -50,20 +50,22 @@ export function WorldMapView({
   const [showPartyPanel, setShowPartyPanel] = useState(true);
   const [showStatsPanel, setShowStatsPanel] = useState(true);
   const [showCurrentAreaPanel, setShowCurrentAreaPanel] = useState(true);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null
+  );
   const [showFastTravelModal, setShowFastTravelModal] = useState(false);
-  
+
   // Pan & Zoom state - restored from localStorage
   const [zoom, setZoom] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('worldMapZoom');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("worldMapZoom");
       return saved ? parseFloat(saved) : 1;
     }
     return 1;
   });
   const [pan, setPan] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('worldMapPan');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("worldMapPan");
       return saved ? JSON.parse(saved) : { x: 0, y: 0 };
     }
     return { x: 0, y: 0 };
@@ -105,8 +107,10 @@ export function WorldMapView({
 
   const partyStats = getPartyStats(activePartyCharacters);
 
-  const { viewModel, loading, error, currentLocation } =
-    useWorldPresenter(initialViewModel, currentLocationId);
+  const { viewModel, loading, error, currentLocation } = useWorldPresenter(
+    initialViewModel,
+    currentLocationId
+  );
 
   // Save location to game store when it changes
   useEffect(() => {
@@ -117,14 +121,14 @@ export function WorldMapView({
 
   // Save zoom/pan to localStorage when they change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('worldMapZoom', zoom.toString());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("worldMapZoom", zoom.toString());
     }
   }, [zoom]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('worldMapPan', JSON.stringify(pan));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("worldMapPan", JSON.stringify(pan));
     }
   }, [pan]);
 
@@ -137,8 +141,8 @@ export function WorldMapView({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // ไม่ drag ถ้ากำลังคลิก location marker
-    if ((e.target as HTMLElement).closest('button')) return;
-    
+    if ((e.target as HTMLElement).closest("button")) return;
+
     setIsDragging(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   };
@@ -171,21 +175,21 @@ export function WorldMapView({
   // Show loading state
   if (loading && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <p className="text-gray-400">กำลังโหลดแผนที่โลก...</p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Show error state
   if (error && !viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
@@ -199,28 +203,30 @@ export function WorldMapView({
             </Link>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Show empty state
   if (!viewModel) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-400 text-6xl mb-4">🗺️</div>
-            <p className="text-gray-400 font-medium mb-2">ยังไม่มีข้อมูลแผนที่</p>
+            <p className="text-gray-400 font-medium mb-2">
+              ยังไม่มีข้อมูลแผนที่
+            </p>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
   // Check if party is empty
   if (activePartyMembers.length === 0) {
     return (
-      <GameLayout>
+      <>
         <div className="absolute inset-0 flex items-center justify-center p-8">
           <div className="text-center max-w-md">
             <AlertTriangle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
@@ -244,7 +250,7 @@ export function WorldMapView({
             </div>
           </div>
         </div>
-      </GameLayout>
+      </>
     );
   }
 
@@ -272,17 +278,20 @@ export function WorldMapView({
           return (isFromCurrent || isToCurrent) && conn.isTwoWay;
         })
         .map((conn) => {
-          const targetLocationId = conn.fromLocationId === currentLocation.id 
-            ? conn.toLocationId 
-            : conn.fromLocationId;
-          const targetLocation = viewModel.locations.find(loc => loc.id === targetLocationId);
-          
+          const targetLocationId =
+            conn.fromLocationId === currentLocation.id
+              ? conn.toLocationId
+              : conn.fromLocationId;
+          const targetLocation = viewModel.locations.find(
+            (loc) => loc.id === targetLocationId
+          );
+
           return {
             ...conn,
             targetLocation,
           };
         })
-        .filter(conn => conn.targetLocation) // แสดงทุก connections ที่มี target
+        .filter((conn) => conn.targetLocation) // แสดงทุก connections ที่มี target
     : [];
 
   // Create virtual locations for current location's services/features
@@ -295,122 +304,142 @@ export function WorldMapView({
     metadata?: any;
   }> = [];
   if (currentLocation?.metadata) {
-    
     // Add NPCs as virtual locations
-    if (currentLocation.metadata.npcs && currentLocation.metadata.npcs.length > 0) {
+    if (
+      currentLocation.metadata.npcs &&
+      currentLocation.metadata.npcs.length > 0
+    ) {
       currentLocation.metadata.npcs.forEach((npcId, idx) => {
         virtualServiceLocations.push({
           id: `service-npc-${npcId}`,
           name: `NPC ${idx + 1}`,
-          type: 'npc',
+          type: "npc",
           isService: true,
-          serviceType: 'npc',
+          serviceType: "npc",
           metadata: { npcId },
         });
       });
     }
-    
+
     // Add shops as virtual locations
-    if (currentLocation.metadata.shops && currentLocation.metadata.shops.length > 0) {
+    if (
+      currentLocation.metadata.shops &&
+      currentLocation.metadata.shops.length > 0
+    ) {
       currentLocation.metadata.shops.forEach((shopId) => {
         virtualServiceLocations.push({
           id: `service-shop-${shopId}`,
           name: `Shop`,
-          type: 'shop',
+          type: "shop",
           isService: true,
-          serviceType: 'shop',
+          serviceType: "shop",
           metadata: { shopId },
         });
       });
     }
-    
+
     // Add inn as virtual location
-    if (currentLocation.metadata.services?.includes('inn')) {
+    if (currentLocation.metadata.services?.includes("inn")) {
       virtualServiceLocations.push({
         id: `service-inn-${currentLocation.id}`,
         name: `Inn`,
-        type: 'inn',
+        type: "inn",
         isService: true,
-        serviceType: 'inn',
+        serviceType: "inn",
       });
     }
-    
+
     // Add guild as virtual location
-    if (currentLocation.metadata.services?.includes('guild')) {
+    if (currentLocation.metadata.services?.includes("guild")) {
       virtualServiceLocations.push({
         id: `service-guild-${currentLocation.id}`,
         name: `Guild Hall`,
-        type: 'guild',
+        type: "guild",
         isService: true,
-        serviceType: 'guild',
+        serviceType: "guild",
       });
     }
-    
+
     // Add battle maps as virtual locations
-    if (currentLocation.metadata.battleMaps && currentLocation.metadata.battleMaps.length > 0) {
+    if (
+      currentLocation.metadata.battleMaps &&
+      currentLocation.metadata.battleMaps.length > 0
+    ) {
       currentLocation.metadata.battleMaps.forEach((battleMapId, idx) => {
         virtualServiceLocations.push({
           id: `service-battle-${battleMapId}`,
           name: `Battle Area ${idx + 1}`,
-          type: 'battle',
+          type: "battle",
           isService: true,
-          serviceType: 'battle',
+          serviceType: "battle",
           metadata: { battleMapId },
         });
       });
     }
-    
+
     // Add encounters as virtual locations
-    if (currentLocation.metadata.encounters && currentLocation.metadata.encounters.length > 0) {
+    if (
+      currentLocation.metadata.encounters &&
+      currentLocation.metadata.encounters.length > 0
+    ) {
       currentLocation.metadata.encounters.forEach((encounterId, idx) => {
         virtualServiceLocations.push({
           id: `service-encounter-${encounterId}`,
           name: `Encounter ${idx + 1}`,
-          type: 'encounter',
+          type: "encounter",
           isService: true,
-          serviceType: 'encounter',
+          serviceType: "encounter",
           metadata: { encounterId },
         });
       });
     }
-    
+
     // Add treasures as virtual locations
-    if (currentLocation.metadata.treasures && currentLocation.metadata.treasures.length > 0) {
+    if (
+      currentLocation.metadata.treasures &&
+      currentLocation.metadata.treasures.length > 0
+    ) {
       currentLocation.metadata.treasures.forEach((treasureId, idx) => {
         virtualServiceLocations.push({
           id: `service-treasure-${treasureId}`,
           name: `Treasure ${idx + 1}`,
-          type: 'treasure',
+          type: "treasure",
           isService: true,
-          serviceType: 'treasure',
+          serviceType: "treasure",
           metadata: { treasureId },
         });
       });
     }
-    
+
     // Add secrets as virtual locations
-    if (currentLocation.metadata.secrets && currentLocation.metadata.secrets.length > 0) {
+    if (
+      currentLocation.metadata.secrets &&
+      currentLocation.metadata.secrets.length > 0
+    ) {
       currentLocation.metadata.secrets.forEach((secretId, idx) => {
         virtualServiceLocations.push({
           id: `service-secret-${secretId}`,
           name: `Secret ${idx + 1}`,
-          type: 'secret',
+          type: "secret",
           isService: true,
-          serviceType: 'secret',
+          serviceType: "secret",
           metadata: { secretId },
         });
       });
     }
-    
+
     // Add exits as virtual locations
-    if (currentLocation.metadata.exits && currentLocation.metadata.exits.length > 0) {
+    if (
+      currentLocation.metadata.exits &&
+      currentLocation.metadata.exits.length > 0
+    ) {
       currentLocation.metadata.exits.forEach((exit, idx) => {
         virtualServiceLocations.push({
           id: `service-exit-${exit.id}`,
           name: `Exit ${idx + 1}`,
-          type: 'exit',
+          type: "exit",
           isService: true,
-          serviceType: 'exit',
+          serviceType: "exit",
           metadata: { exit },
         });
       });
@@ -420,26 +449,26 @@ export function WorldMapView({
   // Create virtual locations for connections (exits/entrances)
   const virtualConnectionLocations = connectionPins.map((connPin) => {
     // กำหนดทิศทางของ connection โดยเปรียบเทียบ level
-    let direction: 'up' | 'down' | 'same' = 'same';
+    let direction: "up" | "down" | "same" = "same";
     if (currentLocation && connPin.targetLocation) {
       const currentLevel = currentLocation.level;
       const targetLevel = connPin.targetLocation.level;
-      
+
       if (targetLevel < currentLevel) {
-        direction = 'up'; // ไปพาเรนต์ (ระดับบน)
+        direction = "up"; // ไปพาเรนต์ (ระดับบน)
       } else if (targetLevel > currentLevel) {
-        direction = 'down'; // ไปไชลด์ (ระดับล่าง)
+        direction = "down"; // ไปไชลด์ (ระดับล่าง)
       } else {
-        direction = 'same'; // ระดับเดียวกัน (พี่น้อง)
+        direction = "same"; // ระดับเดียวกัน (พี่น้อง)
       }
     }
-    
+
     return {
       id: `connection-${connPin.id}`,
-      name: connPin.targetLocation?.name || 'Connection',
+      name: connPin.targetLocation?.name || "Connection",
       type: connPin.connectionType,
       isService: true,
-      serviceType: 'connection',
+      serviceType: "connection",
       connectionType: connPin.connectionType,
       isLocked: connPin.isLocked,
       targetLocation: connPin.targetLocation,
@@ -456,7 +485,7 @@ export function WorldMapView({
 
   // Combine virtual service locations and connections
   // ถ้าไม่มี currentLocation (หน้าแรก) ให้แสดง childLocations แทน
-  const allDisplayLocations = currentLocation 
+  const allDisplayLocations = currentLocation
     ? [...sortedConnections, ...virtualServiceLocations] // Connections ก่อน (เรียงแล้ว), services ทีหลัง
     : childLocations; // หน้าแรก: แสดง root locations (continents)
 
@@ -465,11 +494,11 @@ export function WorldMapView({
     // Simple grid: 4 columns
     const col = index % 4;
     const row = Math.floor(index / 4);
-    
+
     // Calculate position (centered with spacing)
     const x = 20 + col * 23; // % from left
     const y = 20 + row * 25; // % from top
-    
+
     return {
       ...loc,
       x,
@@ -478,41 +507,41 @@ export function WorldMapView({
   });
 
   return (
-    <GameLayout>
+    <>
       {/* Full Screen Map Container */}
-      <div 
+      <div
         className="absolute inset-0 overflow-hidden pointer-events-auto"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab', zIndex: 0 }}
+        style={{ cursor: isDragging ? "grabbing" : "grab", zIndex: 0 }}
       >
         {/* Map Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
           {/* Grid Pattern Overlay */}
-          <div 
+          <div
             className="absolute inset-0 opacity-10"
             style={{
               backgroundImage: `
                 linear-gradient(rgba(147, 51, 234, 0.3) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(147, 51, 234, 0.3) 1px, transparent 1px)
               `,
-              backgroundSize: '50px 50px',
+              backgroundSize: "50px 50px",
             }}
           />
-          
+
           {/* Radial Glow */}
           <div className="absolute inset-0 bg-gradient-radial from-purple-600/10 via-transparent to-transparent" />
         </div>
 
         {/* Location Markers - with Pan & Zoom transform */}
-        <div 
+        <div
           className="absolute inset-0 transition-transform"
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            transformOrigin: 'center center',
+            transformOrigin: "center center",
           }}
         >
           {/* Empty State */}
@@ -544,42 +573,59 @@ export function WorldMapView({
 
           {locationsWithPositions.map((location: any) => {
             const isCurrentLocation = location.id === currentLocationId;
-            const isCityOrTown = location.type === 'city' || location.type === 'town';
+            const isCityOrTown =
+              location.type === "city" || location.type === "town";
             const isService = !!(location as any).isService;
-            
+
             // Check location features (only for real locations, not services)
-            const hasBattle = !isService && !!(location.metadata?.battleMaps?.length || location.encounterTableId);
-            const hasShop = !isService && !!(location.metadata?.shops?.length);
-            const hasInn = !isService && !!(location.metadata?.services?.includes('inn'));
-            const hasGuild = !isService && !!(location.metadata?.services?.includes('guild'));
-            const hasQuest = !isService && (location.type === 'temple' || location.type === 'castle' || location.type === 'town');
-            
+            const hasBattle =
+              !isService &&
+              !!(
+                location.metadata?.battleMaps?.length ||
+                location.encounterTableId
+              );
+            const hasShop = !isService && !!location.metadata?.shops?.length;
+            const hasInn =
+              !isService && !!location.metadata?.services?.includes("inn");
+            const hasGuild =
+              !isService && !!location.metadata?.services?.includes("guild");
+            const hasQuest =
+              !isService &&
+              (location.type === "temple" ||
+                location.type === "castle" ||
+                location.type === "town");
+
             return (
               <button
                 key={location.id}
                 onClick={() => {
                   if (isService) {
                     // ถ้าคลิก connection -> navigate ไปยัง target location
-                    if (location.serviceType === 'connection') {
+                    if (location.serviceType === "connection") {
                       if (location.isLocked) {
-                        alert(`🔒 ${location.name} - ถูกล็อค! ต้องการไอเทมพิเศษ`);
+                        alert(
+                          `🔒 ${location.name} - ถูกล็อค! ต้องการไอเทมพิเศษ`
+                        );
                       } else if (location.targetLocation) {
                         router.push(`/world/${location.targetLocation.id}`);
                       }
                     } else {
                       // ถ้าคลิก service อื่นๆ -> แสดงข้อความตาม service type
                       const serviceMessages: Record<string, string> = {
-                        shop: '🏪 เปิดร้านค้า - Feature กำลังพัฒนา',
-                        inn: '🏨 พักผ่อน - Feature กำลังพัฒนา',
-                        guild: '🏛️ เข้าหอสมาคม - Feature กำลังพัฒนา',
-                        battle: '⚔️ เข้าสู่การต่อสู้ - Feature กำลังพัฒนา',
-                        npc: '👤 พูดคุยกับ NPC - Feature กำลังพัฒนา',
-                        encounter: '💀 Random Encounter - Feature กำลังพัฒนา',
-                        treasure: '💎 เปิดกล่องสมบัติ - Feature กำลังพัฒนา',
-                        secret: '🔮 สำรวจความลับ - Feature กำลังพัฒนา',
-                        exit: '🚪 ใช้ทางออก - Feature กำลังพัฒนา',
+                        shop: "🏪 เปิดร้านค้า - Feature กำลังพัฒนา",
+                        inn: "🏨 พักผ่อน - Feature กำลังพัฒนา",
+                        guild: "🏛️ เข้าหอสมาคม - Feature กำลังพัฒนา",
+                        battle: "⚔️ เข้าสู่การต่อสู้ - Feature กำลังพัฒนา",
+                        npc: "👤 พูดคุยกับ NPC - Feature กำลังพัฒนา",
+                        encounter: "💀 Random Encounter - Feature กำลังพัฒนา",
+                        treasure: "💎 เปิดกล่องสมบัติ - Feature กำลังพัฒนา",
+                        secret: "🔮 สำรวจความลับ - Feature กำลังพัฒนา",
+                        exit: "🚪 ใช้ทางออก - Feature กำลังพัฒนา",
                       };
-                      alert(serviceMessages[location.serviceType] || `${location.name} - Feature กำลังพัฒนา`);
+                      alert(
+                        serviceMessages[location.serviceType] ||
+                          `${location.name} - Feature กำลังพัฒนา`
+                      );
                     }
                   } else if (isCurrentLocation) {
                     // ถ้าคลิกที่ current location -> เปิด detail modal
@@ -596,89 +642,96 @@ export function WorldMapView({
                 }}
               >
                 {/* Connection Lines (optional - to parent) */}
-                
+
                 {/* Marker Glow */}
-                <div className={`absolute inset-0 rounded-full blur-xl transition-all ${
-                  isCurrentLocation 
-                    ? 'bg-amber-400/50 w-24 h-24 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2' 
-                    : 'bg-purple-400/30 w-16 h-16 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:bg-purple-400/50'
-                }`} />
-                
+                <div
+                  className={`absolute inset-0 rounded-full blur-xl transition-all ${
+                    isCurrentLocation
+                      ? "bg-amber-400/50 w-24 h-24 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+                      : "bg-purple-400/30 w-16 h-16 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:bg-purple-400/50"
+                  }`}
+                />
+
                 {/* Marker Icon */}
-                <div className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
-                  isService
-                    ? location.serviceType === 'shop'
-                      ? 'bg-green-600 border-green-400 group-hover:scale-110 group-hover:bg-green-500'
-                      : location.serviceType === 'inn'
-                      ? 'bg-blue-600 border-blue-400 group-hover:scale-110 group-hover:bg-blue-500'
-                      : location.serviceType === 'guild'
-                      ? 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500'
-                      : location.serviceType === 'battle'
-                      ? 'bg-red-600 border-red-400 group-hover:scale-110 group-hover:bg-red-500'
-                      : location.serviceType === 'npc'
-                      ? 'bg-cyan-600 border-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500'
-                      : location.serviceType === 'encounter'
-                      ? 'bg-orange-600 border-orange-400 group-hover:scale-110 group-hover:bg-orange-500'
-                      : location.serviceType === 'treasure'
-                      ? 'bg-yellow-600 border-yellow-400 group-hover:scale-110 group-hover:bg-yellow-500'
-                      : location.serviceType === 'secret'
-                      ? 'bg-indigo-600 border-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500'
-                      : location.serviceType === 'exit'
-                      ? 'bg-teal-600 border-teal-400 group-hover:scale-110 group-hover:bg-teal-500'
-                      : location.serviceType === 'connection'
-                      ? location.isLocked
-                        ? 'bg-red-700 border-red-500 group-hover:scale-110 group-hover:bg-red-600'
-                        : location.direction === 'up'
-                        ? 'bg-blue-600 border-blue-400 group-hover:scale-110 group-hover:bg-blue-500' // ขึ้นบน (parent)
-                        : location.direction === 'down'
-                        ? 'bg-green-600 border-green-400 group-hover:scale-110 group-hover:bg-green-500' // ลงล่าง (child)
-                        : 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500' // เดียวกัน (sibling)
-                      : 'bg-slate-600 border-slate-400 group-hover:scale-110 group-hover:bg-slate-500'
-                    : isCurrentLocation
-                    ? 'bg-amber-500 border-amber-300 scale-125'
-                    : 'bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500'
-                }`}>
+                <div
+                  className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
+                    isService
+                      ? location.serviceType === "shop"
+                        ? "bg-green-600 border-green-400 group-hover:scale-110 group-hover:bg-green-500"
+                        : location.serviceType === "inn"
+                        ? "bg-blue-600 border-blue-400 group-hover:scale-110 group-hover:bg-blue-500"
+                        : location.serviceType === "guild"
+                        ? "bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500"
+                        : location.serviceType === "battle"
+                        ? "bg-red-600 border-red-400 group-hover:scale-110 group-hover:bg-red-500"
+                        : location.serviceType === "npc"
+                        ? "bg-cyan-600 border-cyan-400 group-hover:scale-110 group-hover:bg-cyan-500"
+                        : location.serviceType === "encounter"
+                        ? "bg-orange-600 border-orange-400 group-hover:scale-110 group-hover:bg-orange-500"
+                        : location.serviceType === "treasure"
+                        ? "bg-yellow-600 border-yellow-400 group-hover:scale-110 group-hover:bg-yellow-500"
+                        : location.serviceType === "secret"
+                        ? "bg-indigo-600 border-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500"
+                        : location.serviceType === "exit"
+                        ? "bg-teal-600 border-teal-400 group-hover:scale-110 group-hover:bg-teal-500"
+                        : location.serviceType === "connection"
+                        ? location.isLocked
+                          ? "bg-red-700 border-red-500 group-hover:scale-110 group-hover:bg-red-600"
+                          : location.direction === "up"
+                          ? "bg-blue-600 border-blue-400 group-hover:scale-110 group-hover:bg-blue-500" // ขึ้นบน (parent)
+                          : location.direction === "down"
+                          ? "bg-green-600 border-green-400 group-hover:scale-110 group-hover:bg-green-500" // ลงล่าง (child)
+                          : "bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500" // เดียวกัน (sibling)
+                        : "bg-slate-600 border-slate-400 group-hover:scale-110 group-hover:bg-slate-500"
+                      : isCurrentLocation
+                      ? "bg-amber-500 border-amber-300 scale-125"
+                      : "bg-purple-600 border-purple-400 group-hover:scale-110 group-hover:bg-purple-500"
+                  }`}
+                >
                   <span className="text-2xl">
                     {isService
-                      ? location.serviceType === 'shop'
-                        ? '🏪'
-                        : location.serviceType === 'inn'
-                        ? '🏨'
-                        : location.serviceType === 'guild'
-                        ? '🏛️'
-                        : location.serviceType === 'battle'
-                        ? '⚔️'
-                        : location.serviceType === 'npc'
-                        ? '👤'
-                        : location.serviceType === 'encounter'
-                        ? '💀'
-                        : location.serviceType === 'treasure'
-                        ? '💎'
-                        : location.serviceType === 'secret'
-                        ? '🔮'
-                        : location.serviceType === 'exit'
-                        ? '🚪'
-                        : location.serviceType === 'connection'
+                      ? location.serviceType === "shop"
+                        ? "🏪"
+                        : location.serviceType === "inn"
+                        ? "🏨"
+                        : location.serviceType === "guild"
+                        ? "🏛️"
+                        : location.serviceType === "battle"
+                        ? "⚔️"
+                        : location.serviceType === "npc"
+                        ? "👤"
+                        : location.serviceType === "encounter"
+                        ? "💀"
+                        : location.serviceType === "treasure"
+                        ? "💎"
+                        : location.serviceType === "secret"
+                        ? "🔮"
+                        : location.serviceType === "exit"
+                        ? "🚪"
+                        : location.serviceType === "connection"
                         ? location.isLocked
-                          ? '🔒'
-                          : location.connectionType === 'portal'
-                          ? '🌀'
-                          : location.connectionType === 'gate'
-                          ? '🚧'
-                          : location.connectionType === 'entrance'
-                          ? '🚪'
-                          : location.connectionType === 'stairs'
-                          ? '🪜'
-                          : location.connectionType === 'door'
-                          ? '🚪'
-                          : location.connectionType === 'bridge'
-                          ? '🌉'
-                          : '🔗'
-                        : '❓'
-                      : isCityOrTown ? '🏰' : location.type === 'region' ? '🏔️' : '🗺️'
-                    }
+                          ? "🔒"
+                          : location.connectionType === "portal"
+                          ? "🌀"
+                          : location.connectionType === "gate"
+                          ? "🚧"
+                          : location.connectionType === "entrance"
+                          ? "🚪"
+                          : location.connectionType === "stairs"
+                          ? "🪜"
+                          : location.connectionType === "door"
+                          ? "🚪"
+                          : location.connectionType === "bridge"
+                          ? "🌉"
+                          : "🔗"
+                        : "❓"
+                      : isCityOrTown
+                      ? "🏰"
+                      : location.type === "region"
+                      ? "🏔️"
+                      : "🗺️"}
                   </span>
-                  
+
                   {/* Current Location Indicator */}
                   {isCurrentLocation && (
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
@@ -687,7 +740,7 @@ export function WorldMapView({
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Fast Travel Indicator - Top Left */}
                   {!isService && location.isFastTravelPoint && (
                     <div className="absolute -top-2 -left-2 pointer-events-none">
@@ -696,148 +749,196 @@ export function WorldMapView({
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Direction Badge - Top Left (for connections) */}
-                  {isService && location.serviceType === 'connection' && !location.isLocked && (
-                    <div className="absolute -top-2 -left-2 pointer-events-none">
-                      <div className={`w-6 h-6 border-2 rounded-full flex items-center justify-center shadow-lg font-bold text-sm ${
-                        location.direction === 'up'
-                          ? 'bg-blue-500 border-blue-300 text-white'
-                          : location.direction === 'down'
-                          ? 'bg-green-500 border-green-300 text-white'
-                          : 'bg-purple-500 border-purple-300 text-white'
-                      }`}>
-                        {location.direction === 'up' ? '↑' : location.direction === 'down' ? '↓' : '↔'}
+                  {isService &&
+                    location.serviceType === "connection" &&
+                    !location.isLocked && (
+                      <div className="absolute -top-2 -left-2 pointer-events-none">
+                        <div
+                          className={`w-6 h-6 border-2 rounded-full flex items-center justify-center shadow-lg font-bold text-sm ${
+                            location.direction === "up"
+                              ? "bg-blue-500 border-blue-300 text-white"
+                              : location.direction === "down"
+                              ? "bg-green-500 border-green-300 text-white"
+                              : "bg-purple-500 border-purple-300 text-white"
+                          }`}
+                        >
+                          {location.direction === "up"
+                            ? "↑"
+                            : location.direction === "down"
+                            ? "↓"
+                            : "↔"}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
 
                 {/* Feature Badges - Top Right of Marker (only for real locations) */}
-                {!isService && (hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
-                  <div className="absolute -top-2 -right-2 flex flex-col gap-1 pointer-events-none">
-                    {hasBattle && (
-                      <div className="px-1.5 py-0.5 bg-red-600/90 border border-red-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Battle Available">
-                        <Swords className="w-3 h-3" />
-                        {location.metadata?.battleMaps && location.metadata.battleMaps.length > 1 && (
-                          <span className="text-[9px] font-bold">{location.metadata.battleMaps.length}</span>
-                        )}
-                      </div>
-                    )}
-                    {hasShop && (
-                      <div className="px-1.5 py-0.5 bg-green-600/90 border border-green-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Shop">
-                        <ShoppingBag className="w-3 h-3" />
-                        {location.metadata?.shops && location.metadata.shops.length > 1 && (
-                          <span className="text-[9px] font-bold">{location.metadata.shops.length}</span>
-                        )}
-                      </div>
-                    )}
-                    {hasInn && (
-                      <div className="px-1.5 py-0.5 bg-blue-600/90 border border-blue-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Inn">
-                        <Hotel className="w-3 h-3" />
-                      </div>
-                    )}
-                    {hasGuild && (
-                      <div className="px-1.5 py-0.5 bg-purple-600/90 border border-purple-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm" title="Guild">
-                        <Users2 className="w-3 h-3" />
-                      </div>
-                    )}
-                    {hasQuest && (
-                      <div className="px-1.5 py-0.5 bg-amber-600/90 border border-amber-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm animate-pulse" title="Quest Available">
-                        <Scroll className="w-3 h-3" />
-                      </div>
-                    )}
-                  </div>
-                )}
-                
+                {!isService &&
+                  (hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
+                    <div className="absolute -top-2 -right-2 flex flex-col gap-1 pointer-events-none">
+                      {hasBattle && (
+                        <div
+                          className="px-1.5 py-0.5 bg-red-600/90 border border-red-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm"
+                          title="Battle Available"
+                        >
+                          <Swords className="w-3 h-3" />
+                          {location.metadata?.battleMaps &&
+                            location.metadata.battleMaps.length > 1 && (
+                              <span className="text-[9px] font-bold">
+                                {location.metadata.battleMaps.length}
+                              </span>
+                            )}
+                        </div>
+                      )}
+                      {hasShop && (
+                        <div
+                          className="px-1.5 py-0.5 bg-green-600/90 border border-green-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm"
+                          title="Shop"
+                        >
+                          <ShoppingBag className="w-3 h-3" />
+                          {location.metadata?.shops &&
+                            location.metadata.shops.length > 1 && (
+                              <span className="text-[9px] font-bold">
+                                {location.metadata.shops.length}
+                              </span>
+                            )}
+                        </div>
+                      )}
+                      {hasInn && (
+                        <div
+                          className="px-1.5 py-0.5 bg-blue-600/90 border border-blue-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm"
+                          title="Inn"
+                        >
+                          <Hotel className="w-3 h-3" />
+                        </div>
+                      )}
+                      {hasGuild && (
+                        <div
+                          className="px-1.5 py-0.5 bg-purple-600/90 border border-purple-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm"
+                          title="Guild"
+                        >
+                          <Users2 className="w-3 h-3" />
+                        </div>
+                      )}
+                      {hasQuest && (
+                        <div
+                          className="px-1.5 py-0.5 bg-amber-600/90 border border-amber-400 rounded-full text-white flex items-center gap-0.5 shadow-lg backdrop-blur-sm animate-pulse"
+                          title="Quest Available"
+                        >
+                          <Scroll className="w-3 h-3" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                 {/* Location Name */}
-                <div className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap ${
-                  isCurrentLocation ? 'scale-110' : ''
-                }`}>
-                  <div className={`px-3 py-1 rounded-lg text-sm font-semibold shadow-lg transition-all ${
-                    isCurrentLocation
-                      ? 'bg-amber-500/90 text-white'
-                      : 'bg-slate-800/90 text-gray-200 group-hover:bg-purple-600/90 group-hover:text-white'
-                  }`}>
+                <div
+                  className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap ${
+                    isCurrentLocation ? "scale-110" : ""
+                  }`}
+                >
+                  <div
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold shadow-lg transition-all ${
+                      isCurrentLocation
+                        ? "bg-amber-500/90 text-white"
+                        : "bg-slate-800/90 text-gray-200 group-hover:bg-purple-600/90 group-hover:text-white"
+                    }`}
+                  >
                     {location.name}
                   </div>
                 </div>
-                
+
                 {/* Hover Info */}
                 <div className="absolute top-full mt-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   <div className="px-3 py-2 bg-slate-900/95 border border-purple-500/50 rounded-lg text-xs text-gray-300 whitespace-nowrap shadow-xl">
-                    <div className="font-semibold text-purple-400 capitalize">{location.type}</div>
-                    
+                    <div className="font-semibold text-purple-400 capitalize">
+                      {location.type}
+                    </div>
+
                     {/* Service Info */}
                     {isService && (
                       <div className="mt-1 text-[10px] text-gray-400">
-                        {location.serviceType === 'shop' && 'ร้านค้า - ซื้อขายไอเทม'}
-                        {location.serviceType === 'inn' && 'โรงแรม - พักฟื้น'}
-                        {location.serviceType === 'guild' && 'หอสมาคม - รับเควส'}
-                        {location.serviceType === 'battle' && 'สนามรบ - เข้าสู่การต่อสู้'}
-                        {location.serviceType === 'npc' && 'NPC - พูดคุย/รับเควส'}
-                        {location.serviceType === 'encounter' && 'การสุ่มเจอ - มอนสเตอร์'}
-                        {location.serviceType === 'treasure' && 'สมบัติ - เปิดกล่อง'}
-                        {location.serviceType === 'secret' && 'ความลับ - สำรวจ'}
-                        {location.serviceType === 'exit' && 'ทางออก - เดินทาง'}
-                        {location.serviceType === 'connection' && (
+                        {location.serviceType === "shop" &&
+                          "ร้านค้า - ซื้อขายไอเทม"}
+                        {location.serviceType === "inn" && "โรงแรม - พักฟื้น"}
+                        {location.serviceType === "guild" &&
+                          "หอสมาคม - รับเควส"}
+                        {location.serviceType === "battle" &&
+                          "สนามรบ - เข้าสู่การต่อสู้"}
+                        {location.serviceType === "npc" &&
+                          "NPC - พูดคุย/รับเควส"}
+                        {location.serviceType === "encounter" &&
+                          "การสุ่มเจอ - มอนสเตอร์"}
+                        {location.serviceType === "treasure" &&
+                          "สมบัติ - เปิดกล่อง"}
+                        {location.serviceType === "secret" && "ความลับ - สำรวจ"}
+                        {location.serviceType === "exit" && "ทางออก - เดินทาง"}
+                        {location.serviceType === "connection" && (
                           <>
-                            {location.isLocked 
-                              ? '🔒 ทางเชื่อม - ถูกล็อค' 
-                              : location.direction === 'up'
+                            {location.isLocked
+                              ? "🔒 ทางเชื่อม - ถูกล็อค"
+                              : location.direction === "up"
                               ? `⬆️ ขึ้นบน → ${location.name} (Parent)`
-                              : location.direction === 'down'
+                              : location.direction === "down"
                               ? `⬇️ ลงล่าง → ${location.name} (Child)`
-                              : `↔️ เดียวกัน → ${location.name} (Sibling)`
-                            }
+                              : `↔️ เดียวกัน → ${location.name} (Sibling)`}
                           </>
                         )}
                       </div>
                     )}
-                    
+
                     {/* Available Features (only for real locations) */}
-                    {!isService && (hasBattle || hasShop || hasInn || hasGuild || hasQuest) && (
-                      <div className="mt-2 space-y-1 text-[10px]">
-                        {hasBattle && (
-                          <div className="flex items-center gap-1 text-red-300">
-                            <Swords className="w-3 h-3" /> Battle
-                            {location.metadata?.battleMaps && ` (${location.metadata.battleMaps.length})`}
-                          </div>
-                        )}
-                        {hasShop && (
-                          <div className="flex items-center gap-1 text-green-300">
-                            <ShoppingBag className="w-3 h-3" /> Shop
-                            {location.metadata?.shops && ` (${location.metadata.shops.length})`}
-                          </div>
-                        )}
-                        {hasInn && (
-                          <div className="flex items-center gap-1 text-blue-300">
-                            <Hotel className="w-3 h-3" /> Inn
-                          </div>
-                        )}
-                        {hasGuild && (
-                          <div className="flex items-center gap-1 text-purple-300">
-                            <Users2 className="w-3 h-3" /> Guild
-                          </div>
-                        )}
-                        {hasQuest && (
-                          <div className="flex items-center gap-1 text-amber-300">
-                            <Scroll className="w-3 h-3" /> Quest
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
+                    {!isService &&
+                      (hasBattle ||
+                        hasShop ||
+                        hasInn ||
+                        hasGuild ||
+                        hasQuest) && (
+                        <div className="mt-2 space-y-1 text-[10px]">
+                          {hasBattle && (
+                            <div className="flex items-center gap-1 text-red-300">
+                              <Swords className="w-3 h-3" /> Battle
+                              {location.metadata?.battleMaps &&
+                                ` (${location.metadata.battleMaps.length})`}
+                            </div>
+                          )}
+                          {hasShop && (
+                            <div className="flex items-center gap-1 text-green-300">
+                              <ShoppingBag className="w-3 h-3" /> Shop
+                              {location.metadata?.shops &&
+                                ` (${location.metadata.shops.length})`}
+                            </div>
+                          )}
+                          {hasInn && (
+                            <div className="flex items-center gap-1 text-blue-300">
+                              <Hotel className="w-3 h-3" /> Inn
+                            </div>
+                          )}
+                          {hasGuild && (
+                            <div className="flex items-center gap-1 text-purple-300">
+                              <Users2 className="w-3 h-3" /> Guild
+                            </div>
+                          )}
+                          {hasQuest && (
+                            <div className="flex items-center gap-1 text-amber-300">
+                              <Scroll className="w-3 h-3" /> Quest
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                     <div className="text-gray-400 text-[10px] mt-2 border-t border-slate-700 pt-1">
-                      {isService 
-                        ? location.serviceType === 'connection'
+                      {isService
+                        ? location.serviceType === "connection"
                           ? location.isLocked
-                            ? 'ถูกล็อค - ต้องการไอเทม'
-                            : 'คลิกเพื่อเดินทาง →'
-                          : 'คลิกเพื่อใช้บริการ'
-                        : isCurrentLocation 
-                        ? 'คลิกเพื่อดูรายละเอียด' 
-                        : 'คลิกเพื่อเดินทาง'}
+                            ? "ถูกล็อค - ต้องการไอเทม"
+                            : "คลิกเพื่อเดินทาง →"
+                          : "คลิกเพื่อใช้บริการ"
+                        : isCurrentLocation
+                        ? "คลิกเพื่อดูรายละเอียด"
+                        : "คลิกเพื่อเดินทาง"}
                     </div>
                   </div>
                 </div>
@@ -853,7 +954,9 @@ export function WorldMapView({
               <MapIcon className="w-6 h-6 text-purple-400" />
               <div>
                 <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                  {currentLocation ? currentLocation.name : "แผนที่โลก Aethoria"}
+                  {currentLocation
+                    ? currentLocation.name
+                    : "แผนที่โลก Aethoria"}
                   {currentLocation && (
                     <span className="text-xs text-gray-400 font-normal capitalize">
                       ({currentLocation.type})
@@ -861,8 +964,9 @@ export function WorldMapView({
                   )}
                 </h1>
                 <p className="text-gray-400 text-xs">
-                  บริการ: {virtualServiceLocations.length} | ทางเชื่อม: {virtualConnectionLocations.length} | 
-                  🖱️ ลาก: Pan | 🎡 Scroll: Zoom
+                  บริการ: {virtualServiceLocations.length} | ทางเชื่อม:{" "}
+                  {virtualConnectionLocations.length} | 🖱️ ลาก: Pan | 🎡 Scroll:
+                  Zoom
                 </p>
               </div>
             </div>
@@ -879,7 +983,7 @@ export function WorldMapView({
             <Navigation className="w-5 h-5" />
             <span>Fast Travel</span>
           </button>
-          
+
           {/* Explore Current Location Button */}
           {currentLocation && (
             <button
@@ -938,7 +1042,9 @@ export function WorldMapView({
 
             {/* Zoom Level Indicator */}
             <div className="px-2 py-1 bg-slate-800/50 rounded text-center">
-              <span className="text-xs text-gray-400">{Math.round(zoom * 100)}%</span>
+              <span className="text-xs text-gray-400">
+                {Math.round(zoom * 100)}%
+              </span>
             </div>
           </div>
         </div>
@@ -1091,8 +1197,9 @@ export function WorldMapView({
         )}
 
         {/* Current Area Panel - Top Right (แสดง sibling locations + You are here) */}
-        {currentLocation && siblingLocations.length > 0 && (
-          showCurrentAreaPanel ? (
+        {currentLocation &&
+          siblingLocations.length > 0 &&
+          (showCurrentAreaPanel ? (
             <HUDPanel
               title="พื้นที่ปัจจุบัน"
               icon={<MapPin className="w-5 h-5" />}
@@ -1121,21 +1228,23 @@ export function WorldMapView({
                       }}
                       className={`w-full p-3 rounded-lg border transition-all text-left ${
                         isCurrentLocation
-                          ? 'bg-amber-500/20 border-amber-500 ring-2 ring-amber-400/50 cursor-pointer hover:bg-amber-500/30'
-                          : 'bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-purple-500'
+                          ? "bg-amber-500/20 border-amber-500 ring-2 ring-amber-400/50 cursor-pointer hover:bg-amber-500/30"
+                          : "bg-slate-800/50 border-slate-700 hover:bg-slate-700/50 hover:border-purple-500"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">
-                          {location.type === 'city' || location.type === 'town' 
-                            ? '🏰' 
-                            : location.type === 'region' 
-                            ? '🏔️' 
-                            : '🗺️'}
+                          {location.type === "city" || location.type === "town"
+                            ? "🏰"
+                            : location.type === "region"
+                            ? "🏔️"
+                            : "🗺️"}
                         </span>
-                        <span className={`text-sm font-medium ${
-                          isCurrentLocation ? 'text-amber-300' : 'text-white'
-                        }`}>
+                        <span
+                          className={`text-sm font-medium ${
+                            isCurrentLocation ? "text-amber-300" : "text-white"
+                          }`}
+                        >
                           {location.name}
                         </span>
                         {isCurrentLocation && (
@@ -1144,9 +1253,13 @@ export function WorldMapView({
                           </span>
                         )}
                       </div>
-                      <p className={`text-xs capitalize ${
-                        isCurrentLocation ? 'text-amber-400/80' : 'text-gray-400'
-                      }`}>
+                      <p
+                        className={`text-xs capitalize ${
+                          isCurrentLocation
+                            ? "text-amber-400/80"
+                            : "text-gray-400"
+                        }`}
+                      >
                         {location.type}
                       </p>
                       {isCurrentLocation ? (
@@ -1170,8 +1283,7 @@ export function WorldMapView({
               onClick={() => setShowCurrentAreaPanel(true)}
               position="top-right"
             />
-          )
-        )}
+          ))}
 
         {/* Error Toast */}
         {error && viewModel && (
@@ -1192,7 +1304,9 @@ export function WorldMapView({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Navigation className="w-6 h-6 text-cyan-400" />
-                    <h2 className="text-2xl font-bold text-white">Fast Travel</h2>
+                    <h2 className="text-2xl font-bold text-white">
+                      Fast Travel
+                    </h2>
                   </div>
                   <button
                     onClick={() => setShowFastTravelModal(false)}
@@ -1210,11 +1324,13 @@ export function WorldMapView({
               <div className="p-6 overflow-y-auto max-h-[60vh]">
                 <div className="grid grid-cols-1 gap-3">
                   {viewModel.locations
-                    .filter((loc) => loc.isFastTravelPoint && loc.isDiscoverable)
+                    .filter(
+                      (loc) => loc.isFastTravelPoint && loc.isDiscoverable
+                    )
                     .map((location) => {
                       const isCurrentLoc = location.id === currentLocationId;
                       const canTravel = !location.requiredLevel || true; // TODO: Check player level
-                      
+
                       return (
                         <button
                           key={location.id}
@@ -1227,34 +1343,40 @@ export function WorldMapView({
                           disabled={isCurrentLoc || !canTravel}
                           className={`p-4 rounded-xl border-2 transition-all text-left ${
                             isCurrentLoc
-                              ? 'bg-amber-500/20 border-amber-500 cursor-default'
+                              ? "bg-amber-500/20 border-amber-500 cursor-default"
                               : canTravel
-                              ? 'bg-slate-800/50 border-slate-700 hover:border-cyan-500 hover:bg-slate-700/50 cursor-pointer'
-                              : 'bg-slate-800/30 border-slate-800 opacity-50 cursor-not-allowed'
+                              ? "bg-slate-800/50 border-slate-700 hover:border-cyan-500 hover:bg-slate-700/50 cursor-pointer"
+                              : "bg-slate-800/30 border-slate-800 opacity-50 cursor-not-allowed"
                           }`}
                         >
                           <div className="flex items-start gap-4">
                             {/* Icon */}
-                            <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 ${
-                              isCurrentLoc 
-                                ? 'bg-amber-500 border-amber-300' 
-                                : 'bg-cyan-600 border-cyan-400'
-                            }`}>
+                            <div
+                              className={`w-14 h-14 rounded-full flex items-center justify-center border-2 ${
+                                isCurrentLoc
+                                  ? "bg-amber-500 border-amber-300"
+                                  : "bg-cyan-600 border-cyan-400"
+                              }`}
+                            >
                               <span className="text-2xl">
-                                {location.type === 'city' || location.type === 'town'
-                                  ? '🏰'
-                                  : location.type === 'building' || location.type === 'tower'
-                                  ? '🏛️'
-                                  : location.type === 'area'
-                                  ? '💎'
-                                  : '🗺️'}
+                                {location.type === "city" ||
+                                location.type === "town"
+                                  ? "🏰"
+                                  : location.type === "building" ||
+                                    location.type === "tower"
+                                  ? "🏛️"
+                                  : location.type === "area"
+                                  ? "💎"
+                                  : "🗺️"}
                               </span>
                             </div>
 
                             {/* Info */}
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-bold text-white">{location.name}</h3>
+                                <h3 className="text-lg font-bold text-white">
+                                  {location.name}
+                                </h3>
                                 {isCurrentLoc && (
                                   <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-bold rounded animate-pulse">
                                     YOU ARE HERE
@@ -1264,7 +1386,9 @@ export function WorldMapView({
                                   <Navigation className="w-3 h-3 text-white" />
                                 </div>
                               </div>
-                              <p className="text-sm text-gray-400 mb-2">{location.description}</p>
+                              <p className="text-sm text-gray-400 mb-2">
+                                {location.description}
+                              </p>
                               <div className="flex items-center gap-3 text-xs">
                                 <span className="px-2 py-1 bg-slate-700 text-gray-300 rounded capitalize">
                                   {location.type}
@@ -1275,7 +1399,9 @@ export function WorldMapView({
                                   </span>
                                 )}
                                 {!isCurrentLoc && canTravel && (
-                                  <span className="text-cyan-400 ml-auto">คลิกเพื่อเดินทาง →</span>
+                                  <span className="text-cyan-400 ml-auto">
+                                    คลิกเพื่อเดินทาง →
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -1289,6 +1415,6 @@ export function WorldMapView({
           </div>
         )}
       </GameLayoutOverlay>
-    </GameLayout>
+    </>
   );
 }
