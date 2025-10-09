@@ -771,6 +771,17 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     coordinates: { x: 120, y: 200 }, // Grid-aligned: (3*40, 5*40) - Guild entrance
   },
 
+  // Reverse connection for two-way travel
+  {
+    id: "conn-2-reverse",
+    fromLocationId: "building-guild-hall",
+    toLocationId: "city-silverhold",
+    connectionType: "entrance",
+    isLocked: false,
+    isTwoWay: true,
+    coordinates: { x: 120, y: 200 }, // Same position - exit point
+  },
+
   {
     id: "conn-6",
     fromLocationId: "city-elvenheim",
