@@ -7,7 +7,7 @@ export interface HUDPanelProps {
   title?: string;
   icon?: ReactNode;
   children: ReactNode;
-  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  position?: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-right";
   closable?: boolean;
   onClose?: () => void;
   className?: string;
@@ -30,6 +30,7 @@ export function HUDPanel({
   const positionClasses = {
     "top-left": "top-4 left-4",
     "top-right": "top-4 right-4",
+    "top-center": "top-4 left-1/2 -translate-x-1/2",
     "bottom-left": "bottom-4 left-4",
     "bottom-right": "bottom-4 right-4",
   };
@@ -80,7 +81,7 @@ interface HUDPanelToggleProps {
   label: string;
   icon?: ReactNode;
   onClick: () => void;
-  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  position?: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-right";
 }
 
 export function HUDPanelToggle({
@@ -92,6 +93,7 @@ export function HUDPanelToggle({
   const positionClasses = {
     "top-left": "top-4 left-4",
     "top-right": "top-4 right-4",
+    "top-center": "top-4 left-1/2 -translate-x-1/2",
     "bottom-left": "bottom-4 left-4",
     "bottom-right": "bottom-4 right-4",
   };

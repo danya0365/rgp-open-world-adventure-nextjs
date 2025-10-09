@@ -15,7 +15,6 @@ import {
 } from "@/src/presentation/components/layout/HUDPanel";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { ChevronRight, Home, Map, MapPin, Navigation } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { KeyboardHint } from "./KeyboardHint";
@@ -292,24 +291,22 @@ export function VirtualMapFullView({
           />
         )}
 
-        {/* Help Text - Bottom Center */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-999 pointer-events-none">
-          <p className="text-xs text-gray-400 text-center">
-            🖱️ Click on location markers to navigate • ⚡ Fast travel available
-          </p>
-        </div>
-
         {/* Keyboard Controls Hint */}
         <KeyboardHint />
 
         {/* Minimap Panel - Top Right */}
         {showMinimapPanel && minimapData ? (
-          <div className="absolute top-4 right-4 z-50">
-            <MinimapView
-              {...minimapData}
-              onClose={() => setShowMinimapPanel(false)}
-            />
-          </div>
+          <HUDPanel
+            title="Minimap"
+            icon={<Map className="w-5 h-5" />}
+            position="top-right"
+            closable
+            onClose={() => setShowMinimapPanel(false)}
+            maxHeight="auto"
+            maxWidth="auto"
+          >
+            <MinimapView {...minimapData} />
+          </HUDPanel>
         ) : (
           <HUDPanelToggle
             label="Minimap"
@@ -318,13 +315,17 @@ export function VirtualMapFullView({
             position="top-right"
           />
         )}
-      </GameLayoutOverlay>
 
-      {/* Breadcrumb Panel - Top Center */}
-      {showBreadcrumbPanel ? (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2 max-w-[90vw] overflow-x-auto">
-            <div className="flex items-center gap-2 text-sm">
+        {/* Breadcrumb Panel - Top Center */}
+        {showBreadcrumbPanel ? (
+          <HUDPanel
+            title=""
+            position="top-center"
+            closable
+            onClose={() => setShowBreadcrumbPanel(false)}
+            maxWidth="min(600px, 90vw)"
+          >
+            <div className="flex items-center gap-2 text-sm -mt-2">
               <Home className="w-4 h-4 text-purple-400 shrink-0" />
               {breadcrumb.map((location, index) => (
                 <div key={location.id} className="flex items-center gap-2">
@@ -344,29 +345,16 @@ export function VirtualMapFullView({
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
-          <button
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label={currentLocationData.name}
+            icon={<MapPin className="w-4 h-4" />}
             onClick={() => setShowBreadcrumbPanel(true)}
-            className="px-3 py-2 bg-slate-900/80 hover:bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm flex items-center gap-2"
-          >
-            <MapPin className="w-4 h-4" />
-            {currentLocationData.name}
-          </button>
-        </div>
-      )}
-
-      {/* Main Menu Button - Bottom Left */}
-      <div className="absolute bottom-4 left-4 z-40">
-        <Link
-          href="/"
-          className="px-4 py-2 bg-slate-900/80 hover:bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm flex items-center gap-2"
-        >
-          <Home className="w-4 h-4" />
-        </Link>
-      </div>
+            position="top-center"
+          />
+        )}
+      </GameLayoutOverlay>
     </>
   );
 }

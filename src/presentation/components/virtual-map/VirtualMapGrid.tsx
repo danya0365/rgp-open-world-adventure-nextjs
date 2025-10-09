@@ -28,7 +28,6 @@ export interface MinimapViewProps {
   viewportEndY: number;
   childLocations: Location[];
   gridSize: number;
-  onClose: () => void;
 }
 
 export function VirtualMapGrid({
@@ -135,7 +134,6 @@ export function VirtualMapGrid({
       viewportEndY: viewport.viewportEndY,
       childLocations,
       gridSize,
-      onClose: () => {},
     };
 
     onMinimapDataReady?.(minimapData);
@@ -368,6 +366,8 @@ export function VirtualMapGrid({
 }
 
 // Separate Minimap View component for parent to render
+// This is a pure component that only renders Minimap
+// Parent component is responsible for wrapping with HUDPanel if needed
 export function MinimapView({
   currentLocation,
   tiles,
@@ -379,7 +379,6 @@ export function MinimapView({
   viewportEndY,
   childLocations,
   gridSize,
-  onClose,
 }: MinimapViewProps) {
   return (
     <Minimap
@@ -393,7 +392,7 @@ export function MinimapView({
       viewportEndY={viewportEndY}
       childLocations={childLocations}
       gridSize={gridSize}
-      onClose={onClose}
+      onClose={undefined}
     />
   );
 }

@@ -49,13 +49,13 @@ export function Minimap({
   const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
 
   return (
-    <div className="inline-flex flex-col bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 rounded-lg p-2 shadow-xl">
-      {/* Title with Close Button */}
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <div className="text-xs font-bold text-purple-300 whitespace-nowrap flex-1 text-center">
-          Minimap
-        </div>
-        {onClose && (
+    <div className="inline-flex flex-col">
+      {/* Title with Close Button - Only show if onClose is provided (standalone mode) */}
+      {onClose && (
+        <div className="flex items-center justify-between gap-2 mb-1.5 bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 rounded-t-lg p-2">
+          <div className="text-xs font-bold text-purple-300 whitespace-nowrap flex-1 text-center">
+            Minimap
+          </div>
           <button
             onClick={onClose}
             className="shrink-0 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 rounded transition-colors"
@@ -63,8 +63,8 @@ export function Minimap({
           >
             <span className="text-xs leading-none">✕</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Minimap Canvas */}
       <div
@@ -149,7 +149,7 @@ export function Minimap({
       </div>
 
       {/* Legend */}
-      <div className="mt-1.5 pt-1.5 border-t border-slate-700 flex items-center justify-center gap-3 text-[8px] text-gray-400">
+      <div className={`mt-1.5 pt-1.5 border-t border-slate-700 flex items-center justify-center gap-3 text-[8px] text-gray-400 ${onClose ? 'bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 border-t-0 rounded-b-lg p-2' : ''}`}>
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 bg-blue-400 border border-white rounded-full shrink-0" />
           <span>You</span>
