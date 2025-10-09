@@ -5,6 +5,7 @@ import { MapTile } from "./MapTile";
 import { Minimap } from "./Minimap";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { generateDefaultTiles, generateProceduralMap } from "@/src/utils/mapGenerator";
+import { getLocationConnections } from "@/src/data/master/locations.master";
 import { useMemo, useState, useEffect } from "react";
 
 interface VirtualMapGridProps {
@@ -23,6 +24,13 @@ export function VirtualMapGrid({
   showMinimap = true,
 }: VirtualMapGridProps) {
   const { playerPosition, discoveredLocations, startMovementToTile, visitedTiles } = useVirtualMapStore();
+
+  // Get connections for current location
+  const connections = useMemo(() => {
+    const conns = getLocationConnections(currentLocation.id);
+    console.log(`[VirtualMapGrid] Connections for ${currentLocation.id}:`, conns);
+    return conns;
+  }, [currentLocation.id]);
 
   // Calculate grid dimensions based on location mapData
   const gridWidth = currentLocation.mapData?.gridSize || currentLocation.mapData?.width || 20;
@@ -288,6 +296,39 @@ export function VirtualMapGrid({
             gridSize={gridSize}
           />
         )}
+
+        {/* Connection Markers - SIMPLE VERSION */}
+        {connections
+          .filter(conn => conn.fromLocationId === currentLocation.id && conn.coordinates)
+          .map((connection) => {
+            const tileX = Math.floor(connection.coordinates!.x / gridSize);
+            const tileY = Math.floor(connection.coordinates!.y / gridSize);
+            const x = tileX - viewportStartX;
+            const y = tileY - viewportStartY;
+
+            return (
+              <div
+                key={connection.id}
+                className="absolute pointer-events-auto cursor-pointer"
+                style={{
+                  left: `${x * gridSize}px`,
+                  top: `${y * gridSize}px`,
+                  width: `${gridSize}px`,
+                  height: `${gridSize}px`,
+                  zIndex: 999,
+                }}
+                onClick={() => {
+                  const target = childLocations.find(l => l.id === connection.toLocationId);
+                  if (target) onLocationClick(target);
+                }}
+              >
+                {/* Simple marker */}
+                <div className="w-full h-full bg-green-500 border-4 border-white rounded-full flex items-center justify-center text-2xl animate-bounce">
+                  🏛️
+                </div>
+              </div>
+            );
+          })}
 
         {/* Map Info Overlay - Bottom Left (moved from top) */}
         <div className="absolute bottom-4 left-4 pointer-events-none z-50">

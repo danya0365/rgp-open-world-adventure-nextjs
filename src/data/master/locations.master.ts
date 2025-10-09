@@ -303,7 +303,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "guild-hall",
     description: "สำนักงานใหญ่ของสมาคมนักผจญภัย",
-    coordinates: { x: 90, y: 45 },
+    coordinates: { x: 120, y: 200 }, // Grid-aligned: (3*40, 5*40) - Same as connection
     isDiscoverable: true,
     isFastTravelPoint: true,
     weatherEnabled: false,
@@ -755,7 +755,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 100, y: 50 },
+    coordinates: { x: 400, y: 280 }, // Grid-aligned: (10*40, 7*40)
   },
 
   // ========================================
@@ -768,7 +768,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     connectionType: "entrance",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 90, y: 45 },
+    coordinates: { x: 120, y: 200 }, // Grid-aligned: (3*40, 5*40) - Guild entrance
   },
 
   {
