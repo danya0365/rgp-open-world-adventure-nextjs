@@ -4,9 +4,17 @@ import {
   getLocationChildren,
   getLocationConnections,
 } from "@/src/data/master/locations.master";
-import { Coordinates, Location, MapTile, LocationConnection } from "@/src/domain/types/location.types";
+import {
+  Coordinates,
+  Location,
+  LocationConnection,
+  MapTile,
+} from "@/src/domain/types/location.types";
+import {
+  generateDefaultTiles,
+  generateProceduralMap,
+} from "@/src/utils/mapGenerator";
 import { findPath } from "@/src/utils/pathfinding";
-import { generateDefaultTiles, generateProceduralMap } from "@/src/utils/mapGenerator";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useGameStore } from "./gameStore";
@@ -59,9 +67,11 @@ interface VirtualMapState {
   cameraPosition: Coordinates; // Camera center position
   zoom: number;
 
-  // UI State
+  // UI State (Persisted)
   showMinimap: boolean;
   showLocationInfo: boolean;
+  showLocationListPanel: boolean;
+  showBreadcrumbPanel: boolean;
 
   // Viewport State (Not Persisted)
   viewportSize: { width: number; height: number };
@@ -104,8 +114,13 @@ interface VirtualMapState {
   visitTile: (locationId: string, coordinates: Coordinates) => void;
   setCameraPosition: (position: Coordinates) => void;
   setZoom: (zoom: number) => void;
+  setShowMinimap: (show: boolean) => void;
   toggleMinimap: () => void;
   toggleLocationInfo: () => void;
+  setShowLocationListPanel: (show: boolean) => void;
+  setShowBreadcrumbPanel: (show: boolean) => void;
+  toggleLocationListPanel: () => void;
+  toggleBreadcrumbPanel: () => void;
 
   // Movement Actions (with pathfinding)
   startMovementToTile: (targetX: number, targetY: number) => void;
@@ -123,17 +138,37 @@ interface VirtualMapState {
 
   // Viewport Actions
   setViewportSize: (width: number, height: number) => void;
-  calculateViewport: (gridSize: number, gridWidth: number, gridHeight: number) => void;
+  calculateViewport: (
+    gridSize: number,
+    gridWidth: number,
+    gridHeight: number
+  ) => void;
 
   // Tile Management
-  getOrGenerateTiles: (location: Location, gridWidth: number, gridHeight: number) => MapTile[];
+  getOrGenerateTiles: (
+    location: Location,
+    gridWidth: number,
+    gridHeight: number
+  ) => MapTile[];
   cacheTiles: (locationId: string, tiles: MapTile[]) => void;
   clearTileCache: () => void;
 
   // Helper Selectors
-  isTileVisited: (locationId: string, x: number, y: number, gridSize: number) => boolean;
-  getVisibleConnections: (locationId: string, viewport: ViewportState) => LocationConnection[];
-  getVisibleLocations: (locations: Location[], viewport: ViewportState, gridSize: number) => Location[];
+  isTileVisited: (
+    locationId: string,
+    x: number,
+    y: number,
+    gridSize: number
+  ) => boolean;
+  getVisibleConnections: (
+    locationId: string,
+    viewport: ViewportState
+  ) => LocationConnection[];
+  getVisibleLocations: (
+    locations: Location[],
+    viewport: ViewportState,
+    gridSize: number
+  ) => Location[];
 }
 
 // Default player starting position
@@ -218,6 +253,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         zoom: 1,
         showMinimap: true,
         showLocationInfo: true,
+        showLocationListPanel: false, // Default to closed to avoid blocking screen
+        showBreadcrumbPanel: false, // Default to closed to avoid blocking screen
 
         // ========================================
         // Viewport State
@@ -404,12 +441,34 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({ zoom: Math.max(0.5, Math.min(3, zoom)) }); // Clamp between 0.5 and 3
         },
 
+        setShowMinimap: (show) => {
+          set({ showMinimap: show });
+        },
+
         toggleMinimap: () => {
           set((state) => ({ showMinimap: !state.showMinimap }));
         },
 
         toggleLocationInfo: () => {
           set((state) => ({ showLocationInfo: !state.showLocationInfo }));
+        },
+
+        setShowLocationListPanel: (show) => {
+          set({ showLocationListPanel: show });
+        },
+
+        setShowBreadcrumbPanel: (show) => {
+          set({ showBreadcrumbPanel: show });
+        },
+
+        toggleLocationListPanel: () => {
+          set((state) => ({
+            showLocationListPanel: !state.showLocationListPanel,
+          }));
+        },
+
+        toggleBreadcrumbPanel: () => {
+          set((state) => ({ showBreadcrumbPanel: !state.showBreadcrumbPanel }));
         },
 
         // ========================================
@@ -603,15 +662,22 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           const playerPosition = state.playerPosition;
           const viewportSize = state.viewportSize;
 
-          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+          const playerTileX = Math.floor(
+            playerPosition.coordinates.x / gridSize
+          );
+          const playerTileY = Math.floor(
+            playerPosition.coordinates.y / gridSize
+          );
 
           // Adjust viewport to map size (don't exceed map dimensions)
           const viewportTilesWidth = Math.min(viewportSize.width, gridWidth);
           const viewportTilesHeight = Math.min(viewportSize.height, gridHeight);
 
           // If map is smaller than viewport, show entire map centered
-          if (gridWidth <= viewportTilesWidth && gridHeight <= viewportTilesHeight) {
+          if (
+            gridWidth <= viewportTilesWidth &&
+            gridHeight <= viewportTilesHeight
+          ) {
             set({
               viewport: {
                 width: viewportTilesWidth,
@@ -630,14 +696,26 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           // Center viewport on player
           const viewportStartX = Math.max(
             0,
-            Math.min(gridWidth - viewportTilesWidth, playerTileX - Math.floor(viewportTilesWidth / 2))
+            Math.min(
+              gridWidth - viewportTilesWidth,
+              playerTileX - Math.floor(viewportTilesWidth / 2)
+            )
           );
           const viewportStartY = Math.max(
             0,
-            Math.min(gridHeight - viewportTilesHeight, playerTileY - Math.floor(viewportTilesHeight / 2))
+            Math.min(
+              gridHeight - viewportTilesHeight,
+              playerTileY - Math.floor(viewportTilesHeight / 2)
+            )
           );
-          const viewportEndX = Math.min(gridWidth, viewportStartX + viewportTilesWidth);
-          const viewportEndY = Math.min(gridHeight, viewportStartY + viewportTilesHeight);
+          const viewportEndX = Math.min(
+            gridWidth,
+            viewportStartX + viewportTilesWidth
+          );
+          const viewportEndY = Math.min(
+            gridHeight,
+            viewportStartY + viewportTilesHeight
+          );
 
           set({
             viewport: {
@@ -671,15 +749,25 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           }
 
           // Generate procedural tiles based on location type
-          const seed = location.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const seed = location.id
+            .split("")
+            .reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
           let generatedTiles: MapTile[];
           if (location.type === "forest") {
             generatedTiles = generateProceduralMap(gridWidth, gridHeight, seed);
           } else if (location.type === "mountain") {
-            generatedTiles = generateProceduralMap(gridWidth, gridHeight, seed + 1000);
+            generatedTiles = generateProceduralMap(
+              gridWidth,
+              gridHeight,
+              seed + 1000
+            );
           } else {
-            generatedTiles = generateDefaultTiles(gridWidth, gridHeight, "grass");
+            generatedTiles = generateDefaultTiles(
+              gridWidth,
+              gridHeight,
+              "grass"
+            );
           }
 
           return generatedTiles;
@@ -711,7 +799,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         getVisibleConnections: (locationId, viewport) => {
           const connections = getLocationConnections(locationId);
           return connections.filter((conn) => {
-            if (conn.fromLocationId !== locationId || !conn.coordinates) return false;
+            if (conn.fromLocationId !== locationId || !conn.coordinates)
+              return false;
 
             const tileX = Math.floor(conn.coordinates.x / 40);
             const tileY = Math.floor(conn.coordinates.y / 40);
@@ -726,14 +815,20 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         },
 
         getVisibleLocations: (locations, viewport, gridSize) => {
-          const mapWidth = (viewport.viewportEndX - viewport.viewportStartX) * gridSize;
-          const mapHeight = (viewport.viewportEndY - viewport.viewportStartY) * gridSize;
+          const mapWidth =
+            (viewport.viewportEndX - viewport.viewportStartX) * gridSize;
+          const mapHeight =
+            (viewport.viewportEndY - viewport.viewportStartY) * gridSize;
 
           return locations.filter((location) => {
             if (!location.coordinates) return false;
 
-            const markerX = (location.coordinates.x / gridSize - viewport.viewportStartX) * gridSize;
-            const markerY = (location.coordinates.y / gridSize - viewport.viewportStartY) * gridSize;
+            const markerX =
+              (location.coordinates.x / gridSize - viewport.viewportStartX) *
+              gridSize;
+            const markerY =
+              (location.coordinates.y / gridSize - viewport.viewportStartY) *
+              gridSize;
 
             return (
               markerX >= -gridSize &&
@@ -756,6 +851,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         zoom: state.zoom,
         showMinimap: state.showMinimap,
         showLocationInfo: state.showLocationInfo,
+        showLocationListPanel: state.showLocationListPanel,
+        showBreadcrumbPanel: state.showBreadcrumbPanel,
       }),
       merge: (persistedState: unknown, currentState) => {
         const persisted = persistedState as Partial<VirtualMapState> & {

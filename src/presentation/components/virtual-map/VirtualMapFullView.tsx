@@ -20,7 +20,7 @@ import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { ChevronRight, Home, Map, MapPin, Navigation } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { KeyboardHint } from "./KeyboardHint";
 import { VirtualMapGrid } from "./VirtualMapGrid";
 
@@ -42,6 +42,13 @@ export function VirtualMapFullView({
     childLocations,
     discoveredLocationData,
     refreshCachedData,
+    // UI State from store (persisted)
+    showLocationListPanel,
+    showBreadcrumbPanel,
+    showMinimap,
+    setShowLocationListPanel,
+    setShowBreadcrumbPanel,
+    setShowMinimap,
   } = useVirtualMapStore();
 
   // Enable movement animation
@@ -49,11 +56,6 @@ export function VirtualMapFullView({
 
   // Enable keyboard controls (WASD + Arrow Keys)
   useKeyboardMovement(true);
-
-  // UI State
-  const [showLocationListPanel, setShowLocationListPanel] = useState(true);
-  const [showBreadcrumbPanel, setShowBreadcrumbPanel] = useState(true);
-  const [showMinimap, setShowMinimap] = useState(true);
 
   // Get breadcrumb from master data (not cached as it's lightweight)
   const breadcrumb = currentLocationData
@@ -209,7 +211,7 @@ export function VirtualMapFullView({
           currentLocation={currentLocationData}
           childLocations={childLocations}
           onLocationClick={handleLocationClick}
-          showMinimap={showMinimap}
+          showMinimap={false}
         />
       </div>
 
@@ -343,25 +345,6 @@ export function VirtualMapFullView({
 
         {/* Keyboard Controls Hint */}
         <KeyboardHint />
-
-        {/* Minimap Toggle - Top Right */}
-        <div className="fixed top-4 right-4 z-40">
-          <button
-            data-minimap-toggle
-            onClick={() => setShowMinimap(!showMinimap)}
-            className={`px-3 py-2 backdrop-blur-sm border rounded-lg transition-colors text-white text-sm flex items-center gap-2 ${
-              showMinimap
-                ? "bg-purple-900/80 border-purple-500 hover:bg-purple-800/80"
-                : "bg-slate-900/80 border-slate-700 hover:bg-slate-800/80"
-            }`}
-            title={showMinimap ? "Hide Minimap" : "Show Minimap"}
-          >
-            <Map className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {showMinimap ? "Hide" : "Show"} Map
-            </span>
-          </button>
-        </div>
       </GameLayoutOverlay>
 
       {/* Main Menu Button - Bottom Left */}
