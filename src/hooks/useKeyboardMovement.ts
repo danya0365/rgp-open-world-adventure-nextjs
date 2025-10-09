@@ -17,22 +17,28 @@ export function useKeyboardMovement(enabled: boolean = true) {
     const currentTileX = Math.floor(playerPosition.coordinates.x / gridSize);
     const currentTileY = Math.floor(playerPosition.coordinates.y / gridSize);
 
+    console.log("  - Current player coords:", playerPosition.coordinates);
+    console.log("  - Current tile:", { x: currentTileX, y: currentTileY });
+    console.log("  - Keys pressed:", Array.from(keysPressed.current));
+
     let dx = 0;
     let dy = 0;
 
     // Check which keys are pressed
-    if (keysPressed.current.has("w") || keysPressed.current.has("ArrowUp")) {
+    if (keysPressed.current.has("w") || keysPressed.current.has("arrowup")) {
       dy = -1; // North
     }
-    if (keysPressed.current.has("s") || keysPressed.current.has("ArrowDown")) {
+    if (keysPressed.current.has("s") || keysPressed.current.has("arrowdown")) {
       dy = 1; // South
     }
-    if (keysPressed.current.has("a") || keysPressed.current.has("ArrowLeft")) {
+    if (keysPressed.current.has("a") || keysPressed.current.has("arrowleft")) {
       dx = -1; // West
     }
-    if (keysPressed.current.has("d") || keysPressed.current.has("ArrowRight")) {
+    if (keysPressed.current.has("d") || keysPressed.current.has("arrowright")) {
       dx = 1; // East
     }
+
+    console.log("  - Direction:", { dx, dy });
 
     // Prioritize vertical movement if both pressed
     if (dx !== 0 && dy !== 0) {
@@ -40,14 +46,17 @@ export function useKeyboardMovement(enabled: boolean = true) {
     }
 
     if (dx === 0 && dy === 0) {
+      console.log("  - No direction pressed!");
       return null; // No movement
     }
 
-    return {
+    const target = {
       x: currentTileX + dx,
       y: currentTileY + dy,
     };
-  }, [playerPosition.coordinates.x, playerPosition.coordinates.y]);
+    console.log("  - Calculated target:", target);
+    return target;
+  }, [playerPosition.coordinates]);
 
   // Handle movement based on pressed keys
   const handleMovement = useCallback(() => {

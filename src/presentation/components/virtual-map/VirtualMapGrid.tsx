@@ -4,7 +4,7 @@ import { LocationMarker } from "./LocationMarker";
 import { MapTile } from "./MapTile";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { generateDefaultTiles, generateProceduralMap } from "@/src/utils/mapGenerator";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -25,13 +25,47 @@ export function VirtualMapGrid({
   const gridWidth = currentLocation.mapData?.gridSize || currentLocation.mapData?.width || 20;
   const gridHeight = currentLocation.mapData?.gridSize || currentLocation.mapData?.height || 15;
   
-  // Viewport settings - show only a portion of the map (or entire map if smaller)
-  const maxViewportTilesWidth = 20; // Max 20 tiles wide
-  const maxViewportTilesHeight = 15; // Max 15 tiles tall
+  // Calculate viewport size based on screen size
+  const [viewportSize, setViewportSize] = useState({ width: 20, height: 15 });
+  
+  useEffect(() => {
+    const calculateViewportSize = () => {
+      // Get window dimensions
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // Reserve space for UI (panels, margins, etc.)
+      const availableWidth = windowWidth - 100; // Reserve 100px for side panels
+      const availableHeight = windowHeight - 200; // Reserve 200px for top/bottom UI
+      
+      // Calculate how many tiles can fit
+      const tilesWidth = Math.floor(availableWidth / gridSize);
+      const tilesHeight = Math.floor(availableHeight / gridSize);
+      
+      // Clamp to reasonable values (min 8, max 25)
+      const clampedWidth = Math.max(8, Math.min(25, tilesWidth));
+      const clampedHeight = Math.max(6, Math.min(20, tilesHeight));
+      
+      console.log(`[VirtualMapGrid] Viewport calculation:`);
+      console.log(`  - Window: ${windowWidth}x${windowHeight}`);
+      console.log(`  - Available: ${availableWidth}x${availableHeight}`);
+      console.log(`  - Tiles fit: ${tilesWidth}x${tilesHeight}`);
+      console.log(`  - Clamped: ${clampedWidth}x${clampedHeight}`);
+      
+      setViewportSize({ width: clampedWidth, height: clampedHeight });
+    };
+    
+    // Calculate on mount
+    calculateViewportSize();
+    
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateViewportSize);
+    return () => window.removeEventListener('resize', calculateViewportSize);
+  }, [gridSize]);
   
   // Adjust viewport to map size (don't exceed map dimensions)
-  const viewportTilesWidth = Math.min(maxViewportTilesWidth, gridWidth);
-  const viewportTilesHeight = Math.min(maxViewportTilesHeight, gridHeight);
+  const viewportTilesWidth = Math.min(viewportSize.width, gridWidth);
+  const viewportTilesHeight = Math.min(viewportSize.height, gridHeight);
   
   // Calculate viewport bounds based on player position (memoized for performance)
   const viewport = useMemo(() => {
