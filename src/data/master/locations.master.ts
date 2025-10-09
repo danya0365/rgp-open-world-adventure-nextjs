@@ -36,9 +36,8 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 50,
-      height: 50,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 50, rows: 50 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(50, 50),
     },
   },
@@ -63,9 +62,8 @@ export const LOCATIONS_MASTER: Location[] = [
     currentWeather: "snow",
     timeEnabled: true,
     mapData: {
-      width: 30,
-      height: 30,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 30, rows: 30 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(30, 30),
     },
   },
@@ -87,9 +85,8 @@ export const LOCATIONS_MASTER: Location[] = [
     currentWeather: "sunny",
     timeEnabled: true,
     mapData: {
-      width: 30,
-      height: 30,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 30, rows: 30 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(30, 30),
     },
   },
@@ -117,9 +114,8 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/frostpeak.mp3",
     ambientSound: "/audio/ambient/wind.mp3",
     mapData: {
-      width: 25,
-      height: 25,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 25, rows: 25 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(25, 25),
     },
   },
@@ -144,9 +140,8 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/elven-forest.mp3",
     ambientSound: "/audio/ambient/forest.mp3",
     mapData: {
-      width: 25,
-      height: 25,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 25, rows: 25 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(25, 25),
     },
   },
@@ -178,9 +173,8 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: true,
     encounterTableId: "encounter-ice-monsters",
     mapData: {
-      width: 20,
-      height: 20,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 20, rows: 20 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(20, 20),
     },
     metadata: {
@@ -219,9 +213,8 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/city-theme.mp3",
     ambientSound: "/audio/ambient/city.mp3",
     mapData: {
-      width: 20,
-      height: 15,
-      gridSize: 40, // ✅ Fixed: Each tile = 40px (standard grid size)
+      dimensions: { columns: 20, rows: 15 },
+      tileSize: 40, // ✅ Fixed: Each tile = 40px (standard grid size)
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 20 * 15 }, (_, i) => ({
         x: i % 20,
@@ -264,9 +257,8 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/elven-city.mp3",
     ambientSound: "/audio/ambient/nature.mp3",
     mapData: {
-      width: 20,
-      height: 15,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 20, rows: 15 },
+      tileSize: 40, // Standard grid size
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 20 * 15 }, (_, i) => ({
         x: i % 20,
@@ -310,9 +302,8 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: false,
     backgroundMusic: "/audio/bgm/guild.mp3",
     mapData: {
-      width: 15,
-      height: 15,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 15, rows: 15 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
@@ -345,9 +336,8 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: false,
     backgroundMusic: "/audio/bgm/magic-tower.mp3",
     mapData: {
-      width: 15,
-      height: 15,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 15, rows: 15 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
@@ -382,9 +372,8 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 15,
-      height: 10,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 15, rows: 10 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
@@ -417,9 +406,8 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 15,
-      height: 10,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 15, rows: 10 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
@@ -450,9 +438,8 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 12,
-      height: 12,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 12, rows: 12 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(12, 12),
     },
     metadata: {
@@ -490,9 +477,8 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 10,
-      height: 8,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 10, rows: 8 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(10, 8),
     },
     metadata: {
@@ -527,9 +513,8 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: false,
     timeEnabled: false,
     mapData: {
-      width: 8,
-      height: 8,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 8, rows: 8 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(8, 8),
     },
     metadata: {
@@ -566,9 +551,8 @@ export const LOCATIONS_MASTER: Location[] = [
     ambientSound: "/audio/ambient/dungeon.mp3",
     encounterTableId: "encounter-frozen-depths",
     mapData: {
-      width: 25,
-      height: 25,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 25, rows: 25 },
+      tileSize: 40, // Standard grid size
       tiles: generateWalkableTiles(25, 25),
     },
     metadata: {
@@ -601,9 +585,8 @@ export const LOCATIONS_MASTER: Location[] = [
     backgroundMusic: "/audio/bgm/plains.mp3",
     encounterTableId: "encounter-plains",
     mapData: {
-      width: 30,
-      height: 25,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 30, rows: 25 },
+      tileSize: 40, // Standard grid size
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 30 * 25 }, (_, i) => ({
         x: i % 30,
@@ -639,9 +622,8 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: true,
     backgroundMusic: "/audio/bgm/town.mp3",
     mapData: {
-      width: 18,
-      height: 15,
-      gridSize: 40, // Standard grid size
+      dimensions: { columns: 18, rows: 15 },
+      tileSize: 40, // Standard grid size
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 18 * 15 }, (_, i) => ({
         x: i % 18,

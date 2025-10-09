@@ -76,21 +76,15 @@ export function useKeyboardMovement(enabled: boolean = true) {
       return;
     }
 
-    const mapWidth =
-      currentLocationData.mapData.gridSize ||
-      currentLocationData.mapData.width ||
-      20;
-    const mapHeight =
-      currentLocationData.mapData.gridSize ||
-      currentLocationData.mapData.height ||
-      15;
+    const gridColumns = currentLocationData.mapData.dimensions.columns || 20;
+    const gridRows = currentLocationData.mapData.dimensions.rows || 15;
 
     // Check bounds
     if (
       target.x < 0 ||
-      target.x >= mapWidth ||
+      target.x >= gridColumns ||
       target.y < 0 ||
-      target.y >= mapHeight
+      target.y >= gridRows
     ) {
       return;
     }

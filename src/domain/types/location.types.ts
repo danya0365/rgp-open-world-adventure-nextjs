@@ -54,9 +54,11 @@ export interface Coordinates {
 }
 
 export interface MapData {
-  width: number;
-  height: number;
-  gridSize?: number;
+  dimensions: {
+    columns: number; // Number of tiles horizontally
+    rows: number; // Number of tiles vertically
+  };
+  tileSize: number; // Size of each tile in pixels (e.g., 40px)
   tiles?: MapTile[];
   boundaries?: Coordinates[];
 }

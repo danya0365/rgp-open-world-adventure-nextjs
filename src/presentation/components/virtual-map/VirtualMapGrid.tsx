@@ -20,8 +20,8 @@ interface VirtualMapGridProps {
 export interface MinimapViewProps {
   currentLocation: Location;
   tiles: MapTileType[];
-  gridWidth: number;
-  gridHeight: number;
+  gridColumns: number;
+  gridRows: number;
   viewportStartX: number;
   viewportStartY: number;
   viewportEndX: number;
@@ -53,10 +53,8 @@ export function VirtualMapGrid({
   } = useVirtualMapStore();
 
   // Calculate grid dimensions based on location mapData
-  // gridSize is the pixel size of each tile (e.g., 40px), not the number of tiles
-  // width/height are the number of tiles in each dimension
-  const gridWidth = currentLocation.mapData?.width || 20;
-  const gridHeight = currentLocation.mapData?.height || 15;
+  const gridColumns = currentLocation.mapData?.dimensions.columns || 20;
+  const gridRows = currentLocation.mapData?.dimensions.rows || 15;
 
   // Calculate viewport size based on screen size
   useEffect(() => {
@@ -83,8 +81,8 @@ export function VirtualMapGrid({
 
   // Get or generate tiles from store (must be before early return)
   const tiles = useMemo<MapTileType[]>(() => {
-    return getOrGenerateTiles(currentLocation, gridWidth, gridHeight);
-  }, [currentLocation, gridWidth, gridHeight, getOrGenerateTiles]);
+    return getOrGenerateTiles(currentLocation, gridColumns, gridRows);
+  }, [currentLocation, gridColumns, gridRows, getOrGenerateTiles]);
 
   // Cache tiles after they are generated (in useEffect to avoid setState during render)
   useEffect(() => {
@@ -95,12 +93,12 @@ export function VirtualMapGrid({
 
   // Calculate viewport whenever player moves or location changes
   useEffect(() => {
-    calculateViewport(gridSize, gridWidth, gridHeight);
+    calculateViewport(gridSize, gridColumns, gridRows);
   }, [
     playerPosition.coordinates,
     gridSize,
-    gridWidth,
-    gridHeight,
+    gridColumns,
+    gridRows,
     viewportSize,
     calculateViewport,
   ]);
@@ -126,8 +124,8 @@ export function VirtualMapGrid({
     const minimapData: MinimapViewProps = {
       currentLocation,
       tiles,
-      gridWidth,
-      gridHeight,
+      gridColumns,
+      gridRows,
       viewportStartX: viewport.viewportStartX,
       viewportStartY: viewport.viewportStartY,
       viewportEndX: viewport.viewportEndX,
@@ -142,8 +140,8 @@ export function VirtualMapGrid({
     tiles,
     currentLocation,
     childLocations,
-    gridWidth,
-    gridHeight,
+    gridColumns,
+    gridRows,
     gridSize,
     onMinimapDataReady,
   ]);
@@ -348,7 +346,7 @@ export function VirtualMapGrid({
               <span className="capitalize">{currentLocation.type}</span>
               <span>•</span>
               <span>
-                {gridWidth}x{gridHeight} tiles
+                {gridColumns}x{gridRows} tiles
               </span>
               <span>•</span>
               <span>
@@ -380,8 +378,8 @@ export function VirtualMapGrid({
 export function MinimapView({
   currentLocation,
   tiles,
-  gridWidth,
-  gridHeight,
+  gridColumns,
+  gridRows,
   viewportStartX,
   viewportStartY,
   viewportEndX,
@@ -393,8 +391,8 @@ export function MinimapView({
     <Minimap
       currentLocation={currentLocation}
       tiles={tiles}
-      gridWidth={gridWidth}
-      gridHeight={gridHeight}
+      gridWidth={gridColumns}
+      gridHeight={gridRows}
       viewportStartX={viewportStartX}
       viewportStartY={viewportStartY}
       viewportEndX={viewportEndX}

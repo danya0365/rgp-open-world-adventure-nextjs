@@ -379,15 +379,13 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           let newCoords = coordinates;
           if (!newCoords) {
             const location = getLocationById(locationId);
-            const mapWidth =
-              location?.mapData?.gridSize || location?.mapData?.width || 20;
-            const mapHeight =
-              location?.mapData?.gridSize || location?.mapData?.height || 15;
-            const pixelSize = 40; // tile size in pixels
+            const gridColumns = location?.mapData?.dimensions.columns || 20;
+            const gridRows = location?.mapData?.dimensions.rows || 15;
+            const tileSize = location?.mapData?.tileSize || 40;
             // Center of map
             newCoords = {
-              x: Math.floor(mapWidth / 2) * pixelSize,
-              y: Math.floor(mapHeight / 2) * pixelSize,
+              x: Math.floor(gridColumns / 2) * tileSize,
+              y: Math.floor(gridRows / 2) * tileSize,
             };
           }
 
@@ -499,14 +497,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           if (!currentLocation?.mapData?.tiles) return;
 
           const tiles = currentLocation.mapData.tiles;
-          const mapWidth =
-            currentLocation.mapData.gridSize ||
-            currentLocation.mapData.width ||
-            20;
-          const mapHeight =
-            currentLocation.mapData.gridSize ||
-            currentLocation.mapData.height ||
-            15;
+          const gridColumns = currentLocation.mapData.dimensions.columns || 20;
+          const gridRows = currentLocation.mapData.dimensions.rows || 15;
 
           // Find path using A*
           const path = findPath(
@@ -515,8 +507,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             targetX,
             targetY,
             tiles,
-            mapWidth,
-            mapHeight
+            gridColumns,
+            gridRows
           );
 
           if (path.length === 0) {
