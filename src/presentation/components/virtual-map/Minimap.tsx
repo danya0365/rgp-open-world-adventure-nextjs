@@ -36,12 +36,12 @@ export function Minimap({
   const minimapHeight = gridHeight * minimapScale;
   const maxMinimapSize = 200; // Max size in pixels
 
-  // Scale down if too large
+  // Scale down if too large (maintain aspect ratio)
   const scale = Math.min(1, maxMinimapSize / Math.max(minimapWidth, minimapHeight));
-  const finalWidth = minimapWidth * scale;
-  const finalHeight = minimapHeight * scale;
+  const finalWidth = Math.floor(minimapWidth * scale);
+  const finalHeight = Math.floor(minimapHeight * scale);
   const tileSize = minimapScale * scale;
-
+  
   // Calculate player position on minimap
   const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
   const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
@@ -49,22 +49,23 @@ export function Minimap({
   return (
     <div className="bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 rounded-lg p-2 shadow-xl">
       {/* Title */}
-      <div className="text-xs font-bold text-purple-300 mb-1 text-center">
+      <div className="text-xs font-bold text-purple-300 mb-1.5 text-center">
         Minimap
       </div>
 
       {/* Minimap Canvas */}
       <div
-        className="relative border border-slate-700 rounded overflow-hidden"
+        className="relative border border-slate-700 rounded overflow-hidden bg-slate-950"
         style={{
           width: `${finalWidth}px`,
           height: `${finalHeight}px`,
+          margin: '0 auto',
         }}
       >
-        {/* Tiles */}
         {tiles.map((tile, index) => {
-          const x = tile.x * tileSize;
-          const y = tile.y * tileSize;
+          const x = Math.floor(tile.x * tileSize);
+          const y = Math.floor(tile.y * tileSize);
+          const tileSizeRounded = Math.ceil(tileSize);
 
           // Tile color based on type and walkability
           let bgColor = "bg-gray-800"; // Default (non-walkable)
@@ -84,8 +85,8 @@ export function Minimap({
               style={{
                 left: `${x}px`,
                 top: `${y}px`,
-                width: `${tileSize}px`,
-                height: `${tileSize}px`,
+                width: `${tileSizeRounded}px`,
+                height: `${tileSizeRounded}px`,
               }}
             />
           );
@@ -95,10 +96,10 @@ export function Minimap({
         <div
           className="absolute border-2 border-yellow-400 bg-yellow-400/10 pointer-events-none"
           style={{
-            left: `${viewportStartX * tileSize}px`,
-            top: `${viewportStartY * tileSize}px`,
-            width: `${(viewportEndX - viewportStartX) * tileSize}px`,
-            height: `${(viewportEndY - viewportStartY) * tileSize}px`,
+            left: `${Math.floor(viewportStartX * tileSize)}px`,
+            top: `${Math.floor(viewportStartY * tileSize)}px`,
+            width: `${Math.ceil((viewportEndX - viewportStartX) * tileSize)}px`,
+            height: `${Math.ceil((viewportEndY - viewportStartY) * tileSize)}px`,
           }}
         />
 
@@ -106,8 +107,8 @@ export function Minimap({
         {childLocations
           .filter((loc) => loc.coordinates)
           .map((location) => {
-            const markerX = (location.coordinates!.x / gridSize) * tileSize;
-            const markerY = (location.coordinates!.y / gridSize) * tileSize;
+            const markerX = Math.floor((location.coordinates!.x / gridSize) * tileSize);
+            const markerY = Math.floor((location.coordinates!.y / gridSize) * tileSize);
 
             return (
               <div
@@ -127,8 +128,8 @@ export function Minimap({
           <div
             className="absolute w-3 h-3 bg-blue-400 border-2 border-white rounded-full animate-pulse shadow-lg"
             style={{
-              left: `${playerTileX * tileSize - 6}px`,
-              top: `${playerTileY * tileSize - 6}px`,
+              left: `${Math.floor(playerTileX * tileSize) - 6}px`,
+              top: `${Math.floor(playerTileY * tileSize) - 6}px`,
               zIndex: 100,
             }}
           />
@@ -136,18 +137,18 @@ export function Minimap({
       </div>
 
       {/* Legend */}
-      <div className="mt-2 text-[8px] text-gray-400 space-y-0.5">
+      <div className="mt-1.5 pt-1.5 border-t border-slate-700 flex items-center justify-center gap-3 text-[8px] text-gray-400">
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-blue-400 border border-white rounded-full" />
-          <span>Player</span>
+          <div className="w-2 h-2 bg-blue-400 border border-white rounded-full shrink-0" />
+          <span>You</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 border-2 border-yellow-400" />
-          <span>Viewport</span>
+          <div className="w-2 h-2 border-2 border-yellow-400 shrink-0" />
+          <span>View</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-purple-500 border border-white rounded-full" />
-          <span>Locations</span>
+          <div className="w-2 h-2 bg-purple-500 border border-white rounded-full shrink-0" />
+          <span>Loc</span>
         </div>
       </div>
     </div>
