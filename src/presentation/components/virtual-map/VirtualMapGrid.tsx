@@ -53,10 +53,10 @@ export function VirtualMapGrid({
   } = useVirtualMapStore();
 
   // Calculate grid dimensions based on location mapData
-  const gridWidth =
-    currentLocation.mapData?.gridSize || currentLocation.mapData?.width || 20;
-  const gridHeight =
-    currentLocation.mapData?.gridSize || currentLocation.mapData?.height || 15;
+  // gridSize is the pixel size of each tile (e.g., 40px), not the number of tiles
+  // width/height are the number of tiles in each dimension
+  const gridWidth = currentLocation.mapData?.width || 20;
+  const gridHeight = currentLocation.mapData?.height || 15;
 
   // Calculate viewport size based on screen size
   useEffect(() => {
@@ -137,7 +137,16 @@ export function VirtualMapGrid({
     };
 
     onMinimapDataReady?.(minimapData);
-  }, [viewport, tiles, currentLocation, childLocations, gridWidth, gridHeight, gridSize, onMinimapDataReady]);
+  }, [
+    viewport,
+    tiles,
+    currentLocation,
+    childLocations,
+    gridWidth,
+    gridHeight,
+    gridSize,
+    onMinimapDataReady,
+  ]);
 
   // Handle tile click - start pathfinding movement
   const handleTileClick = (tile: MapTileType) => {

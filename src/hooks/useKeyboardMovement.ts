@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useRef } from "react";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { useCallback, useEffect, useRef } from "react";
 
 /**
  * Hook for keyboard-based player movement
@@ -7,7 +7,12 @@ import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
  * Hold key = continuous movement
  */
 export function useKeyboardMovement(enabled: boolean = true) {
-  const { playerPosition, startMovementToTile, movementState, currentLocationData } = useVirtualMapStore();
+  const {
+    playerPosition,
+    startMovementToTile,
+    movementState,
+    currentLocationData,
+  } = useVirtualMapStore();
   const keysPressed = useRef<Set<string>>(new Set());
   const moveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -16,10 +21,6 @@ export function useKeyboardMovement(enabled: boolean = true) {
     const gridSize = 40;
     const currentTileX = Math.floor(playerPosition.coordinates.x / gridSize);
     const currentTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-
-    console.log("  - Current player coords:", playerPosition.coordinates);
-    console.log("  - Current tile:", { x: currentTileX, y: currentTileY });
-    console.log("  - Keys pressed:", Array.from(keysPressed.current));
 
     let dx = 0;
     let dy = 0;
@@ -46,7 +47,6 @@ export function useKeyboardMovement(enabled: boolean = true) {
     }
 
     if (dx === 0 && dy === 0) {
-      console.log("  - No direction pressed!");
       return null; // No movement
     }
 
@@ -54,22 +54,17 @@ export function useKeyboardMovement(enabled: boolean = true) {
       x: currentTileX + dx,
       y: currentTileY + dy,
     };
-    console.log("  - Calculated target:", target);
     return target;
   }, [playerPosition.coordinates]);
 
   // Handle movement based on pressed keys
   const handleMovement = useCallback(() => {
-    console.log("[useKeyboardMovement] handleMovement called");
-    
     // Don't move if already moving
     if (movementState.isMoving) {
-      console.log("  - Already moving, skipping");
       return;
     }
 
     const target = calculateTargetTile();
-    console.log("  - Target tile:", target);
     if (!target) return;
 
     // Check if player is in a location with map data
@@ -81,60 +76,89 @@ export function useKeyboardMovement(enabled: boolean = true) {
       return;
     }
 
-    const mapWidth = currentLocationData.mapData.gridSize || currentLocationData.mapData.width || 20;
-    const mapHeight = currentLocationData.mapData.gridSize || currentLocationData.mapData.height || 15;
+    const mapWidth =
+      currentLocationData.mapData.gridSize ||
+      currentLocationData.mapData.width ||
+      20;
+    const mapHeight =
+      currentLocationData.mapData.gridSize ||
+      currentLocationData.mapData.height ||
+      15;
 
     // Check bounds
-    if (target.x < 0 || target.x >= mapWidth || target.y < 0 || target.y >= mapHeight) {
-      console.log("  - Target out of bounds");
+    if (
+      target.x < 0 ||
+      target.x >= mapWidth ||
+      target.y < 0 ||
+      target.y >= mapHeight
+    ) {
       return;
     }
 
-    console.log("  - Starting movement to:", target);
     // Start movement to target tile
     startMovementToTile(target.x, target.y);
-  }, [calculateTargetTile, movementState.isMoving, currentLocationData, startMovementToTile]);
+  }, [
+    calculateTargetTile,
+    movementState.isMoving,
+    currentLocationData,
+    startMovementToTile,
+  ]);
 
   // Handle keydown
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!enabled) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!enabled) return;
 
-    const key = e.key.toLowerCase();
-    const validKeys = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"];
+      const key = e.key.toLowerCase();
+      const validKeys = [
+        "w",
+        "a",
+        "s",
+        "d",
+        "arrowup",
+        "arrowdown",
+        "arrowleft",
+        "arrowright",
+      ];
 
-    if (validKeys.includes(key)) {
-      e.preventDefault(); // Prevent page scroll
+      if (validKeys.includes(key)) {
+        e.preventDefault(); // Prevent page scroll
 
-      // Add key to pressed set
-      if (!keysPressed.current.has(key)) {
-        keysPressed.current.add(key);
+        // Add key to pressed set
+        if (!keysPressed.current.has(key)) {
+          keysPressed.current.add(key);
 
-        // Start movement immediately
-        handleMovement();
+          // Start movement immediately
+          handleMovement();
 
-        // Start continuous movement interval
-        if (moveIntervalRef.current === null) {
-          moveIntervalRef.current = setInterval(() => {
-            handleMovement();
-          }, 100); // Check every 100ms for continuous movement
+          // Start continuous movement interval
+          if (moveIntervalRef.current === null) {
+            moveIntervalRef.current = setInterval(() => {
+              handleMovement();
+            }, 100); // Check every 100ms for continuous movement
+          }
         }
       }
-    }
-  }, [enabled, handleMovement]);
+    },
+    [enabled, handleMovement]
+  );
 
   // Handle keyup
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    if (!enabled) return;
+  const handleKeyUp = useCallback(
+    (e: KeyboardEvent) => {
+      if (!enabled) return;
 
-    const key = e.key.toLowerCase();
-    keysPressed.current.delete(key);
+      const key = e.key.toLowerCase();
+      keysPressed.current.delete(key);
 
-    // Stop interval if no keys pressed
-    if (keysPressed.current.size === 0 && moveIntervalRef.current !== null) {
-      clearInterval(moveIntervalRef.current);
-      moveIntervalRef.current = null;
-    }
-  }, [enabled]);
+      // Stop interval if no keys pressed
+      if (keysPressed.current.size === 0 && moveIntervalRef.current !== null) {
+        clearInterval(moveIntervalRef.current);
+        moveIntervalRef.current = null;
+      }
+    },
+    [enabled]
+  );
 
   // Setup keyboard listeners
   useEffect(() => {
