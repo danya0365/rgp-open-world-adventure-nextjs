@@ -157,7 +157,7 @@
   - [x] **HUD Panel System** ✅ (closable panels, toggle buttons)
   - [x] **Map Controls** ✅ (Pan, Zoom, Center Map button)
   - [x] **Interactive Map** ✅ (Full-screen, Pan & Zoom)
-  - [x] **Virtual World Map (Grid-Based)** 🔄 IN PROGRESS (60% Complete)
+  - [x] **Virtual World Map (Grid-Based)** 🔄 IN PROGRESS (85% Complete)
     - [x] Render actual map with real grid size (like Battle Grid)
     - [x] Player position icon (real-time tracking)
     - [x] Update player position on movement
@@ -171,14 +171,19 @@
     - [x] Movement animation (60fps)
     - [x] Camera follows player
     - [x] Player persistence (localStorage)
-    - [ ] **NPCs on Map** ⚠️ NOT STARTED
-    - [ ] **Shops on Map** ⚠️ NOT STARTED
-    - [ ] **Services on Map** (Inn, Guild, Bank) ⚠️ NOT STARTED
-    - [ ] **Battle Triggers on Map** ⚠️ NOT STARTED
-    - [ ] **Quest Markers** (NPCs with quests) ⚠️ NOT STARTED
-    - [ ] **Interactive POI** (click to interact) ⚠️ NOT STARTED
-    - [ ] **POI Icons & Tooltips** ⚠️ NOT STARTED
-    - [ ] **Treasure Chests** ⚠️ NOT STARTED
+    - [x] **NPCs on Map** ✅ COMPLETED (2025-10-10)
+    - [x] **Shops on Map** ✅ COMPLETED (2025-10-10)
+    - [x] **Services on Map** (Inn, Guild, Bank) ✅ COMPLETED (2025-10-10)
+    - [x] **Battle Triggers on Map** ✅ COMPLETED (2025-10-10)
+    - [x] **Quest Markers** (NPCs with quests) ✅ COMPLETED (2025-10-10)
+    - [x] **Interactive POI** (walk to POI + SPACE to interact) ✅ COMPLETED (2025-10-10)
+    - [x] **POI Icons & Tooltips** ✅ COMPLETED (2025-10-10)
+    - [x] **Treasure Chests** ✅ COMPLETED (2025-10-10)
+    - [ ] **POI Modals/Pages** 🔄 IN PROGRESS
+      - [ ] NPC Dialogue Modal
+      - [ ] Shop Page/Modal
+      - [ ] Service Modals (Inn, Guild, Bank)
+      - [ ] Treasure Modal
     - [ ] **Secret Areas** ⚠️ NOT STARTED
   - [x] Player position & movement (pathfinding)
   - [x] Fog of war system
@@ -645,17 +650,32 @@
 ## 📊 Progress Summary
 
 **Phase 1:** Foundation - 100% (Design System ✅, Mock Data ✅, Architecture ✅)
-**Phase 2:** Core Systems - 85% (Characters ✅, Parties ✅, World Map ✅, Quest ✅, Location Detail ✅, Combat ✅, Virtual Map 🔄 60%)
-**Phase 3:** Advanced Features - 3% (Virtual World 🔄 In Progress)
+**Phase 2:** Core Systems - 92% (Characters ✅, Parties ✅, World Map ✅, Quest ✅, Location Detail ✅, Combat ✅, Virtual Map 🔄 85%)
+**Phase 3:** Advanced Features - 8% (Virtual World 🔄 In Progress)
 **Phase 4:** UI/UX - 95% (Component Library ✅, Game UI ✅, Navigation ✅, Full-Screen Layouts ✅)
 **Phase 5:** Backend - 0%
 **Phase 6:** Testing - 0%
 **Phase 7:** Launch - 0%
 
-**Overall Progress: 85%** 🎮
+**Overall Progress: 88%** 🎮
 
-**Recent Achievements (2025-10-09)**:
-- 🔄 **Virtual World Map System - IN PROGRESS (60%)** - 10:50 🗺️
+**Recent Achievements (2025-10-10)**:
+- ✅ **POI System - COMPLETE!** - 06:11 🎯⭐
+  - ✅ NPCMarker component (with quest indicators)
+  - ✅ ShopMarker component (type-based icons & colors)
+  - ✅ ServiceMarker component (Inn, Guild, Bank, Temple, etc.)
+  - ✅ BattleMarkerComponent (difficulty-based styling)
+  - ✅ TreasureMarkerComponent (opened/unopened states)
+  - ✅ POI Interaction Hook (usePOIInteraction)
+  - ✅ Walk-to-interact system (no click, must walk to POI)
+  - ✅ SPACE key interaction (context-aware actions)
+  - ✅ Interaction indicators ("Press SPACE to...")
+  - ✅ Master data updated (NPCs, Shops, Services with coordinates)
+  - ✅ Battle navigation working (SPACE → /battle/[mapId])
+  - 🔄 **TODO: NPC/Shop/Service/Treasure modals**
+
+**Previous Achievements (2025-10-09)**:
+- 🔄 **Virtual World Map System - 85% COMPLETE** - 10:50 🗺️
   - ✅ Grid-based tile rendering system (real map visualization)
   - ✅ Player position tracking & movement
   - ✅ A* Pathfinding algorithm (smooth tile-by-tile movement)
@@ -671,10 +691,6 @@
   - ✅ Procedural map generation
   - ✅ Master data integration (24 locations)
   - ✅ SSR-safe implementation
-  - ⚠️ **MISSING: NPCs, Shops, Services, Battle Triggers**
-  - ⚠️ **MISSING: Quest Markers, Treasure Chests**
-  - ⚠️ **MISSING: Interactive POI (Point of Interest)**
-  - ⚠️ **MISSING: Weather overlay, Day/night cycle**
 - ✅ **Full-Screen Layout Refactoring - COMPLETE!** - 09:18 🎨
   - Characters Page (Pan & Zoom map with character markers)
   - Party Page (Formation-based layout with party members)
