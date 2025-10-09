@@ -1058,7 +1058,7 @@
     - [x] Real-time filtered count in Stats Panel
   - [x] Clean Architecture maintained
   
-- [x] **Party Page** (`/party`) ✅ COMPLETED (2025-10-09 08:46)
+- [x] **Party Page** (`/party`) ✅ COMPLETED (2025-10-09 08:52)
   - [x] **Party-Focused Redesign** - Focus on party members, not available characters
   - [x] Component-based architecture (separated into sub-components)
   - [x] **Sub-Components Created:**
@@ -1066,6 +1066,7 @@
     - [x] `PartyEmptySlot` - Interactive empty slot with + icon
     - [x] `PartyFormationView` - Formation-based layout (Front/Back rows)
     - [x] `PartyStatsPanel` - Team statistics display
+    - [x] `CharacterSelectModal` - Compact character selection modal ✅ NEW!
     - [x] `PartyView` - Main orchestrator component
   - [x] **Formation System** - 2x2 grid (Front Row, Back Row)
     - [x] Position 0, 1 - Front Row (bottom 65%)
@@ -1081,6 +1082,14 @@
     - [x] Dashed border with + icon
     - [x] Click to open character selection modal
     - [x] Hover hints
+  - [x] **Character Selection Modal** - Compact & Responsive ✅ NEW!
+    - [x] Compact grid layout (1-3 columns responsive)
+    - [x] Small avatar circles (14px)
+    - [x] Inline stats preview (HP, MP, ATK, DEF)
+    - [x] Rarity badges with icons
+    - [x] Max height 60vh with scroll
+    - [x] Empty state with helpful message
+    - [x] Footer with cancel button
   - [x] HUD Panels (Party Management - Left, Stats - Right)
   - [x] Pan & Zoom controls (mouse wheel, drag, reset button)
   - [x] Available characters shown in modal (not on map)

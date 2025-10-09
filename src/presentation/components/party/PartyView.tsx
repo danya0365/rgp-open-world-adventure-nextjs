@@ -8,8 +8,7 @@ import { PartySlider } from "./PartySlider";
 import { RenamePartyModal } from "./RenamePartyModal";
 import { PartyFormationView } from "./PartyFormationView";
 import { PartyStatsPanel } from "./PartyStatsPanel";
-import { Modal } from "@/src/presentation/components/ui";
-import { CharacterCard } from "@/src/presentation/components/character/CharacterCard";
+import { CharacterSelectModal } from "./CharacterSelectModal";
 import { PartyViewModel } from "@/src/presentation/presenters/party/PartyPresenter";
 import { usePartyPresenter } from "@/src/presentation/presenters/party/usePartyPresenter";
 import { getPartyStats, getPartySynergy } from "@/src/stores/gameStore";
@@ -417,33 +416,17 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
         )}
       </GameLayoutOverlay>
 
-      {/* Character Selection Modal */}
-      <Modal
+      {/* Character Selection Modal - Compact & Responsive */}
+      <CharacterSelectModal
         isOpen={isSelectModalOpen}
         onClose={() => {
           setIsSelectModalOpen(false);
           setSelectedPosition(null);
         }}
-        title={`เลือกตัวละครสำหรับ Slot ${(selectedPosition || 0) + 1}`}
-        size="xl"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {availableChars.map((character) => (
-            <div
-              key={character.id}
-              onClick={() => handleCharacterSelect(character)}
-              className="cursor-pointer"
-            >
-              <CharacterCard character={character} />
-            </div>
-          ))}
-        </div>
-        {availableChars.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-400">ไม่มีตัวละครที่สามารถเลือกได้</p>
-          </div>
-        )}
-      </Modal>
+        position={selectedPosition || 0}
+        characters={availableChars}
+        onSelect={handleCharacterSelect}
+      />
 
       {/* Create Party Modal */}
       <CreatePartyModal
