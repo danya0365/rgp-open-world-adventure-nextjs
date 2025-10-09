@@ -333,6 +333,11 @@ export function VirtualMapGrid({
               viewportEndY={viewportEndY}
               childLocations={childLocations}
               gridSize={gridSize}
+              onClose={() => {
+                // Toggle minimap via parent component
+                const parentToggle = document.querySelector('[data-minimap-toggle]') as HTMLButtonElement;
+                parentToggle?.click();
+              }}
             />
           </div>
         )}

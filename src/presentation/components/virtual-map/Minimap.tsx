@@ -14,6 +14,7 @@ interface MinimapProps {
   viewportEndY: number;
   childLocations: Location[];
   gridSize?: number;
+  onClose?: () => void;
 }
 
 export function Minimap({
@@ -27,6 +28,7 @@ export function Minimap({
   viewportEndY,
   childLocations,
   gridSize = 40,
+  onClose,
 }: MinimapProps) {
   const { playerPosition } = useVirtualMapStore();
 
@@ -47,19 +49,29 @@ export function Minimap({
   const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
 
   return (
-    <div className="bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 rounded-lg p-2 shadow-xl">
-      {/* Title */}
-      <div className="text-xs font-bold text-purple-300 mb-1.5 text-center">
-        Minimap
+    <div className="inline-flex flex-col bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 rounded-lg p-2 shadow-xl">
+      {/* Title with Close Button */}
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="text-xs font-bold text-purple-300 whitespace-nowrap flex-1 text-center">
+          Minimap
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="shrink-0 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500/20 rounded transition-colors"
+            title="Close Minimap"
+          >
+            <span className="text-xs leading-none">✕</span>
+          </button>
+        )}
       </div>
 
       {/* Minimap Canvas */}
       <div
-        className="relative border border-slate-700 rounded overflow-hidden bg-slate-950"
+        className="relative border border-slate-700 rounded overflow-hidden bg-slate-950 shrink-0"
         style={{
           width: `${finalWidth}px`,
           height: `${finalHeight}px`,
-          margin: '0 auto',
         }}
       >
         {tiles.map((tile, index) => {
