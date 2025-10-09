@@ -14,10 +14,10 @@ import {
   HUDPanelToggle,
 } from "@/src/presentation/components/layout/HUDPanel";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { ChevronRight, Home, Info, Map, MapPin, Navigation } from "lucide-react";
+import { ChevronRight, Home, Info, Keyboard, Map, MapPin, Navigation } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { KeyboardHint } from "./KeyboardHint";
+import { KeyboardHintContent } from "./KeyboardHint";
 import {
   MapInfoView,
   MapInfoViewProps,
@@ -48,10 +48,12 @@ export function VirtualMapFullView({
     showBreadcrumbPanel,
     showMinimapPanel,
     showMapInfoPanel,
+    showKeyboardHintPanel,
     setShowLocationListPanel,
     setShowBreadcrumbPanel,
     setShowMinimapPanel,
     setShowMapInfoPanel,
+    setShowKeyboardHintPanel,
   } = useVirtualMapStore();
 
   // Local state for minimap data and map info data
@@ -301,8 +303,27 @@ export function VirtualMapFullView({
           />
         )}
 
-        {/* Keyboard Controls Hint */}
-        <KeyboardHint />
+        {/* Keyboard Controls Panel - Bottom Right */}
+        {showKeyboardHintPanel ? (
+          <HUDPanel
+            title="Keyboard Controls"
+            icon={<Keyboard className="w-5 h-5" />}
+            position="bottom-right"
+            closable
+            onClose={() => setShowKeyboardHintPanel(false)}
+            maxHeight="auto"
+            maxWidth="auto"
+          >
+            <KeyboardHintContent />
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label="Controls"
+            icon={<Keyboard className="w-4 h-4" />}
+            onClick={() => setShowKeyboardHintPanel(true)}
+            position="bottom-right"
+          />
+        )}
 
         {/* Minimap Panel - Top Right */}
         {showMinimapPanel && minimapData ? (

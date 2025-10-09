@@ -74,6 +74,7 @@ interface VirtualMapState {
   showBreadcrumbPanel: boolean;
   showMinimapPanel: boolean;
   showMapInfoPanel: boolean;
+  showKeyboardHintPanel: boolean;
 
   // Viewport State (Not Persisted)
   viewportSize: { width: number; height: number };
@@ -123,10 +124,12 @@ interface VirtualMapState {
   setShowBreadcrumbPanel: (show: boolean) => void;
   setShowMinimapPanel: (show: boolean) => void;
   setShowMapInfoPanel: (show: boolean) => void;
+  setShowKeyboardHintPanel: (show: boolean) => void;
   toggleLocationListPanel: () => void;
   toggleBreadcrumbPanel: () => void;
   toggleMinimapPanel: () => void;
   toggleMapInfoPanel: () => void;
+  toggleKeyboardHintPanel: () => void;
 
   // Movement Actions (with pathfinding)
   startMovementToTile: (targetX: number, targetY: number) => void;
@@ -263,6 +266,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showBreadcrumbPanel: false, // Default to closed to avoid blocking screen
         showMinimapPanel: true, // Default to open for easy access
         showMapInfoPanel: true, // Default to open for map info
+        showKeyboardHintPanel: true, // Default to open for keyboard hints
 
         // ========================================
         // Viewport State
@@ -475,6 +479,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({ showMapInfoPanel: show });
         },
 
+        setShowKeyboardHintPanel: (show) => {
+          set({ showKeyboardHintPanel: show });
+        },
+
         toggleLocationListPanel: () => {
           set((state) => ({
             showLocationListPanel: !state.showLocationListPanel,
@@ -491,6 +499,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 
         toggleMapInfoPanel: () => {
           set((state) => ({ showMapInfoPanel: !state.showMapInfoPanel }));
+        },
+
+        toggleKeyboardHintPanel: () => {
+          set((state) => ({ showKeyboardHintPanel: !state.showKeyboardHintPanel }));
         },
 
         // ========================================
@@ -871,6 +883,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         showBreadcrumbPanel: state.showBreadcrumbPanel,
         showMinimapPanel: state.showMinimapPanel,
         showMapInfoPanel: state.showMapInfoPanel,
+        showKeyboardHintPanel: state.showKeyboardHintPanel,
       }),
       merge: (persistedState: unknown, currentState) => {
         const persisted = persistedState as Partial<VirtualMapState> & {
