@@ -4,8 +4,9 @@ import {
   getLocationChildren,
   getLocationConnections,
 } from "@/src/data/master/locations.master";
-import { Coordinates, Location } from "@/src/domain/types/location.types";
+import { Coordinates, Location, MapTile, LocationConnection } from "@/src/domain/types/location.types";
 import { findPath } from "@/src/utils/pathfinding";
+import { generateDefaultTiles, generateProceduralMap } from "@/src/utils/mapGenerator";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useGameStore } from "./gameStore";
@@ -33,6 +34,17 @@ export interface MovementState {
   movementSpeed: number; // tiles per second
 }
 
+export interface ViewportState {
+  width: number; // viewport width in tiles
+  height: number; // viewport height in tiles
+  playerTileX: number;
+  playerTileY: number;
+  viewportStartX: number;
+  viewportStartY: number;
+  viewportEndX: number;
+  viewportEndY: number;
+}
+
 interface VirtualMapState {
   // ========================================
   // User State (Persisted)
@@ -50,6 +62,13 @@ interface VirtualMapState {
   // UI State
   showMinimap: boolean;
   showLocationInfo: boolean;
+
+  // Viewport State (Not Persisted)
+  viewportSize: { width: number; height: number };
+  viewport: ViewportState | null;
+
+  // Tile Cache (Not Persisted)
+  generatedTiles: Map<string, MapTile[]>; // locationId -> tiles
 
   // ========================================
   // Movement State (Not Persisted)
@@ -101,6 +120,19 @@ interface VirtualMapState {
 
   // Refresh cached data
   refreshCachedData: () => void;
+
+  // Viewport Actions
+  setViewportSize: (width: number, height: number) => void;
+  calculateViewport: (gridSize: number, gridWidth: number, gridHeight: number) => void;
+
+  // Tile Management
+  getOrGenerateTiles: (location: Location, gridWidth: number, gridHeight: number) => MapTile[];
+  clearTileCache: () => void;
+
+  // Helper Selectors
+  isTileVisited: (locationId: string, x: number, y: number, gridSize: number) => boolean;
+  getVisibleConnections: (locationId: string, viewport: ViewportState) => LocationConnection[];
+  getVisibleLocations: (locations: Location[], viewport: ViewportState, gridSize: number) => Location[];
 }
 
 // Default player starting position
@@ -185,6 +217,17 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         zoom: 1,
         showMinimap: true,
         showLocationInfo: true,
+
+        // ========================================
+        // Viewport State
+        // ========================================
+        viewportSize: { width: 20, height: 15 },
+        viewport: null,
+
+        // ========================================
+        // Tile Cache
+        // ========================================
+        generatedTiles: new Map(),
 
         // ========================================
         // Movement State
@@ -545,6 +588,165 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             discoveredLocations: state.discoveredLocations,
           });
           set(cached);
+        },
+
+        // ========================================
+        // Viewport Actions
+        // ========================================
+        setViewportSize: (width, height) => {
+          set({ viewportSize: { width, height } });
+        },
+
+        calculateViewport: (gridSize, gridWidth, gridHeight) => {
+          const state = get();
+          const playerPosition = state.playerPosition;
+          const viewportSize = state.viewportSize;
+
+          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
+          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+
+          // Adjust viewport to map size (don't exceed map dimensions)
+          const viewportTilesWidth = Math.min(viewportSize.width, gridWidth);
+          const viewportTilesHeight = Math.min(viewportSize.height, gridHeight);
+
+          // If map is smaller than viewport, show entire map centered
+          if (gridWidth <= viewportTilesWidth && gridHeight <= viewportTilesHeight) {
+            set({
+              viewport: {
+                width: viewportTilesWidth,
+                height: viewportTilesHeight,
+                playerTileX,
+                playerTileY,
+                viewportStartX: 0,
+                viewportStartY: 0,
+                viewportEndX: gridWidth,
+                viewportEndY: gridHeight,
+              },
+            });
+            return;
+          }
+
+          // Center viewport on player
+          const viewportStartX = Math.max(
+            0,
+            Math.min(gridWidth - viewportTilesWidth, playerTileX - Math.floor(viewportTilesWidth / 2))
+          );
+          const viewportStartY = Math.max(
+            0,
+            Math.min(gridHeight - viewportTilesHeight, playerTileY - Math.floor(viewportTilesHeight / 2))
+          );
+          const viewportEndX = Math.min(gridWidth, viewportStartX + viewportTilesWidth);
+          const viewportEndY = Math.min(gridHeight, viewportStartY + viewportTilesHeight);
+
+          set({
+            viewport: {
+              width: viewportTilesWidth,
+              height: viewportTilesHeight,
+              playerTileX,
+              playerTileY,
+              viewportStartX,
+              viewportStartY,
+              viewportEndX,
+              viewportEndY,
+            },
+          });
+        },
+
+        // ========================================
+        // Tile Management
+        // ========================================
+        getOrGenerateTiles: (location, gridWidth, gridHeight) => {
+          const state = get();
+          const cached = state.generatedTiles.get(location.id);
+
+          // Return cached tiles if available
+          if (cached) {
+            return cached;
+          }
+
+          // If location has predefined tiles, use them
+          if (location.mapData?.tiles && location.mapData.tiles.length > 0) {
+            const tiles = location.mapData.tiles;
+            // Cache the tiles
+            set((state) => {
+              const newCache = new Map(state.generatedTiles);
+              newCache.set(location.id, tiles);
+              return { generatedTiles: newCache };
+            });
+            return tiles;
+          }
+
+          // Generate procedural tiles based on location type
+          const seed = location.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+          let generatedTiles: MapTile[];
+          if (location.type === "forest") {
+            generatedTiles = generateProceduralMap(gridWidth, gridHeight, seed);
+          } else if (location.type === "mountain") {
+            generatedTiles = generateProceduralMap(gridWidth, gridHeight, seed + 1000);
+          } else {
+            generatedTiles = generateDefaultTiles(gridWidth, gridHeight, "grass");
+          }
+
+          // Cache the generated tiles
+          set((state) => {
+            const newCache = new Map(state.generatedTiles);
+            newCache.set(location.id, generatedTiles);
+            return { generatedTiles: newCache };
+          });
+
+          return generatedTiles;
+        },
+
+        clearTileCache: () => {
+          set({ generatedTiles: new Map() });
+        },
+
+        // ========================================
+        // Helper Selectors
+        // ========================================
+        isTileVisited: (locationId, x, y, gridSize) => {
+          const state = get();
+          const visitedTiles = state.visitedTiles.get(locationId) || [];
+          return visitedTiles.some(
+            (coord) => coord.x === x * gridSize && coord.y === y * gridSize
+          );
+        },
+
+        getVisibleConnections: (locationId, viewport) => {
+          const connections = getLocationConnections(locationId);
+          return connections.filter((conn) => {
+            if (conn.fromLocationId !== locationId || !conn.coordinates) return false;
+
+            const tileX = Math.floor(conn.coordinates.x / 40);
+            const tileY = Math.floor(conn.coordinates.y / 40);
+
+            return (
+              tileX >= viewport.viewportStartX &&
+              tileX < viewport.viewportEndX &&
+              tileY >= viewport.viewportStartY &&
+              tileY < viewport.viewportEndY
+            );
+          });
+        },
+
+        getVisibleLocations: (locations, viewport, gridSize) => {
+          const mapWidth = (viewport.viewportEndX - viewport.viewportStartX) * gridSize;
+          const mapHeight = (viewport.viewportEndY - viewport.viewportStartY) * gridSize;
+
+          return locations.filter((location) => {
+            if (!location.coordinates) return false;
+
+            const markerX = (location.coordinates.x / gridSize - viewport.viewportStartX) * gridSize;
+            const markerY = (location.coordinates.y / gridSize - viewport.viewportStartY) * gridSize;
+
+            return (
+              markerX >= -gridSize &&
+              markerX <= mapWidth + gridSize &&
+              markerY >= -gridSize &&
+              markerY <= mapHeight + gridSize
+            );
+          });
         },
       };
     },

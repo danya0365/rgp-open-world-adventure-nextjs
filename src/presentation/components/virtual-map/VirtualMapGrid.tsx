@@ -4,9 +4,7 @@ import { LocationMarker } from "./LocationMarker";
 import { MapTile } from "./MapTile";
 import { Minimap } from "./Minimap";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { generateDefaultTiles, generateProceduralMap } from "@/src/utils/mapGenerator";
-import { getLocationConnections } from "@/src/data/master/locations.master";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -23,139 +21,68 @@ export function VirtualMapGrid({
   gridSize = 40,
   showMinimap = true,
 }: VirtualMapGridProps) {
-  const { playerPosition, discoveredLocations, startMovementToTile, visitedTiles } = useVirtualMapStore();
+  const {
+    playerPosition,
+    discoveredLocations,
+    startMovementToTile,
+    viewport,
+    viewportSize,
+    setViewportSize,
+    calculateViewport,
+    getOrGenerateTiles,
+    isTileVisited,
+    getVisibleConnections,
+    getVisibleLocations,
+  } = useVirtualMapStore();
 
-  // Get connections for current location
-  const connections = useMemo(() => {
-    const conns = getLocationConnections(currentLocation.id);
-    console.log(`[VirtualMapGrid] Connections for ${currentLocation.id}:`, conns);
-    return conns;
-  }, [currentLocation.id]);
 
   // Calculate grid dimensions based on location mapData
   const gridWidth = currentLocation.mapData?.gridSize || currentLocation.mapData?.width || 20;
   const gridHeight = currentLocation.mapData?.gridSize || currentLocation.mapData?.height || 15;
-  
+
   // Calculate viewport size based on screen size
-  const [viewportSize, setViewportSize] = useState({ width: 20, height: 15 });
-  
   useEffect(() => {
     const calculateViewportSize = () => {
-      // Get window dimensions
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-      
-      // Reserve space for UI (panels, margins, etc.)
-      const availableWidth = windowWidth - 100; // Reserve 100px for side panels
-      const availableHeight = windowHeight - 200; // Reserve 200px for top/bottom UI
-      
-      // Calculate how many tiles can fit
+
+      const availableWidth = windowWidth - 100;
+      const availableHeight = windowHeight - 200;
+
       const tilesWidth = Math.floor(availableWidth / gridSize);
       const tilesHeight = Math.floor(availableHeight / gridSize);
-      
-      // Clamp to reasonable values (min 8, max 25)
+
       const clampedWidth = Math.max(8, Math.min(25, tilesWidth));
       const clampedHeight = Math.max(6, Math.min(20, tilesHeight));
-      
-      console.log(`[VirtualMapGrid] Viewport calculation:`);
-      console.log(`  - Window: ${windowWidth}x${windowHeight}`);
-      console.log(`  - Available: ${availableWidth}x${availableHeight}`);
-      console.log(`  - Tiles fit: ${tilesWidth}x${tilesHeight}`);
-      console.log(`  - Clamped: ${clampedWidth}x${clampedHeight}`);
-      
-      setViewportSize({ width: clampedWidth, height: clampedHeight });
+
+      setViewportSize(clampedWidth, clampedHeight);
     };
-    
-    // Calculate on mount
+
     calculateViewportSize();
-    
-    // Recalculate on window resize
-    window.addEventListener('resize', calculateViewportSize);
-    return () => window.removeEventListener('resize', calculateViewportSize);
-  }, [gridSize]);
-  
-  // Adjust viewport to map size (don't exceed map dimensions)
-  const viewportTilesWidth = Math.min(viewportSize.width, gridWidth);
-  const viewportTilesHeight = Math.min(viewportSize.height, gridHeight);
-  
-  // Calculate viewport bounds based on player position (memoized for performance)
-  const viewport = useMemo(() => {
-    const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-    const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-    
-    // If map is smaller than viewport, show entire map centered
-    if (gridWidth <= viewportTilesWidth && gridHeight <= viewportTilesHeight) {
-      return {
-        playerTileX,
-        playerTileY,
-        viewportStartX: 0,
-        viewportStartY: 0,
-        viewportEndX: gridWidth,
-        viewportEndY: gridHeight,
-      };
-    }
-    
-    // Center viewport on player
-    const viewportStartX = Math.max(0, Math.min(gridWidth - viewportTilesWidth, playerTileX - Math.floor(viewportTilesWidth / 2)));
-    const viewportStartY = Math.max(0, Math.min(gridHeight - viewportTilesHeight, playerTileY - Math.floor(viewportTilesHeight / 2)));
-    const viewportEndX = Math.min(gridWidth, viewportStartX + viewportTilesWidth);
-    const viewportEndY = Math.min(gridHeight, viewportStartY + viewportTilesHeight);
-    
-    return {
-      playerTileX,
-      playerTileY,
-      viewportStartX,
-      viewportStartY,
-      viewportEndX,
-      viewportEndY,
-    };
-  }, [playerPosition.coordinates.x, playerPosition.coordinates.y, gridSize, gridWidth, gridHeight, viewportTilesWidth, viewportTilesHeight]);
-  
-  const { playerTileX, playerTileY, viewportStartX, viewportStartY, viewportEndX, viewportEndY } = viewport;
-  
-  // Viewport size in pixels (use actual viewport size, not max)
-  const actualViewportWidth = viewportEndX - viewportStartX;
-  const actualViewportHeight = viewportEndY - viewportStartY;
-  const mapWidth = actualViewportWidth * gridSize;
-  const mapHeight = actualViewportHeight * gridSize;
+    window.addEventListener("resize", calculateViewportSize);
+    return () => window.removeEventListener("resize", calculateViewportSize);
+  }, [gridSize, setViewportSize]);
 
-  // Get or generate tiles
+  // Get or generate tiles from store (must be before early return)
   const tiles = useMemo<MapTileType[]>(() => {
-    console.log(`[VirtualMapGrid] Generating tiles for ${currentLocation.id}`);
-    console.log(`  - Grid size: ${gridWidth}x${gridHeight}`);
-    console.log(`  - Has predefined tiles:`, currentLocation.mapData?.tiles?.length);
-    
-    // If location has predefined tiles, use them
-    if (currentLocation.mapData?.tiles && currentLocation.mapData.tiles.length > 0) {
-      console.log(`  ✓ Using predefined tiles (${currentLocation.mapData.tiles.length})`);
-      return currentLocation.mapData.tiles;
-    }
+    return getOrGenerateTiles(currentLocation, gridWidth, gridHeight);
+  }, [currentLocation, gridWidth, gridHeight, getOrGenerateTiles]);
 
-    // Generate procedural tiles based on location type
-    const seed = currentLocation.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    
-    let generatedTiles: MapTileType[];
-    if (currentLocation.type === "forest") {
-      generatedTiles = generateProceduralMap(gridWidth, gridHeight, seed);
-    } else if (currentLocation.type === "mountain") {
-      generatedTiles = generateProceduralMap(gridWidth, gridHeight, seed + 1000);
-    } else {
-      generatedTiles = generateDefaultTiles(gridWidth, gridHeight, "grass");
-    }
-    
-    console.log(`  ✓ Generated ${generatedTiles.length} tiles (type: ${currentLocation.type})`);
-    return generatedTiles;
-  }, [currentLocation, gridWidth, gridHeight]);
+  // Calculate viewport whenever player moves or location changes
+  useEffect(() => {
+    calculateViewport(gridSize, gridWidth, gridHeight);
+  }, [playerPosition.coordinates, gridSize, gridWidth, gridHeight, viewportSize, calculateViewport]);
 
-  // Get visited tiles for current location
-  const currentLocationVisitedTiles = visitedTiles.get(currentLocation.id) || [];
+  // Get visible connections and locations from store (must be before early return)
+  const connections = useMemo(() => {
+    if (!viewport) return [];
+    return getVisibleConnections(currentLocation.id, viewport);
+  }, [currentLocation.id, viewport, getVisibleConnections]);
 
-  // Check if tile is visited
-  const isTileVisited = (x: number, y: number) => {
-    return currentLocationVisitedTiles.some(
-      (coord) => coord.x === x * gridSize && coord.y === y * gridSize
-    );
-  };
+  const visibleChildLocations = useMemo(() => {
+    if (!viewport) return [];
+    return getVisibleLocations(childLocations, viewport, gridSize);
+  }, [childLocations, viewport, gridSize, getVisibleLocations]);
 
   // Handle tile click - start pathfinding movement
   const handleTileClick = (tile: MapTileType) => {
@@ -177,23 +104,23 @@ export function VirtualMapGrid({
       console.log(`  ✗ Player not in this location (player: ${playerPosition.locationId}, current: ${currentLocation.id})`);
     }
   };
+
+  // Early return if viewport not calculated yet
+  if (!viewport) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+        <div className="text-white">Loading map...</div>
+      </div>
+    );
+  }
+
+  const { playerTileX, playerTileY, viewportStartX, viewportStartY, viewportEndX, viewportEndY } = viewport;
   
-  // Debug: log render info
-  console.log(`[VirtualMapGrid] Rendering:`);
-  console.log(`  - Total tiles: ${tiles.length}`);
-  console.log(`  - Walkable tiles: ${tiles.filter(t => t.isWalkable).length}`);
-  console.log(`  - Viewport: (${viewportStartX}, ${viewportStartY}) → (${viewportEndX}, ${viewportEndY})`);
-  console.log(`  - Player: (${playerTileX}, ${playerTileY}) at location: ${playerPosition.locationId}`);
-  console.log(`  - Current location: ${currentLocation.id}`);
-  
-  const visibleTiles = tiles.filter((tile) => 
-    tile.x >= viewportStartX && 
-    tile.x < viewportEndX && 
-    tile.y >= viewportStartY && 
-    tile.y < viewportEndY
-  );
-  console.log(`  - Visible tiles: ${visibleTiles.length}`);
-  console.log(`  - Visible walkable: ${visibleTiles.filter(t => t.isWalkable).length}`);
+  // Viewport size in pixels (use actual viewport size, not max)
+  const actualViewportWidth = viewportEndX - viewportStartX;
+  const actualViewportHeight = viewportEndY - viewportStartY;
+  const mapWidth = actualViewportWidth * gridSize;
+  const mapHeight = actualViewportHeight * gridSize;
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
@@ -246,7 +173,7 @@ export function VirtualMapGrid({
                 key={`${tile.x}-${tile.y}-${index}`}
                 tile={offsetTile}
                 gridSize={gridSize}
-                isVisited={isTileVisited(tile.x, tile.y)}
+                isVisited={isTileVisited(currentLocation.id, tile.x, tile.y, gridSize)}
                 isPlayerPosition={isPlayerPos}
                 onClick={() => handleTileClick(tile)}
               />
@@ -254,38 +181,25 @@ export function VirtualMapGrid({
           })}
 
         {/* Child Location Markers (on top of tiles) */}
-        {childLocations
-          .filter((location) => location.coordinates) // Only show locations with coordinates
-          .map((location) => {
-            // Calculate marker position relative to viewport
-            const markerX = ((location.coordinates!.x / gridSize) - viewportStartX) * gridSize;
-            const markerY = ((location.coordinates!.y / gridSize) - viewportStartY) * gridSize;
-            
-            // Only render if marker is within viewport
-            const isInViewport = 
-              markerX >= -gridSize && 
-              markerX <= mapWidth + gridSize &&
-              markerY >= -gridSize && 
-              markerY <= mapHeight + gridSize;
-            
-            if (!isInViewport) return null;
-            
-            // Create adjusted location with viewport-relative coordinates
-            const adjustedLocation = {
-              ...location,
-              coordinates: { x: markerX, y: markerY },
-            };
-            
-            return (
-              <LocationMarker
-                key={location.id}
-                location={adjustedLocation}
-                onClick={() => onLocationClick(location)}
-                isDiscovered={discoveredLocations.has(location.id)}
-                isCurrentLocation={location.id === playerPosition.locationId}
-              />
-            );
-          })}
+        {visibleChildLocations.map((location) => {
+          const markerX = ((location.coordinates!.x / gridSize) - viewportStartX) * gridSize;
+          const markerY = ((location.coordinates!.y / gridSize) - viewportStartY) * gridSize;
+
+          const adjustedLocation = {
+            ...location,
+            coordinates: { x: markerX, y: markerY },
+          };
+
+          return (
+            <LocationMarker
+              key={location.id}
+              location={adjustedLocation}
+              onClick={() => onLocationClick(location)}
+              isDiscovered={discoveredLocations.has(location.id)}
+              isCurrentLocation={location.id === playerPosition.locationId}
+            />
+          );
+        })}
 
         {/* Player Marker (only show if player is in this location) */}
         {playerPosition.locationId === currentLocation.id && (
@@ -297,16 +211,14 @@ export function VirtualMapGrid({
           />
         )}
 
-        {/* Connection Markers - SIMPLE VERSION */}
-        {connections
-          .filter(conn => conn.fromLocationId === currentLocation.id && conn.coordinates)
-          .map((connection) => {
+        {/* Connection Markers */}
+        {connections.map((connection) => {
             const tileX = Math.floor(connection.coordinates!.x / gridSize);
             const tileY = Math.floor(connection.coordinates!.y / gridSize);
             const x = tileX - viewportStartX;
             const y = tileY - viewportStartY;
             
-            const target = childLocations.find(l => l.id === connection.toLocationId);
+            const target = childLocations.find((l) => l.id === connection.toLocationId);
             const isDiscovered = target && discoveredLocations.has(target.id);
 
             return (
@@ -323,11 +235,16 @@ export function VirtualMapGrid({
                 onClick={() => {
                   if (target) onLocationClick(target);
                 }}
-                title={target ? `${target.name} - Click to enter` : 'Unknown location'}
+                title={target ? `${target.name} - Click to enter` : "Unknown location"}
               >
-                {/* Simple marker */}
-                <div className={`w-full h-full ${isDiscovered ? 'bg-green-500' : 'bg-gray-500'} border-4 border-white rounded-full flex items-center justify-center text-2xl ${isDiscovered ? 'animate-bounce' : ''}`}>
-                  {isDiscovered ? '🏛️' : '❓'}
+                <div
+                  className={`w-full h-full ${
+                    isDiscovered ? "bg-green-500" : "bg-gray-500"
+                  } border-4 border-white rounded-full flex items-center justify-center text-2xl ${
+                    isDiscovered ? "animate-bounce" : ""
+                  }`}
+                >
+                  {isDiscovered ? "🏛️" : "❓"}
                 </div>
               </div>
             );
