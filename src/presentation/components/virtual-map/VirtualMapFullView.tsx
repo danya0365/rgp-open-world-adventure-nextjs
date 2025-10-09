@@ -197,7 +197,7 @@ export function VirtualMapFullView({
 
   return (
     <>
-      {/* Virtual Map Grid */}
+      {/* Virtual Map Container */}
       <div className="absolute inset-0">
         <VirtualMapGrid
           currentLocation={currentLocationData}
@@ -209,44 +209,6 @@ export function VirtualMapFullView({
 
       {/* HUD Overlays */}
       <GameLayoutOverlay>
-        {/* Breadcrumb Panel - Top Center */}
-        {showBreadcrumbPanel ? (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
-            <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2 max-w-[90vw] overflow-x-auto">
-              <div className="flex items-center gap-2 text-sm">
-                <Home className="w-4 h-4 text-purple-400 shrink-0" />
-                {breadcrumb.map((location, index) => (
-                  <div key={location.id} className="flex items-center gap-2">
-                    {index > 0 && (
-                      <ChevronRight className="w-3 h-3 text-gray-600 shrink-0" />
-                    )}
-                    <button
-                      onClick={() => handleBreadcrumbClick(location)}
-                      className={`whitespace-nowrap transition-colors ${
-                        index === breadcrumb.length - 1
-                          ? "text-white font-semibold"
-                          : "text-gray-400 hover:text-gray-300"
-                      }`}
-                    >
-                      {location.name}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40">
-            <button
-              onClick={() => setShowBreadcrumbPanel(true)}
-              className="px-3 py-2 bg-slate-900/80 hover:bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm flex items-center gap-2"
-            >
-              <MapPin className="w-4 h-4" />
-              {currentLocationData.name}
-            </button>
-          </div>
-        )}
-
         {/* Location List Panel - Left */}
         {showLocationListPanel ? (
           <HUDPanel
@@ -326,21 +288,56 @@ export function VirtualMapFullView({
         )}
 
         {/* Help Text - Bottom Center */}
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
-          <HUDPanel>
-            <p className="text-xs text-gray-400 text-center">
-              🖱️ Click on location markers to navigate • ⚡ Fast travel
-              available
-            </p>
-          </HUDPanel>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-999 pointer-events-none">
+          <p className="text-xs text-gray-400 text-center">
+            🖱️ Click on location markers to navigate • ⚡ Fast travel available
+          </p>
         </div>
 
         {/* Keyboard Controls Hint */}
         <KeyboardHint />
       </GameLayoutOverlay>
 
+      {/* Breadcrumb Panel - Top Center */}
+      {showBreadcrumbPanel ? (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
+          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg px-4 py-2 max-w-[90vw] overflow-x-auto">
+            <div className="flex items-center gap-2 text-sm">
+              <Home className="w-4 h-4 text-purple-400 shrink-0" />
+              {breadcrumb.map((location, index) => (
+                <div key={location.id} className="flex items-center gap-2">
+                  {index > 0 && (
+                    <ChevronRight className="w-3 h-3 text-gray-600 shrink-0" />
+                  )}
+                  <button
+                    onClick={() => handleBreadcrumbClick(location)}
+                    className={`whitespace-nowrap transition-colors ${
+                      index === breadcrumb.length - 1
+                        ? "text-white font-semibold"
+                        : "text-gray-400 hover:text-gray-300"
+                    }`}
+                  >
+                    {location.name}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
+          <button
+            onClick={() => setShowBreadcrumbPanel(true)}
+            className="px-3 py-2 bg-slate-900/80 hover:bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm flex items-center gap-2"
+          >
+            <MapPin className="w-4 h-4" />
+            {currentLocationData.name}
+          </button>
+        </div>
+      )}
+
       {/* Main Menu Button - Bottom Left */}
-      <div className="fixed bottom-4 left-4 z-40">
+      <div className="absolute bottom-4 left-4 z-40">
         <Link
           href="/"
           className="px-4 py-2 bg-slate-900/80 hover:bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm flex items-center gap-2"

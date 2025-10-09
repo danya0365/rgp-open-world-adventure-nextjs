@@ -12,14 +12,14 @@ export interface GameLayoutProps {
 
 /**
  * GameLayout - Full screen game layout with fixed header and scrollable content
- * 
+ *
  * Features:
  * - Fixed full screen layout
  * - Prevents body scroll
  * - Glass morphism design
  * - Responsive header with stats
  * - Scrollable content area
- * 
+ *
  * Usage:
  * ```tsx
  * <GameLayout>
@@ -95,7 +95,7 @@ export function GameLayoutOverlay({
 }: GameLayoutOverlayProps) {
   return (
     <div className={`absolute inset-0 pointer-events-none ${className}`}>
-      <div className="relative w-full h-full pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none">
         {/* Children can have pointer-events-auto on individual elements */}
         {children}
       </div>

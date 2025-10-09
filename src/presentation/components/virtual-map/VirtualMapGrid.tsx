@@ -1,10 +1,13 @@
-import { Location, MapTile as MapTileType } from "@/src/domain/types/location.types";
-import { PlayerMarker } from "./PlayerMarker";
+import {
+  Location,
+  MapTile as MapTileType,
+} from "@/src/domain/types/location.types";
+import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { useEffect, useMemo } from "react";
 import { LocationMarker } from "./LocationMarker";
 import { MapTile } from "./MapTile";
 import { Minimap } from "./Minimap";
-import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { useMemo, useEffect } from "react";
+import { PlayerMarker } from "./PlayerMarker";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -36,10 +39,11 @@ export function VirtualMapGrid({
     getVisibleLocations,
   } = useVirtualMapStore();
 
-
   // Calculate grid dimensions based on location mapData
-  const gridWidth = currentLocation.mapData?.gridSize || currentLocation.mapData?.width || 20;
-  const gridHeight = currentLocation.mapData?.gridSize || currentLocation.mapData?.height || 15;
+  const gridWidth =
+    currentLocation.mapData?.gridSize || currentLocation.mapData?.width || 20;
+  const gridHeight =
+    currentLocation.mapData?.gridSize || currentLocation.mapData?.height || 15;
 
   // Calculate viewport size based on screen size
   useEffect(() => {
@@ -79,7 +83,14 @@ export function VirtualMapGrid({
   // Calculate viewport whenever player moves or location changes
   useEffect(() => {
     calculateViewport(gridSize, gridWidth, gridHeight);
-  }, [playerPosition.coordinates, gridSize, gridWidth, gridHeight, viewportSize, calculateViewport]);
+  }, [
+    playerPosition.coordinates,
+    gridSize,
+    gridWidth,
+    gridHeight,
+    viewportSize,
+    calculateViewport,
+  ]);
 
   // Get visible connections and locations from store (must be before early return)
   const connections = useMemo(() => {
@@ -98,18 +109,20 @@ export function VirtualMapGrid({
     console.log(`  - Tile walkable:`, tile.isWalkable);
     console.log(`  - Player location:`, playerPosition.locationId);
     console.log(`  - Current location:`, currentLocation.id);
-    
+
     if (!tile.isWalkable) {
       console.log(`  ✗ Tile not walkable`);
       return;
     }
-    
+
     // Only move if player is in this location
     if (playerPosition.locationId === currentLocation.id) {
       console.log(`  ✓ Starting movement to (${tile.x}, ${tile.y})`);
       startMovementToTile(tile.x, tile.y);
     } else {
-      console.log(`  ✗ Player not in this location (player: ${playerPosition.locationId}, current: ${currentLocation.id})`);
+      console.log(
+        `  ✗ Player not in this location (player: ${playerPosition.locationId}, current: ${currentLocation.id})`
+      );
     }
   };
 
@@ -122,8 +135,15 @@ export function VirtualMapGrid({
     );
   }
 
-  const { playerTileX, playerTileY, viewportStartX, viewportStartY, viewportEndX, viewportEndY } = viewport;
-  
+  const {
+    playerTileX,
+    playerTileY,
+    viewportStartX,
+    viewportStartY,
+    viewportEndX,
+    viewportEndY,
+  } = viewport;
+
   // Viewport size in pixels (use actual viewport size, not max)
   const actualViewportWidth = viewportEndX - viewportStartX;
   const actualViewportHeight = viewportEndY - viewportStartY;
@@ -157,11 +177,12 @@ export function VirtualMapGrid({
       >
         {/* Render Only Visible Tiles (Viewport) */}
         {tiles
-          .filter((tile) => 
-            tile.x >= viewportStartX && 
-            tile.x < viewportEndX && 
-            tile.y >= viewportStartY && 
-            tile.y < viewportEndY
+          .filter(
+            (tile) =>
+              tile.x >= viewportStartX &&
+              tile.x < viewportEndX &&
+              tile.y >= viewportStartY &&
+              tile.y < viewportEndY
           )
           .map((tile, index) => {
             const isPlayerPos =
@@ -181,7 +202,12 @@ export function VirtualMapGrid({
                 key={`${tile.x}-${tile.y}-${index}`}
                 tile={offsetTile}
                 gridSize={gridSize}
-                isVisited={isTileVisited(currentLocation.id, tile.x, tile.y, gridSize)}
+                isVisited={isTileVisited(
+                  currentLocation.id,
+                  tile.x,
+                  tile.y,
+                  gridSize
+                )}
                 isPlayerPosition={isPlayerPos}
                 onClick={() => handleTileClick(tile)}
               />
@@ -190,8 +216,10 @@ export function VirtualMapGrid({
 
         {/* Child Location Markers (on top of tiles) */}
         {visibleChildLocations.map((location) => {
-          const markerX = ((location.coordinates!.x / gridSize) - viewportStartX) * gridSize;
-          const markerY = ((location.coordinates!.y / gridSize) - viewportStartY) * gridSize;
+          const markerX =
+            (location.coordinates!.x / gridSize - viewportStartX) * gridSize;
+          const markerY =
+            (location.coordinates!.y / gridSize - viewportStartY) * gridSize;
 
           const adjustedLocation = {
             ...location,
@@ -212,8 +240,8 @@ export function VirtualMapGrid({
         {/* Player Marker (only show if player is in this location) */}
         {playerPosition.locationId === currentLocation.id && (
           <PlayerMarker
-            x={(playerPosition.coordinates.x / gridSize) - viewportStartX}
-            y={(playerPosition.coordinates.y / gridSize) - viewportStartY}
+            x={playerPosition.coordinates.x / gridSize - viewportStartX}
+            y={playerPosition.coordinates.y / gridSize - viewportStartY}
             facing={playerPosition.facing}
             gridSize={gridSize}
           />
@@ -221,42 +249,46 @@ export function VirtualMapGrid({
 
         {/* Connection Markers */}
         {connections.map((connection) => {
-            const tileX = Math.floor(connection.coordinates!.x / gridSize);
-            const tileY = Math.floor(connection.coordinates!.y / gridSize);
-            const x = tileX - viewportStartX;
-            const y = tileY - viewportStartY;
-            
-            const target = childLocations.find((l) => l.id === connection.toLocationId);
-            const isDiscovered = target && discoveredLocations.has(target.id);
+          const tileX = Math.floor(connection.coordinates!.x / gridSize);
+          const tileY = Math.floor(connection.coordinates!.y / gridSize);
+          const x = tileX - viewportStartX;
+          const y = tileY - viewportStartY;
 
-            return (
+          const target = childLocations.find(
+            (l) => l.id === connection.toLocationId
+          );
+          const isDiscovered = target && discoveredLocations.has(target.id);
+
+          return (
+            <div
+              key={connection.id}
+              className="absolute pointer-events-auto cursor-pointer"
+              style={{
+                left: `${x * gridSize}px`,
+                top: `${y * gridSize}px`,
+                width: `${gridSize}px`,
+                height: `${gridSize}px`,
+                zIndex: 999,
+              }}
+              onClick={() => {
+                if (target) onLocationClick(target);
+              }}
+              title={
+                target ? `${target.name} - Click to enter` : "Unknown location"
+              }
+            >
               <div
-                key={connection.id}
-                className="absolute pointer-events-auto cursor-pointer"
-                style={{
-                  left: `${x * gridSize}px`,
-                  top: `${y * gridSize}px`,
-                  width: `${gridSize}px`,
-                  height: `${gridSize}px`,
-                  zIndex: 999,
-                }}
-                onClick={() => {
-                  if (target) onLocationClick(target);
-                }}
-                title={target ? `${target.name} - Click to enter` : "Unknown location"}
+                className={`w-full h-full ${
+                  isDiscovered ? "bg-green-500" : "bg-gray-500"
+                } border-4 border-white rounded-full flex items-center justify-center text-2xl ${
+                  isDiscovered ? "animate-bounce" : ""
+                }`}
               >
-                <div
-                  className={`w-full h-full ${
-                    isDiscovered ? "bg-green-500" : "bg-gray-500"
-                  } border-4 border-white rounded-full flex items-center justify-center text-2xl ${
-                    isDiscovered ? "animate-bounce" : ""
-                  }`}
-                >
-                  {isDiscovered ? "🏛️" : "❓"}
-                </div>
+                {isDiscovered ? "🏛️" : "❓"}
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
 
         {/* Map Info Overlay - Bottom Left (moved from top) */}
         <div className="absolute bottom-4 left-4 pointer-events-none z-50">
@@ -270,12 +302,17 @@ export function VirtualMapGrid({
             <div className="mt-1 flex items-center gap-2 text-[9px] text-gray-500">
               <span className="capitalize">{currentLocation.type}</span>
               <span>•</span>
-              <span>{gridWidth}x{gridHeight} tiles</span>
+              <span>
+                {gridWidth}x{gridHeight} tiles
+              </span>
               <span>•</span>
-              <span>View: {actualViewportWidth}x{actualViewportHeight}</span>
+              <span>
+                View: {actualViewportWidth}x{actualViewportHeight}
+              </span>
             </div>
             <div className="mt-1 text-[8px] text-gray-600">
-              Position: ({playerTileX}, {playerTileY}) | Viewport: ({viewportStartX}, {viewportStartY})
+              Position: ({playerTileX}, {playerTileY}) | Viewport: (
+              {viewportStartX}, {viewportStartY})
             </div>
           </div>
         </div>
@@ -304,28 +341,15 @@ export function VirtualMapGrid({
               gridSize={gridSize}
               onClose={() => {
                 // Toggle minimap via parent component
-                const parentToggle = document.querySelector('[data-minimap-toggle]') as HTMLButtonElement;
+                const parentToggle = document.querySelector(
+                  "[data-minimap-toggle]"
+                ) as HTMLButtonElement;
                 parentToggle?.click();
               }}
             />
           </div>
         )}
       </div>
-
-      {/* Empty State */}
-      {childLocations.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🗺️</div>
-            <h3 className="text-xl font-bold text-white mb-2">
-              No Sub-Locations
-            </h3>
-            <p className="text-gray-400">
-              This is the deepest level in this area
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
