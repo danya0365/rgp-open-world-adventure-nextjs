@@ -305,6 +305,9 @@ export function VirtualMapGrid({
             const tileY = Math.floor(connection.coordinates!.y / gridSize);
             const x = tileX - viewportStartX;
             const y = tileY - viewportStartY;
+            
+            const target = childLocations.find(l => l.id === connection.toLocationId);
+            const isDiscovered = target && discoveredLocations.has(target.id);
 
             return (
               <div
@@ -318,13 +321,13 @@ export function VirtualMapGrid({
                   zIndex: 999,
                 }}
                 onClick={() => {
-                  const target = childLocations.find(l => l.id === connection.toLocationId);
                   if (target) onLocationClick(target);
                 }}
+                title={target ? `${target.name} - Click to enter` : 'Unknown location'}
               >
                 {/* Simple marker */}
-                <div className="w-full h-full bg-green-500 border-4 border-white rounded-full flex items-center justify-center text-2xl animate-bounce">
-                  🏛️
+                <div className={`w-full h-full ${isDiscovered ? 'bg-green-500' : 'bg-gray-500'} border-4 border-white rounded-full flex items-center justify-center text-2xl ${isDiscovered ? 'animate-bounce' : ''}`}>
+                  {isDiscovered ? '🏛️' : '❓'}
                 </div>
               </div>
             );

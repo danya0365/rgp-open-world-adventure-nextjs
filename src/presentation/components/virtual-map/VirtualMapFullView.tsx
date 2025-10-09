@@ -2,18 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Location } from "@/src/domain/types/location.types";
 import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
 import { VirtualMapGrid } from "./VirtualMapGrid";
 import { KeyboardHint } from "./KeyboardHint";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { getLocationById, getLocationPath, getLocationConnections } from "@/src/data/master/locations.master";
 import { useMovementAnimation } from "@/src/hooks/useMovementAnimation";
 import { useKeyboardMovement } from "@/src/hooks/useKeyboardMovement";
-import {
-  getLocationPath,
-} from "@/src/data/master/locations.master";
-import { Map, Navigation, MapPin, Home, ChevronRight } from "lucide-react";
+import { Home, Map, Navigation, MapPin, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface VirtualMapFullViewProps {
@@ -23,6 +20,7 @@ interface VirtualMapFullViewProps {
 export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProps) {
   const router = useRouter();
   const {
+    playerPosition,
     discoveredLocations,
     teleportToLocation,
     discoverLocation,
@@ -78,14 +76,53 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
     refreshCachedData();
   }, [currentLocationData, discoverLocation, refreshCachedData]);
 
+  // Check for connection triggers when player moves
+  useEffect(() => {
+    if (!currentLocationData) return;
+
+    // Get connections for current location
+    const connections = getLocationConnections(currentLocationData.id);
+
+    // Check if player is standing on a connection point
+    for (const connection of connections) {
+      if (connection.fromLocationId !== currentLocationData.id) continue;
+      if (!connection.coordinates) continue;
+
+      // Calculate tile position
+      const connTileX = Math.floor(connection.coordinates.x / 40);
+      const connTileY = Math.floor(connection.coordinates.y / 40);
+      const playerTileX = Math.floor(playerPosition.coordinates.x / 40);
+      const playerTileY = Math.floor(playerPosition.coordinates.y / 40);
+
+      // If player is on connection tile, trigger navigation
+      if (connTileX === playerTileX && connTileY === playerTileY) {
+        console.log(`[VirtualMapFullView] Player stepped on connection:`, connection.id);
+        
+        // Find target location
+        const target = childLocations.find(loc => loc.id === connection.toLocationId);
+        if (target) {
+          console.log(`  → Auto-navigating to:`, target.id);
+          
+          // Auto-discover and teleport
+          if (!discoveredLocations.has(target.id)) {
+            discoverLocation(target.id);
+          }
+          teleportToLocation(target.id, target.coordinates);
+          router.push(`/virtual-world/${target.id}`);
+        }
+        break;
+      }
+    }
+  }, [playerPosition.coordinates.x, playerPosition.coordinates.y, currentLocationData, childLocations, discoveredLocations, discoverLocation, teleportToLocation, router]);
+
   // Handle location click - teleport + update URL
   const handleLocationClick = (location: Location) => {
     console.log(`[VirtualMapFullView] Location clicked:`, location.id);
     
-    // Check if location is discovered (for security)
+    // Auto-discover location when clicking (connections are always accessible)
     if (!discoveredLocations.has(location.id)) {
-      console.log(`  ✗ Location not discovered yet!`);
-      return;
+      console.log(`  ℹ️ Auto-discovering location: ${location.id}`);
+      discoverLocation(location.id);
     }
     
     console.log(`  ✓ Teleporting to ${location.id}`);
