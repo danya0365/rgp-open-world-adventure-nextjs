@@ -1098,13 +1098,14 @@
   - [x] Mobile responsive
   - [x] Clean Architecture maintained
 
-- [x] **Quest Page** (`/quests`) ✅ COMPLETED (2025-10-09 09:12)
+- [x] **Quest Page** (`/quests`) ✅ COMPLETED (2025-10-09 09:18)
   - [x] **Full-Screen Layout** - Quest map with Pan & Zoom
   - [x] Component-based architecture (separated into sub-components)
   - [x] **Sub-Components Created:**
     - [x] `QuestMarker` - Individual quest marker with type/status indicators
     - [x] `QuestMapView` - Full-screen quest map container
     - [x] `QuestStatsPanel` - Quest statistics display
+    - [x] `QuestDetailCompact` - Compact quest detail modal ✅ NEW!
     - [x] `QuestFullView` - Main orchestrator component
   - [x] **Quest Markers** - Color-coded by type and status
     - [x] Main quests (Gold/Crown) - larger markers
@@ -1122,8 +1123,22 @@
     - [x] Statistics Panel (Right) - Total, Active, Completed, Available
     - [x] Filters Panel (Bottom Left) - Type & Status filters
   - [x] Pan & Zoom controls (mouse wheel, drag, reset button)
-  - [x] Quest Detail Modal (click marker to open)
-  - [x] Mobile responsive (3 columns mobile, 5 desktop)
+  - [x] **Quest Detail Modal - Compact** ✅ NEW!
+    - [x] Smaller size (md instead of lg)
+    - [x] Compact description (line-clamp-3)
+    - [x] Progress bar instead of full list
+    - [x] Compact objectives list (max-h-120px scrollable)
+    - [x] Smaller rewards cards
+    - [x] Compact action buttons
+    - [x] Mobile responsive (max-h-85vh)
+  - [x] **Mobile Responsive Optimization** ✅ IMPROVED!
+    - [x] Quest grid: 2 columns mobile, 3 tablet, 5 desktop
+    - [x] Quest markers: Smaller on mobile (14-16px)
+    - [x] Icon sizes: 6px mobile → 12px desktop
+    - [x] Name labels: Compact text + truncate
+    - [x] HUD panels: Smaller width/height (85vw max)
+    - [x] Filter button: Outside overlay (z-100) to avoid blocking
+    - [x] Touch-friendly button sizes
   - [x] Clean Architecture maintained
   - [x] Created new file: `QuestFullView.tsx` (preserved original `QuestView.tsx`)
 

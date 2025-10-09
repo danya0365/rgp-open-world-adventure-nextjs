@@ -8,7 +8,7 @@ import { GameLayout, GameLayoutOverlay } from "@/src/presentation/components/lay
 import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
 import { QuestMapView } from "./QuestMapView";
 import { QuestStatsPanel } from "./QuestStatsPanel";
-import { QuestDetail } from "./QuestDetail";
+import { QuestDetailCompact } from "./QuestDetailCompact";
 import { Scroll, Filter, ListChecks, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
@@ -155,17 +155,35 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
     filteredQuests = filteredQuests.filter((q) => q.status === selectedStatus);
   }
 
-  // Generate positions for quests (responsive grid)
+  // Generate positions for quests (responsive grid) - Improved mobile spacing
   const questsWithPositions = filteredQuests.map((quest, index) => {
     const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-    const columns = isMobile ? 3 : 5;
+    const isTablet = typeof window !== "undefined" && window.innerWidth >= 768 && window.innerWidth < 1024;
+    
+    let columns, spacingX, spacingY, startX, startY;
+    
+    if (isMobile) {
+      columns = 2; // 2 columns on mobile (wider spacing)
+      spacingX = 40;
+      spacingY = 30;
+      startX = 20;
+      startY = 25;
+    } else if (isTablet) {
+      columns = 3;
+      spacingX = 28;
+      spacingY = 25;
+      startX = 18;
+      startY = 22;
+    } else {
+      columns = 5;
+      spacingX = 16;
+      spacingY = 20;
+      startX = 12;
+      startY = 20;
+    }
+
     const col = index % columns;
     const row = Math.floor(index / columns);
-    const spacingX = isMobile ? 28 : 16;
-    const spacingY = isMobile ? 25 : 20;
-    const startX = isMobile ? 12 : 12;
-    const startY = isMobile ? 20 : 20;
-
     const x = startX + col * spacingX;
     const y = startY + row * spacingY;
 
@@ -215,7 +233,7 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
 
       {/* HUD Overlays */}
       <GameLayoutOverlay>
-        {/* Quest Log Panel - Top Left */}
+        {/* Quest Log Panel - Top Left - Mobile Optimized */}
         {showQuestLogPanel ? (
           <HUDPanel
             title="Active Quests"
@@ -223,8 +241,8 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
             position="top-left"
             closable
             onClose={() => setShowQuestLogPanel(false)}
-            maxHeight="400px"
-            maxWidth="min(350px, 90vw)"
+            maxHeight="min(350px, 50vh)"
+            maxWidth="min(320px, 85vw)"
           >
             <div className="space-y-2">
               {viewModel.activeQuests.length > 0 ? (
@@ -278,7 +296,7 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
           />
         )}
 
-        {/* Stats Panel - Top Right */}
+        {/* Stats Panel - Top Right - Mobile Optimized */}
         {showStatsPanel ? (
           <HUDPanel
             title="Quest Statistics"
@@ -286,8 +304,8 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
             position="top-right"
             closable
             onClose={() => setShowStatsPanel(false)}
-            maxHeight="300px"
-            maxWidth="280px"
+            maxHeight="min(280px, 45vh)"
+            maxWidth="min(260px, 80vw)"
           >
             <QuestStatsPanel stats={viewModel.stats} />
           </HUDPanel>
@@ -300,7 +318,7 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
           />
         )}
 
-        {/* Filters Panel - Bottom Left */}
+        {/* Filters Panel - Bottom Left - Mobile Optimized */}
         {showFiltersPanel && (
           <HUDPanel
             title="Filters"
@@ -308,8 +326,8 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
             position="bottom-left"
             closable
             onClose={() => setShowFiltersPanel(false)}
-            maxHeight="400px"
-            maxWidth="min(350px, 90vw)"
+            maxHeight="min(380px, 55vh)"
+            maxWidth="min(320px, 85vw)"
           >
             <div className="space-y-4">
               {/* Type Filter */}
@@ -384,14 +402,14 @@ export function QuestFullView({ initialViewModel }: QuestFullViewProps) {
         </div>
       )}
 
-      {/* Quest Detail Modal */}
-      <QuestDetail
+      {/* Quest Detail Modal - Compact */}
+      <QuestDetailCompact
         quest={selectedQuest}
         isOpen={!!selectedQuest}
         onClose={() => setSelectedQuest(null)}
-        onStart={(questId) => handleQuestAction("start", questId)}
-        onComplete={(questId) => handleQuestAction("complete", questId)}
-        onAbandon={(questId) => handleQuestAction("abandon", questId)}
+        onStart={(questId: string) => handleQuestAction("start", questId)}
+        onComplete={(questId: string) => handleQuestAction("complete", questId)}
+        onAbandon={(questId: string) => handleQuestAction("abandon", questId)}
       />
 
       {/* Error Toast */}

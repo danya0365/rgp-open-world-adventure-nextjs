@@ -59,9 +59,13 @@ export function QuestMarker({ quest, onClick, x, y }: QuestMarkerProps) {
   const isCompleted = quest.status === "completed";
   const isLocked = quest.status === "locked";
 
-  // Size based on type (main quests are bigger)
-  const size = quest.type === "main" ? "w-20 h-20 sm:w-24 md:w-28 sm:h-24 md:h-28" : "w-16 h-16 sm:w-18 md:w-20 sm:h-18 md:h-20";
-  const glowSize = quest.type === "main" ? "w-24 h-24 sm:w-28 md:w-32 sm:h-28 md:h-32" : "w-20 h-20 sm:w-22 md:w-24 sm:h-22 md:h-24";
+  // Size based on type (main quests are bigger) - Mobile optimized
+  const size = quest.type === "main" 
+    ? "w-16 h-16 sm:w-20 md:w-24 lg:w-28 sm:h-20 md:h-24 lg:h-28" 
+    : "w-14 h-14 sm:w-16 md:w-18 lg:w-20 sm:h-16 md:h-18 lg:h-20";
+  const glowSize = quest.type === "main" 
+    ? "w-20 h-20 sm:w-24 md:w-28 lg:w-32 sm:h-24 md:h-28 lg:h-32" 
+    : "w-16 h-16 sm:w-20 md:w-22 lg:w-24 sm:h-20 md:h-22 lg:h-24";
 
   return (
     <button
@@ -101,8 +105,8 @@ export function QuestMarker({ quest, onClick, x, y }: QuestMarkerProps) {
               : `bg-gradient-to-br ${colors.bg} ${colors.border} group-hover:scale-110`
           }`}
         >
-          {/* Icon */}
-          <Icon className={`w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 text-white ${isLocked ? "opacity-50" : ""}`} />
+          {/* Icon - Mobile optimized */}
+          <Icon className={`w-6 h-6 sm:w-8 md:w-10 lg:w-12 sm:h-8 md:h-10 lg:h-12 text-white ${isLocked ? "opacity-50" : ""}`} />
         </div>
 
         {/* Status Badge */}
@@ -139,10 +143,10 @@ export function QuestMarker({ quest, onClick, x, y }: QuestMarkerProps) {
         </div>
       </div>
 
-      {/* Quest Name */}
-      <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[200px]">
+      {/* Quest Name - Mobile optimized */}
+      <div className="absolute top-full mt-2 sm:mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[150px] sm:max-w-[200px]">
         <div
-          className={`px-3 py-1 rounded-lg text-sm font-semibold shadow-lg transition-all ${
+          className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm font-semibold shadow-lg transition-all ${
             isCompleted
               ? "bg-green-500/90 text-white"
               : isActive
