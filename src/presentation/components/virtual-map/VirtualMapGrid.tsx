@@ -115,6 +115,10 @@ export function VirtualMapGrid({
   // Handle tile click - start pathfinding movement
   const handleTileClick = (tile: MapTileType) => {
     console.log(`[VirtualMapGrid] Tile clicked:`, tile);
+    console.log(`  - Tile walkable:`, tile.isWalkable);
+    console.log(`  - Player location:`, playerPosition.locationId);
+    console.log(`  - Current location:`, currentLocation.id);
+    
     if (!tile.isWalkable) {
       console.log(`  ✗ Tile not walkable`);
       return;
@@ -132,6 +136,7 @@ export function VirtualMapGrid({
   // Debug: log render info
   console.log(`[VirtualMapGrid] Rendering:`);
   console.log(`  - Total tiles: ${tiles.length}`);
+  console.log(`  - Walkable tiles: ${tiles.filter(t => t.isWalkable).length}`);
   console.log(`  - Viewport: (${viewportStartX}, ${viewportStartY}) → (${viewportEndX}, ${viewportEndY})`);
   console.log(`  - Player: (${playerTileX}, ${playerTileY}) at location: ${playerPosition.locationId}`);
   console.log(`  - Current location: ${currentLocation.id}`);
@@ -143,6 +148,7 @@ export function VirtualMapGrid({
     tile.y < viewportEndY
   );
   console.log(`  - Visible tiles: ${visibleTiles.length}`);
+  console.log(`  - Visible walkable: ${visibleTiles.filter(t => t.isWalkable).length}`);
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
@@ -246,8 +252,8 @@ export function VirtualMapGrid({
           />
         )}
 
-        {/* Map Info Overlay - Top Left */}
-        <div className="absolute top-4 left-4 pointer-events-none z-50">
+        {/* Map Info Overlay - Bottom Left (moved from top) */}
+        <div className="absolute bottom-4 left-4 pointer-events-none z-50">
           <div className="bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-lg px-3 py-2 max-w-xs">
             <h2 className="text-lg sm:text-xl font-bold text-white mb-1">
               {currentLocation.name}
@@ -260,7 +266,7 @@ export function VirtualMapGrid({
               <span>•</span>
               <span>{gridWidth}x{gridHeight} tiles</span>
               <span>•</span>
-              <span>View: {viewportTilesWidth}x{viewportTilesHeight}</span>
+              <span>View: {actualViewportWidth}x{actualViewportHeight}</span>
             </div>
             <div className="mt-1 text-[8px] text-gray-600">
               Position: ({playerTileX}, {playerTileY}) | Viewport: ({viewportStartX}, {viewportStartY})

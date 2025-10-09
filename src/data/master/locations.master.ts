@@ -205,6 +205,14 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 20,
       height: 15,
       gridSize: 20,
+      // Pre-generate walkable tiles for testing
+      tiles: Array.from({ length: 20 * 15 }, (_, i) => ({
+        x: i % 20,
+        y: Math.floor(i / 20),
+        type: "grass" as const,
+        isWalkable: true,
+        height: 0,
+      })),
     },
     metadata: {
       npcs: ["npc-mayor", "npc-blacksmith", "npc-merchant"],
@@ -242,6 +250,14 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 20,
       height: 15,
       gridSize: 20,
+      // Pre-generate walkable tiles for testing
+      tiles: Array.from({ length: 20 * 15 }, (_, i) => ({
+        x: i % 20,
+        y: Math.floor(i / 20),
+        type: "grass" as const,
+        isWalkable: true,
+        height: 0,
+      })),
     },
     metadata: {
       npcs: ["npc-elder", "npc-archer-trainer", "npc-herbalist"],
@@ -563,6 +579,14 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 30,
       height: 25,
       gridSize: 30,
+      // Pre-generate walkable tiles for testing
+      tiles: Array.from({ length: 30 * 25 }, (_, i) => ({
+        x: i % 30,
+        y: Math.floor(i / 30),
+        type: "grass" as const,
+        isWalkable: true,
+        height: 0,
+      })),
     },
     metadata: {
       encounters: ["slime", "goblin", "wild-boar"],
@@ -593,6 +617,14 @@ export const LOCATIONS_MASTER: Location[] = [
       width: 18,
       height: 15,
       gridSize: 18,
+      // Pre-generate walkable tiles for testing
+      tiles: Array.from({ length: 18 * 15 }, (_, i) => ({
+        x: i % 18,
+        y: Math.floor(i / 18),
+        type: "grass" as const,
+        isWalkable: true,
+        height: 0,
+      })),
     },
     metadata: {
       npcs: ["npc-fisherman", "npc-trader"],

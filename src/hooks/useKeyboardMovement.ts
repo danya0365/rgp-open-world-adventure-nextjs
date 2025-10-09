@@ -51,25 +51,37 @@ export function useKeyboardMovement(enabled: boolean = true) {
 
   // Handle movement based on pressed keys
   const handleMovement = useCallback(() => {
+    console.log("[useKeyboardMovement] handleMovement called");
+    
     // Don't move if already moving
     if (movementState.isMoving) {
+      console.log("  - Already moving, skipping");
       return;
     }
 
     const target = calculateTargetTile();
+    console.log("  - Target tile:", target);
     if (!target) return;
 
     // Check if player is in a location with map data
-    if (!currentLocationData?.mapData?.tiles) return;
+    if (!currentLocationData?.mapData?.tiles) {
+      console.log("  - No tiles data available!");
+      console.log("  - currentLocationData:", currentLocationData?.id);
+      console.log("  - Has mapData:", !!currentLocationData?.mapData);
+      console.log("  - Has tiles:", !!currentLocationData?.mapData?.tiles);
+      return;
+    }
 
     const mapWidth = currentLocationData.mapData.gridSize || currentLocationData.mapData.width || 20;
     const mapHeight = currentLocationData.mapData.gridSize || currentLocationData.mapData.height || 15;
 
     // Check bounds
     if (target.x < 0 || target.x >= mapWidth || target.y < 0 || target.y >= mapHeight) {
+      console.log("  - Target out of bounds");
       return;
     }
 
+    console.log("  - Starting movement to:", target);
     // Start movement to target tile
     startMovementToTile(target.x, target.y);
   }, [calculateTargetTile, movementState.isMoving, currentLocationData, startMovementToTile]);
