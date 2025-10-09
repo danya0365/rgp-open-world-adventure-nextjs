@@ -30,6 +30,7 @@ export function VirtualMapGrid({
     setViewportSize,
     calculateViewport,
     getOrGenerateTiles,
+    cacheTiles,
     isTileVisited,
     getVisibleConnections,
     getVisibleLocations,
@@ -67,6 +68,13 @@ export function VirtualMapGrid({
   const tiles = useMemo<MapTileType[]>(() => {
     return getOrGenerateTiles(currentLocation, gridWidth, gridHeight);
   }, [currentLocation, gridWidth, gridHeight, getOrGenerateTiles]);
+
+  // Cache tiles after they are generated (in useEffect to avoid setState during render)
+  useEffect(() => {
+    if (tiles && tiles.length > 0) {
+      cacheTiles(currentLocation.id, tiles);
+    }
+  }, [tiles, currentLocation.id, cacheTiles]);
 
   // Calculate viewport whenever player moves or location changes
   useEffect(() => {

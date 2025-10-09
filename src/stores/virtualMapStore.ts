@@ -127,6 +127,7 @@ interface VirtualMapState {
 
   // Tile Management
   getOrGenerateTiles: (location: Location, gridWidth: number, gridHeight: number) => MapTile[];
+  cacheTiles: (locationId: string, tiles: MapTile[]) => void;
   clearTileCache: () => void;
 
   // Helper Selectors
@@ -664,16 +665,9 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             return cached;
           }
 
-          // If location has predefined tiles, use them
+          // If location has predefined tiles, use them (don't cache yet)
           if (location.mapData?.tiles && location.mapData.tiles.length > 0) {
-            const tiles = location.mapData.tiles;
-            // Cache the tiles
-            set((state) => {
-              const newCache = new Map(state.generatedTiles);
-              newCache.set(location.id, tiles);
-              return { generatedTiles: newCache };
-            });
-            return tiles;
+            return location.mapData.tiles;
           }
 
           // Generate procedural tiles based on location type
@@ -688,14 +682,15 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             generatedTiles = generateDefaultTiles(gridWidth, gridHeight, "grass");
           }
 
-          // Cache the generated tiles
+          return generatedTiles;
+        },
+
+        cacheTiles: (locationId, tiles) => {
           set((state) => {
             const newCache = new Map(state.generatedTiles);
-            newCache.set(location.id, generatedTiles);
+            newCache.set(locationId, tiles);
             return { generatedTiles: newCache };
           });
-
-          return generatedTiles;
         },
 
         clearTileCache: () => {
