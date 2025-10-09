@@ -38,7 +38,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 50,
       height: 50,
-      gridSize: 50,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(50, 50),
     },
   },
@@ -65,7 +65,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 30,
       height: 30,
-      gridSize: 30,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(30, 30),
     },
   },
@@ -89,7 +89,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 30,
       height: 30,
-      gridSize: 30,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(30, 30),
     },
   },
@@ -119,7 +119,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 25,
       height: 25,
-      gridSize: 25,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(25, 25),
     },
   },
@@ -146,7 +146,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 25,
       height: 25,
-      gridSize: 25,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(25, 25),
     },
   },
@@ -180,7 +180,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 20,
       height: 20,
-      gridSize: 20,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(20, 20),
     },
     metadata: {
@@ -209,7 +209,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "silverhold",
     description: "เมืองป้อมปราการที่สร้างจากหินและน้ำแข็ง",
-    coordinates: { x: 100, y: 50 },
+    coordinates: { x: 400, y: 280 }, // Center of map: (10*40, 7*40)
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 10,
@@ -221,7 +221,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 20,
       height: 15,
-      gridSize: 20,
+      gridSize: 40, // ✅ Fixed: Each tile = 40px (standard grid size)
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 20 * 15 }, (_, i) => ({
         x: i % 20,
@@ -266,7 +266,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 20,
       height: 15,
-      gridSize: 20,
+      gridSize: 40, // Standard grid size
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 20 * 15 }, (_, i) => ({
         x: i % 20,
@@ -312,7 +312,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 15,
       height: 15,
-      gridSize: 15,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
@@ -347,7 +347,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 15,
       height: 15,
-      gridSize: 15,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
@@ -384,7 +384,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 15,
       height: 10,
-      gridSize: 15,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
@@ -419,7 +419,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 15,
       height: 10,
-      gridSize: 15,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
@@ -452,7 +452,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 12,
       height: 12,
-      gridSize: 12,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(12, 12),
     },
     metadata: {
@@ -484,7 +484,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "guild-master-office",
     description: "ห้องทำงานของหัวหน้าสมาคมนักผจญภัย",
-    coordinates: { x: 25, y: 10 },
+    coordinates: { x: 200, y: 160 }, // Center: (5*40, 4*40)
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
@@ -492,7 +492,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 10,
       height: 8,
-      gridSize: 10,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(10, 8),
     },
     metadata: {
@@ -521,7 +521,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "meeting-room-a",
     description: "ห้องประชุมสำหรับวางแผนภารกิจ",
-    coordinates: { x: 15, y: 10 },
+    coordinates: { x: 160, y: 160 }, // Center: (4*40, 4*40)
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
@@ -529,7 +529,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 8,
       height: 8,
-      gridSize: 8,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(8, 8),
     },
     metadata: {
@@ -568,7 +568,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 25,
       height: 25,
-      gridSize: 25,
+      gridSize: 40, // Standard grid size
       tiles: generateWalkableTiles(25, 25),
     },
     metadata: {
@@ -603,7 +603,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 30,
       height: 25,
-      gridSize: 30,
+      gridSize: 40, // Standard grid size
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 30 * 25 }, (_, i) => ({
         x: i % 30,
@@ -641,7 +641,7 @@ export const LOCATIONS_MASTER: Location[] = [
     mapData: {
       width: 18,
       height: 15,
-      gridSize: 18,
+      gridSize: 40, // Standard grid size
       // Pre-generate walkable tiles for testing
       tiles: Array.from({ length: 18 * 15 }, (_, i) => ({
         x: i % 18,
