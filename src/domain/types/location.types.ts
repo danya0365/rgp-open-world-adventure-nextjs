@@ -72,15 +72,46 @@ export interface MapTile {
   data?: Record<string, any>;
 }
 
+// POI (Point of Interest) Types
+export interface POIBase {
+  id: string;
+  coordinates: Coordinates; // Position on the map grid (tile coordinates)
+  name?: string; // Optional display name
+  icon?: string; // Optional icon identifier
+}
+
+export interface NPCMarker extends POIBase {
+  hasQuest?: boolean; // Does this NPC have a quest?
+  questId?: string; // Quest ID if available
+}
+
+export interface ShopMarker extends POIBase {
+  shopType?: "weapons" | "armor" | "items" | "magic" | "potions" | "general";
+}
+
+export interface ServiceMarker extends POIBase {
+  serviceType: "inn" | "guild" | "bank" | "temple" | "blacksmith" | "quest-board" | "party-formation" | "bounties";
+}
+
+export interface BattleMarker extends POIBase {
+  battleMapId: string; // Reference to battle map
+  difficulty?: "easy" | "normal" | "hard" | "boss";
+}
+
+export interface TreasureMarker extends POIBase {
+  treasureId: string;
+  isDiscovered?: boolean;
+}
+
 export interface LocationMetadata {
-  npcs?: string[]; // NPC IDs
-  battleMaps?: string[]; // Battle Map IDs for this location (each map has its own enemies)
-  shops?: string[]; // Shop IDs
-  services?: string[]; // Service types
-  exits?: LocationConnection[];
-  encounters?: string[]; // Encounter table IDs
-  treasures?: string[]; // Treasure IDs
-  secrets?: string[]; // Secret IDs
+  npcs?: NPCMarker[]; // NPCs with positions
+  shops?: ShopMarker[]; // Shops with positions
+  services?: ServiceMarker[]; // Services with positions
+  battleMaps?: BattleMarker[]; // Battle triggers with positions
+  treasures?: TreasureMarker[]; // Treasure chests with positions
+  encounters?: string[]; // Random encounter table IDs
+  secrets?: string[]; // Secret area IDs
+  exits?: LocationConnection[]; // Deprecated: use LOCATION_CONNECTIONS instead
 }
 
 export interface LocationConnection {

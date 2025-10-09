@@ -178,8 +178,12 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(20, 20),
     },
     metadata: {
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
       encounters: ["ice-wolf", "frost-giant", "ice-elemental"],
-      treasures: ["crystal-chest-1", "crystal-chest-2"],
       secrets: ["hidden-cave-1"],
     },
   },
@@ -225,10 +229,101 @@ export const LOCATIONS_MASTER: Location[] = [
       })),
     },
     metadata: {
-      npcs: ["npc-mayor", "npc-blacksmith", "npc-merchant"],
-      battleMaps: ["map-forest-clearing", "map-cave-entrance"],
-      shops: ["shop-weapons", "shop-armor", "shop-items"],
-      services: ["inn", "guild", "bank"],
+      // NPCs with positions on map (tile coordinates)
+      npcs: [
+        { 
+          id: "npc-mayor", 
+          coordinates: { x: 10, y: 5 }, // Center of city hall
+          name: "Mayor Aldric",
+          hasQuest: true,
+          questId: "quest-main-1"
+        },
+        { 
+          id: "npc-blacksmith", 
+          coordinates: { x: 15, y: 8 }, // Near forge
+          name: "Blacksmith Gorin",
+          hasQuest: false
+        },
+        { 
+          id: "npc-merchant", 
+          coordinates: { x: 7, y: 6 }, // Market square
+          name: "Merchant Lyra",
+          hasQuest: true,
+          questId: "quest-side-1"
+        },
+      ],
+      
+      // Shops with positions
+      shops: [
+        { 
+          id: "shop-weapons", 
+          coordinates: { x: 14, y: 7 }, // Near blacksmith
+          name: "Weapon Shop",
+          shopType: "weapons" as const
+        },
+        { 
+          id: "shop-armor", 
+          coordinates: { x: 16, y: 9 }, // Armor district
+          name: "Armor Shop",
+          shopType: "armor" as const
+        },
+        { 
+          id: "shop-items", 
+          coordinates: { x: 8, y: 7 }, // Market area
+          name: "General Store",
+          shopType: "items" as const
+        },
+      ],
+      
+      // Services with positions
+      services: [
+        { 
+          id: "inn", 
+          coordinates: { x: 5, y: 10 }, // Residential area
+          name: "The Frozen Hearth Inn",
+          serviceType: "inn" as const
+        },
+        { 
+          id: "guild", 
+          coordinates: { x: 3, y: 5 }, // Guild district (matches building-guild-hall connection)
+          name: "Adventurer's Guild",
+          serviceType: "guild" as const
+        },
+        { 
+          id: "bank", 
+          coordinates: { x: 12, y: 4 }, // Financial district
+          name: "Silverhold Bank",
+          serviceType: "bank" as const
+        },
+      ],
+      
+      // Battle triggers with positions
+      battleMaps: [
+        {
+          id: "map-forest-clearing",
+          battleMapId: "map-forest-clearing",
+          coordinates: { x: 2, y: 12 }, // Forest entrance (south)
+          name: "Forest Clearing",
+          difficulty: "normal" as const
+        },
+        {
+          id: "map-cave-entrance",
+          battleMapId: "map-cave-entrance",
+          coordinates: { x: 18, y: 3 }, // Cave entrance (north-east)
+          name: "Cave Entrance",
+          difficulty: "hard" as const
+        },
+      ],
+      
+      // Treasure chests
+      treasures: [
+        {
+          id: "treasure-city-1",
+          treasureId: "treasure-city-1",
+          coordinates: { x: 1, y: 1 }, // Hidden corner
+          name: "Hidden Chest"
+        },
+      ],
     },
   },
 
@@ -269,9 +364,73 @@ export const LOCATIONS_MASTER: Location[] = [
       })),
     },
     metadata: {
-      npcs: ["npc-elder", "npc-archer-trainer", "npc-herbalist"],
-      shops: ["shop-magic", "shop-bows", "shop-potions"],
-      services: ["inn", "guild", "temple"],
+      // NPCs with positions
+      npcs: [
+        { 
+          id: "npc-elder", 
+          coordinates: { x: 10, y: 7 }, // Elder's tree house
+          name: "Elder Thalion",
+          hasQuest: true,
+          questId: "quest-elven-1"
+        },
+        { 
+          id: "npc-archer-trainer", 
+          coordinates: { x: 15, y: 5 }, // Training grounds
+          name: "Archer Trainer Sylvara",
+          hasQuest: false
+        },
+        { 
+          id: "npc-herbalist", 
+          coordinates: { x: 5, y: 9 }, // Herb garden
+          name: "Herbalist Elara",
+          hasQuest: true,
+          questId: "quest-herbs-1"
+        },
+      ],
+      
+      // Shops with positions
+      shops: [
+        { 
+          id: "shop-magic", 
+          coordinates: { x: 12, y: 8 }, // Magic district
+          name: "Arcane Emporium",
+          shopType: "magic" as const
+        },
+        { 
+          id: "shop-bows", 
+          coordinates: { x: 16, y: 6 }, // Near training grounds
+          name: "Elven Bowyer",
+          shopType: "weapons" as const
+        },
+        { 
+          id: "shop-potions", 
+          coordinates: { x: 6, y: 10 }, // Near herb garden
+          name: "Potion Shop",
+          shopType: "potions" as const
+        },
+      ],
+      
+      // Services with positions
+      services: [
+        { 
+          id: "inn", 
+          coordinates: { x: 8, y: 12 }, // Residential area
+          name: "The Moonlit Rest",
+          serviceType: "inn" as const
+        },
+        { 
+          id: "guild", 
+          coordinates: { x: 13, y: 4 }, // Guild hall
+          name: "Elven Rangers Guild",
+          serviceType: "guild" as const
+        },
+        { 
+          id: "temple", 
+          coordinates: { x: 3, y: 3 }, // Sacred grove
+          name: "Temple of Moonlight",
+          serviceType: "temple" as const
+        },
+      ],
     },
   },
 
@@ -307,8 +466,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
-      npcs: ["npc-guild-master", "npc-receptionist", "npc-quest-board"],
-      services: ["quest-board", "party-formation", "bounties"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -341,8 +503,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(15, 15),
     },
     metadata: {
-      npcs: ["npc-archmage", "npc-librarian", "npc-apprentice"],
-      services: ["spell-learning", "enchanting", "library"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -377,8 +542,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
-      npcs: ["npc-receptionist", "npc-quest-board"],
-      services: ["quest-board", "registration"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -411,8 +579,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(15, 10),
     },
     metadata: {
-      npcs: ["npc-party-leader"],
-      services: ["party-formation", "strategy-planning"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -443,8 +614,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(12, 12),
     },
     metadata: {
-      npcs: ["npc-librarian"],
-      services: ["library", "spell-research"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -482,8 +656,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(10, 8),
     },
     metadata: {
-      npcs: ["npc-guild-master"],
-      services: ["special-quests", "rank-promotion"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -518,7 +695,11 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(8, 8),
     },
     metadata: {
-      services: ["party-formation"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 
@@ -556,8 +737,12 @@ export const LOCATIONS_MASTER: Location[] = [
       tiles: generateWalkableTiles(25, 25),
     },
     metadata: {
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
       encounters: ["ice-golem", "frost-dragon", "frozen-undead"],
-      treasures: ["legendary-chest-1"],
       secrets: ["secret-boss-room"],
     },
   },
@@ -597,9 +782,12 @@ export const LOCATIONS_MASTER: Location[] = [
       })),
     },
     metadata: {
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
       encounters: ["slime", "goblin", "wild-boar"],
-      npcs: ["npc-tutorial-guide"],
-      battleMaps: ["map-plains-battle"],
     },
   },
 
@@ -634,9 +822,11 @@ export const LOCATIONS_MASTER: Location[] = [
       })),
     },
     metadata: {
-      npcs: ["npc-fisherman", "npc-trader"],
-      shops: ["shop-general", "shop-fish"],
-      services: ["inn", "dock"],
+      npcs: [],
+      shops: [],
+      services: [],
+      battleMaps: [],
+      treasures: [],
     },
   },
 ];

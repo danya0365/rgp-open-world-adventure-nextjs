@@ -301,83 +301,90 @@ export function WorldMapView({
     type: string;
     isService: boolean;
     serviceType: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }> = [];
   if (currentLocation?.metadata) {
-    // Add NPCs as virtual locations
+    // Add NPCs as virtual locations (now using NPCMarker[])
     if (
       currentLocation.metadata.npcs &&
       currentLocation.metadata.npcs.length > 0
     ) {
-      currentLocation.metadata.npcs.forEach((npcId, idx) => {
+      currentLocation.metadata.npcs.forEach((npc) => {
         virtualServiceLocations.push({
-          id: `service-npc-${npcId}`,
-          name: `NPC ${idx + 1}`,
+          id: `service-npc-${npc.id}`,
+          name: npc.name || `NPC`,
           type: "npc",
           isService: true,
           serviceType: "npc",
-          metadata: { npcId },
+          metadata: { 
+            npcId: npc.id,
+            hasQuest: npc.hasQuest,
+            questId: npc.questId,
+          },
         });
       });
     }
 
-    // Add shops as virtual locations
+    // Add shops as virtual locations (now using ShopMarker[])
     if (
       currentLocation.metadata.shops &&
       currentLocation.metadata.shops.length > 0
     ) {
-      currentLocation.metadata.shops.forEach((shopId) => {
+      currentLocation.metadata.shops.forEach((shop) => {
         virtualServiceLocations.push({
-          id: `service-shop-${shopId}`,
-          name: `Shop`,
+          id: `service-shop-${shop.id}`,
+          name: shop.name || `Shop`,
           type: "shop",
           isService: true,
           serviceType: "shop",
-          metadata: { shopId },
+          metadata: { 
+            shopId: shop.id,
+            shopType: shop.shopType,
+          },
         });
       });
     }
 
-    // Add inn as virtual location
-    if (currentLocation.metadata.services?.includes("inn")) {
-      virtualServiceLocations.push({
-        id: `service-inn-${currentLocation.id}`,
-        name: `Inn`,
-        type: "inn",
-        isService: true,
-        serviceType: "inn",
+    // Add services as virtual locations (now using ServiceMarker[])
+    if (
+      currentLocation.metadata.services &&
+      currentLocation.metadata.services.length > 0
+    ) {
+      currentLocation.metadata.services.forEach((service) => {
+        virtualServiceLocations.push({
+          id: `service-${service.serviceType}-${currentLocation.id}`,
+          name: service.name || service.serviceType,
+          type: service.serviceType,
+          isService: true,
+          serviceType: service.serviceType,
+          metadata: {
+            serviceId: service.id,
+          },
+        });
       });
     }
 
-    // Add guild as virtual location
-    if (currentLocation.metadata.services?.includes("guild")) {
-      virtualServiceLocations.push({
-        id: `service-guild-${currentLocation.id}`,
-        name: `Guild Hall`,
-        type: "guild",
-        isService: true,
-        serviceType: "guild",
-      });
-    }
-
-    // Add battle maps as virtual locations
+    // Add battle maps as virtual locations (now using BattleMarker[])
     if (
       currentLocation.metadata.battleMaps &&
       currentLocation.metadata.battleMaps.length > 0
     ) {
-      currentLocation.metadata.battleMaps.forEach((battleMapId, idx) => {
+      currentLocation.metadata.battleMaps.forEach((battle) => {
         virtualServiceLocations.push({
-          id: `service-battle-${battleMapId}`,
-          name: `Battle Area ${idx + 1}`,
+          id: `service-battle-${battle.battleMapId}`,
+          name: battle.name || `Battle Area`,
           type: "battle",
           isService: true,
           serviceType: "battle",
-          metadata: { battleMapId },
+          metadata: { 
+            battleMapId: battle.battleMapId,
+            difficulty: battle.difficulty,
+          },
         });
       });
     }
 
-    // Add encounters as virtual locations
+    // Add encounters as virtual locations (still string[])
     if (
       currentLocation.metadata.encounters &&
       currentLocation.metadata.encounters.length > 0
@@ -394,19 +401,22 @@ export function WorldMapView({
       });
     }
 
-    // Add treasures as virtual locations
+    // Add treasures as virtual locations (now using TreasureMarker[])
     if (
       currentLocation.metadata.treasures &&
       currentLocation.metadata.treasures.length > 0
     ) {
-      currentLocation.metadata.treasures.forEach((treasureId, idx) => {
+      currentLocation.metadata.treasures.forEach((treasure) => {
         virtualServiceLocations.push({
-          id: `service-treasure-${treasureId}`,
-          name: `Treasure ${idx + 1}`,
+          id: `service-treasure-${treasure.treasureId}`,
+          name: treasure.name || `Treasure`,
           type: "treasure",
           isService: true,
           serviceType: "treasure",
-          metadata: { treasureId },
+          metadata: { 
+            treasureId: treasure.treasureId,
+            isDiscovered: treasure.isDiscovered,
+          },
         });
       });
     }

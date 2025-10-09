@@ -82,8 +82,9 @@ export class LocationDetailPresenter {
       };
     }
 
-    // Get NPCs from location metadata
-    const npcIds = location.metadata?.npcs || [];
+    // Get NPCs from location metadata (now NPCMarker[])
+    const npcMarkers = location.metadata?.npcs || [];
+    const npcIds = npcMarkers.map((npc) => npc.id);
     const npcs = this.characters.filter((char) => npcIds.includes(char.id));
 
     // Get available quests for this location
@@ -91,8 +92,9 @@ export class LocationDetailPresenter {
       (quest) => quest.status === "available" || quest.status === "active"
     );
 
-    // Get battle maps from location metadata (Master Data)
-    const battleMapIds = location.metadata?.battleMaps || [];
+    // Get battle maps from location metadata (now BattleMarker[])
+    const battleMarkers = location.metadata?.battleMaps || [];
+    const battleMapIds = battleMarkers.map((battle) => battle.battleMapId);
     const battleMaps = this.battleMaps.filter((map) =>
       battleMapIds.includes(map.id)
     );
