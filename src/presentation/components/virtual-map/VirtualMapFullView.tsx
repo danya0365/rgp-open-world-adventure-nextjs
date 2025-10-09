@@ -47,33 +47,25 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
   // Get breadcrumb from master data (not cached as it's lightweight)
   const breadcrumb = currentLocationData ? getLocationPath(currentLocationData.id) : [];
 
-  // Initialize store from URL on mount
+  // Sync URL with player's actual location on mount
   useEffect(() => {
     console.log(`[VirtualMapFullView] Initializing...`);
-    console.log(`  - initialLocationId:`, initialLocationId);
-    console.log(`  - currentLocationData:`, currentLocationData?.id);
+    console.log(`  - URL locationId:`, initialLocationId);
     
     const currentPos = useVirtualMapStore.getState().playerPosition;
-    console.log(`  - Current player position:`, currentPos);
+    console.log(`  - Player's actual location:`, currentPos.locationId);
     
-    if (initialLocationId) {
-      // Teleport player to this location if they're not already here
-      if (currentPos.locationId !== initialLocationId) {
-        console.log(`  ✓ Teleporting player to ${initialLocationId}`);
-        teleportToLocation(initialLocationId);
-      } else {
-        console.log(`  ✓ Player already at ${initialLocationId}`);
-      }
-    } else if (currentLocationData) {
-      // If no URL param, teleport to current location in store
-      if (currentPos.locationId !== currentLocationData.id) {
-        console.log(`  ✓ Teleporting player to current location: ${currentLocationData.id}`);
-        teleportToLocation(currentLocationData.id);
-      } else {
-        console.log(`  ✓ Player already at ${currentLocationData.id}`);
-      }
+    // If URL doesn't match player's actual location, redirect to correct location
+    if (initialLocationId && currentPos.locationId !== initialLocationId) {
+      console.log(`  ⚠️ URL mismatch! Player is at ${currentPos.locationId}, but URL shows ${initialLocationId}`);
+      console.log(`  ↻ Redirecting to player's actual location...`);
+      router.push(`/virtual-world/${currentPos.locationId}`);
+    } else if (!initialLocationId && currentPos.locationId) {
+      // If no URL param, redirect to player's current location
+      console.log(`  ↻ No URL param, redirecting to player location: ${currentPos.locationId}`);
+      router.push(`/virtual-world/${currentPos.locationId}`);
     } else {
-      console.log(`  ✗ No location data available!`);
+      console.log(`  ✓ URL matches player location`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
@@ -88,19 +80,34 @@ export function VirtualMapFullView({ initialLocationId }: VirtualMapFullViewProp
 
   // Handle location click - teleport + update URL
   const handleLocationClick = (location: Location) => {
+    console.log(`[VirtualMapFullView] Location clicked:`, location.id);
+    
+    // Check if location is discovered (for security)
+    if (!discoveredLocations.has(location.id)) {
+      console.log(`  ✗ Location not discovered yet!`);
+      return;
+    }
+    
+    console.log(`  ✓ Teleporting to ${location.id}`);
+    
     // Teleport to location (updates store)
     teleportToLocation(location.id, location.coordinates);
     
-    // Update URL
+    // Update URL to match new location
     router.push(`/virtual-world/${location.id}`);
   };
 
   // Handle breadcrumb click - teleport + update URL
   const handleBreadcrumbClick = (location: Location) => {
+    console.log(`[VirtualMapFullView] Breadcrumb clicked:`, location.id);
+    
+    // Breadcrumbs are always accessible (parent locations)
+    console.log(`  ✓ Teleporting to ${location.id}`);
+    
     // Teleport to location (updates store)
     teleportToLocation(location.id, location.coordinates);
     
-    // Update URL
+    // Update URL to match new location
     router.push(`/virtual-world/${location.id}`);
   };
 
