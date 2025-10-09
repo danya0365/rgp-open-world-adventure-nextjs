@@ -6,7 +6,7 @@ interface BattleMarkerComponentProps {
   gridSize: number;
   viewportOffsetX: number;
   viewportOffsetY: number;
-  onClick?: (battle: BattleMarker) => void;
+  isPlayerNearby?: boolean;
 }
 
 // Difficulty colors
@@ -30,7 +30,7 @@ export function BattleMarkerComponent({
   gridSize,
   viewportOffsetX,
   viewportOffsetY,
-  onClick,
+  isPlayerNearby = false,
 }: BattleMarkerComponentProps) {
   // Calculate position relative to viewport
   const x = (battle.coordinates.x - viewportOffsetX) * gridSize;
@@ -42,7 +42,7 @@ export function BattleMarkerComponent({
 
   return (
     <div
-      className="absolute pointer-events-auto cursor-pointer group"
+      className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -50,7 +50,6 @@ export function BattleMarkerComponent({
         height: `${gridSize}px`,
         zIndex: 50,
       }}
-      onClick={() => onClick?.(battle)}
       title={battle.name || "Battle Area"}
     >
       {/* Battle Circle with pulsing animation */}
@@ -65,8 +64,8 @@ export function BattleMarkerComponent({
         <Icon className="w-3 h-3 text-white" />
       </div>
 
-      {/* Name Label (on hover) */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+      {/* Name Label (always show) */}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
         <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg">
           {battle.name || "Battle Area"}
           <div className="text-[10px] text-gray-300 capitalize">
@@ -74,6 +73,15 @@ export function BattleMarkerComponent({
           </div>
         </div>
       </div>
+
+      {/* Interaction Indicator (when player is nearby) */}
+      {isPlayerNearby && (
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap animate-bounce">
+          <div className="bg-red-500 text-white text-xs px-3 py-1 rounded-full shadow-lg font-bold">
+            Press SPACE to battle
+          </div>
+        </div>
+      )}
 
       {/* Glow effect for boss battles */}
       {difficulty === "boss" && (

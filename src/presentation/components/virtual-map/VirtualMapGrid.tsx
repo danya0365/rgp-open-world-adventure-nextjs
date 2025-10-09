@@ -13,6 +13,7 @@ import { ShopMarker } from "./ShopMarker";
 import { ServiceMarker } from "./ServiceMarker";
 import { BattleMarkerComponent } from "./BattleMarkerComponent";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
+import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -72,6 +73,9 @@ export function VirtualMapGrid({
     getVisibleConnections,
     getVisibleLocations,
   } = useVirtualMapStore();
+
+  // POI Interaction Hook - handles SPACE key press for interactions
+  usePOIInteraction(currentLocation, gridSize);
 
   // Calculate grid dimensions based on location mapData
   const gridColumns = currentLocation.mapData?.dimensions.columns || 20;
@@ -343,79 +347,95 @@ export function VirtualMapGrid({
         )}
 
         {/* POI Markers - NPCs */}
-        {currentLocation.metadata?.npcs?.map((npc) => (
-          <NPCMarker
-            key={npc.id}
-            npc={npc}
-            gridSize={gridSize}
-            viewportOffsetX={viewportStartX}
-            viewportOffsetY={viewportStartY}
-            onClick={(clickedNpc) => {
-              console.log("NPC clicked:", clickedNpc);
-              // TODO: Open NPC dialogue modal
-            }}
-          />
-        ))}
+        {currentLocation.metadata?.npcs?.map((npc) => {
+          // Check if player is at this NPC's position
+          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
+          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+          const isPlayerAtNPC = playerTileX === npc.coordinates.x && playerTileY === npc.coordinates.y;
+          
+          return (
+            <NPCMarker
+              key={npc.id}
+              npc={npc}
+              gridSize={gridSize}
+              viewportOffsetX={viewportStartX}
+              viewportOffsetY={viewportStartY}
+              isPlayerNearby={isPlayerAtNPC}
+            />
+          );
+        })}
 
         {/* POI Markers - Shops */}
-        {currentLocation.metadata?.shops?.map((shop) => (
-          <ShopMarker
-            key={shop.id}
-            shop={shop}
-            gridSize={gridSize}
-            viewportOffsetX={viewportStartX}
-            viewportOffsetY={viewportStartY}
-            onClick={(clickedShop) => {
-              console.log("Shop clicked:", clickedShop);
-              // TODO: Navigate to shop page
-            }}
-          />
-        ))}
+        {currentLocation.metadata?.shops?.map((shop) => {
+          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
+          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+          const isPlayerAtShop = playerTileX === shop.coordinates.x && playerTileY === shop.coordinates.y;
+          
+          return (
+            <ShopMarker
+              key={shop.id}
+              shop={shop}
+              gridSize={gridSize}
+              viewportOffsetX={viewportStartX}
+              viewportOffsetY={viewportStartY}
+              isPlayerNearby={isPlayerAtShop}
+            />
+          );
+        })}
 
         {/* POI Markers - Services */}
-        {currentLocation.metadata?.services?.map((service) => (
-          <ServiceMarker
-            key={service.id}
-            service={service}
-            gridSize={gridSize}
-            viewportOffsetX={viewportStartX}
-            viewportOffsetY={viewportStartY}
-            onClick={(clickedService) => {
-              console.log("Service clicked:", clickedService);
-              // TODO: Open service modal
-            }}
-          />
-        ))}
+        {currentLocation.metadata?.services?.map((service) => {
+          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
+          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+          const isPlayerAtService = playerTileX === service.coordinates.x && playerTileY === service.coordinates.y;
+          
+          return (
+            <ServiceMarker
+              key={service.id}
+              service={service}
+              gridSize={gridSize}
+              viewportOffsetX={viewportStartX}
+              viewportOffsetY={viewportStartY}
+              isPlayerNearby={isPlayerAtService}
+            />
+          );
+        })}
 
         {/* POI Markers - Battle Triggers */}
-        {currentLocation.metadata?.battleMaps?.map((battle) => (
-          <BattleMarkerComponent
-            key={battle.id}
-            battle={battle}
-            gridSize={gridSize}
-            viewportOffsetX={viewportStartX}
-            viewportOffsetY={viewportStartY}
-            onClick={(clickedBattle) => {
-              console.log("Battle clicked:", clickedBattle);
-              // TODO: Navigate to battle page
-            }}
-          />
-        ))}
+        {currentLocation.metadata?.battleMaps?.map((battle) => {
+          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
+          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+          const isPlayerAtBattle = playerTileX === battle.coordinates.x && playerTileY === battle.coordinates.y;
+          
+          return (
+            <BattleMarkerComponent
+              key={battle.id}
+              battle={battle}
+              gridSize={gridSize}
+              viewportOffsetX={viewportStartX}
+              viewportOffsetY={viewportStartY}
+              isPlayerNearby={isPlayerAtBattle}
+            />
+          );
+        })}
 
         {/* POI Markers - Treasures */}
-        {currentLocation.metadata?.treasures?.map((treasure) => (
-          <TreasureMarkerComponent
-            key={treasure.id}
-            treasure={treasure}
-            gridSize={gridSize}
-            viewportOffsetX={viewportStartX}
-            viewportOffsetY={viewportStartY}
-            onClick={(clickedTreasure) => {
-              console.log("Treasure clicked:", clickedTreasure);
-              // TODO: Open treasure modal
-            }}
-          />
-        ))}
+        {currentLocation.metadata?.treasures?.map((treasure) => {
+          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
+          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+          const isPlayerAtTreasure = playerTileX === treasure.coordinates.x && playerTileY === treasure.coordinates.y;
+          
+          return (
+            <TreasureMarkerComponent
+              key={treasure.id}
+              treasure={treasure}
+              gridSize={gridSize}
+              viewportOffsetX={viewportStartX}
+              viewportOffsetY={viewportStartY}
+              isPlayerNearby={isPlayerAtTreasure}
+            />
+          );
+        })}
 
         {/* Connection Markers */}
         {connections.map((connection) => {

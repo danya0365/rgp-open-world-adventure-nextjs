@@ -6,7 +6,7 @@ interface ServiceMarkerProps {
   gridSize: number;
   viewportOffsetX: number;
   viewportOffsetY: number;
-  onClick?: (service: ServiceMarkerType) => void;
+  isPlayerNearby?: boolean;
 }
 
 // Service type icons
@@ -38,7 +38,7 @@ export function ServiceMarker({
   gridSize,
   viewportOffsetX,
   viewportOffsetY,
-  onClick,
+  isPlayerNearby = false,
 }: ServiceMarkerProps) {
   // Calculate position relative to viewport
   const x = (service.coordinates.x - viewportOffsetX) * gridSize;
@@ -49,7 +49,7 @@ export function ServiceMarker({
 
   return (
     <div
-      className="absolute pointer-events-auto cursor-pointer group"
+      className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -57,7 +57,6 @@ export function ServiceMarker({
         height: `${gridSize}px`,
         zIndex: 50,
       }}
-      onClick={() => onClick?.(service)}
       title={service.name || service.serviceType}
     >
       {/* Service Circle */}
@@ -72,8 +71,8 @@ export function ServiceMarker({
         <span className="text-[8px] font-bold text-gray-700">S</span>
       </div>
 
-      {/* Name Label (on hover) */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+      {/* Name Label (always show) */}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
         <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg">
           {service.name || service.serviceType}
           <div className="text-[10px] text-gray-300 capitalize">
@@ -81,6 +80,15 @@ export function ServiceMarker({
           </div>
         </div>
       </div>
+
+      {/* Interaction Indicator (when player is nearby) */}
+      {isPlayerNearby && (
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap animate-bounce">
+          <div className="bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow-lg font-bold">
+            Press SPACE to use
+          </div>
+        </div>
+      )}
     </div>
   );
 }

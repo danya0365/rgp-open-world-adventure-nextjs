@@ -6,7 +6,7 @@ interface NPCMarkerProps {
   gridSize: number;
   viewportOffsetX: number;
   viewportOffsetY: number;
-  onClick?: (npc: NPCMarkerType) => void;
+  isPlayerNearby?: boolean;
 }
 
 export function NPCMarker({
@@ -14,7 +14,7 @@ export function NPCMarker({
   gridSize,
   viewportOffsetX,
   viewportOffsetY,
-  onClick,
+  isPlayerNearby = false,
 }: NPCMarkerProps) {
   // Calculate position relative to viewport
   const x = (npc.coordinates.x - viewportOffsetX) * gridSize;
@@ -22,7 +22,7 @@ export function NPCMarker({
 
   return (
     <div
-      className="absolute pointer-events-auto cursor-pointer group"
+      className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -30,7 +30,6 @@ export function NPCMarker({
         height: `${gridSize}px`,
         zIndex: 50,
       }}
-      onClick={() => onClick?.(npc)}
       title={npc.name || "NPC"}
     >
       {/* NPC Circle */}
@@ -51,8 +50,8 @@ export function NPCMarker({
         </div>
       )}
 
-      {/* Name Label (on hover) */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+      {/* Name Label (always show) */}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
         <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg">
           {npc.name || "NPC"}
           {npc.hasQuest && (
@@ -60,6 +59,15 @@ export function NPCMarker({
           )}
         </div>
       </div>
+
+      {/* Interaction Indicator (when player is nearby) */}
+      {isPlayerNearby && (
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap animate-bounce">
+          <div className="bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow-lg font-bold">
+            Press SPACE to talk
+          </div>
+        </div>
+      )}
     </div>
   );
 }

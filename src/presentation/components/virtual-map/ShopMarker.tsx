@@ -6,7 +6,7 @@ interface ShopMarkerProps {
   gridSize: number;
   viewportOffsetX: number;
   viewportOffsetY: number;
-  onClick?: (shop: ShopMarkerType) => void;
+  isPlayerNearby?: boolean;
 }
 
 // Shop type icons
@@ -34,7 +34,7 @@ export function ShopMarker({
   gridSize,
   viewportOffsetX,
   viewportOffsetY,
-  onClick,
+  isPlayerNearby = false,
 }: ShopMarkerProps) {
   // Calculate position relative to viewport
   const x = (shop.coordinates.x - viewportOffsetX) * gridSize;
@@ -46,7 +46,7 @@ export function ShopMarker({
 
   return (
     <div
-      className="absolute pointer-events-auto cursor-pointer group"
+      className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -54,7 +54,6 @@ export function ShopMarker({
         height: `${gridSize}px`,
         zIndex: 50,
       }}
-      onClick={() => onClick?.(shop)}
       title={shop.name || "Shop"}
     >
       {/* Shop Circle */}
@@ -69,8 +68,8 @@ export function ShopMarker({
         <ShoppingBag className="w-2.5 h-2.5 text-gray-700" />
       </div>
 
-      {/* Name Label (on hover) */}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+      {/* Name Label (always show) */}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
         <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg">
           {shop.name || "Shop"}
           <div className="text-[10px] text-gray-300 capitalize">
@@ -78,6 +77,15 @@ export function ShopMarker({
           </div>
         </div>
       </div>
+
+      {/* Interaction Indicator (when player is nearby) */}
+      {isPlayerNearby && (
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap animate-bounce">
+          <div className="bg-green-500 text-white text-xs px-3 py-1 rounded-full shadow-lg font-bold">
+            Press SPACE to enter
+          </div>
+        </div>
+      )}
     </div>
   );
 }
