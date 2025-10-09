@@ -8,6 +8,11 @@ import { LocationMarker } from "./LocationMarker";
 import { MapTile } from "./MapTile";
 import { Minimap } from "./Minimap";
 import { PlayerMarker } from "./PlayerMarker";
+import { NPCMarker } from "./NPCMarker";
+import { ShopMarker } from "./ShopMarker";
+import { ServiceMarker } from "./ServiceMarker";
+import { BattleMarkerComponent } from "./BattleMarkerComponent";
+import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -336,6 +341,81 @@ export function VirtualMapGrid({
             gridSize={gridSize}
           />
         )}
+
+        {/* POI Markers - NPCs */}
+        {currentLocation.metadata?.npcs?.map((npc) => (
+          <NPCMarker
+            key={npc.id}
+            npc={npc}
+            gridSize={gridSize}
+            viewportOffsetX={viewportStartX}
+            viewportOffsetY={viewportStartY}
+            onClick={(clickedNpc) => {
+              console.log("NPC clicked:", clickedNpc);
+              // TODO: Open NPC dialogue modal
+            }}
+          />
+        ))}
+
+        {/* POI Markers - Shops */}
+        {currentLocation.metadata?.shops?.map((shop) => (
+          <ShopMarker
+            key={shop.id}
+            shop={shop}
+            gridSize={gridSize}
+            viewportOffsetX={viewportStartX}
+            viewportOffsetY={viewportStartY}
+            onClick={(clickedShop) => {
+              console.log("Shop clicked:", clickedShop);
+              // TODO: Navigate to shop page
+            }}
+          />
+        ))}
+
+        {/* POI Markers - Services */}
+        {currentLocation.metadata?.services?.map((service) => (
+          <ServiceMarker
+            key={service.id}
+            service={service}
+            gridSize={gridSize}
+            viewportOffsetX={viewportStartX}
+            viewportOffsetY={viewportStartY}
+            onClick={(clickedService) => {
+              console.log("Service clicked:", clickedService);
+              // TODO: Open service modal
+            }}
+          />
+        ))}
+
+        {/* POI Markers - Battle Triggers */}
+        {currentLocation.metadata?.battleMaps?.map((battle) => (
+          <BattleMarkerComponent
+            key={battle.id}
+            battle={battle}
+            gridSize={gridSize}
+            viewportOffsetX={viewportStartX}
+            viewportOffsetY={viewportStartY}
+            onClick={(clickedBattle) => {
+              console.log("Battle clicked:", clickedBattle);
+              // TODO: Navigate to battle page
+            }}
+          />
+        ))}
+
+        {/* POI Markers - Treasures */}
+        {currentLocation.metadata?.treasures?.map((treasure) => (
+          <TreasureMarkerComponent
+            key={treasure.id}
+            treasure={treasure}
+            gridSize={gridSize}
+            viewportOffsetX={viewportStartX}
+            viewportOffsetY={viewportStartY}
+            onClick={(clickedTreasure) => {
+              console.log("Treasure clicked:", clickedTreasure);
+              // TODO: Open treasure modal
+            }}
+          />
+        ))}
 
         {/* Connection Markers */}
         {connections.map((connection) => {
