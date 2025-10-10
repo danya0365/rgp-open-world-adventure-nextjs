@@ -1,6 +1,7 @@
 "use client";
 
 import { LocationConnection } from "@/src/domain/types/location.types";
+import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
 interface ConnectionMarkerProps {
   connection: LocationConnection;
@@ -19,6 +20,13 @@ export function ConnectionMarker({
   onClick,
   isDiscovered = true,
 }: ConnectionMarkerProps) {
+  // Get connection marker size in pixels
+  const { width, height } = getPOIPixelSize(connection.from.gridSize, gridSize);
+  
+  // Determine if connection is 1x1 (use circle) or larger (use rounded rectangle)
+  const is1x1 = (!connection.from.gridSize || (connection.from.gridSize.width === 1 && connection.from.gridSize.height === 1));
+  const shapeClass = is1x1 ? "rounded-full" : "rounded-xl";
+  
   // Connection type icons and colors (must be before any early returns)
   const getConnectionStyle = () => {
     switch (connection.connectionType) {
@@ -77,12 +85,12 @@ export function ConnectionMarker({
         style={{
           left: `${x * gridSize}px`,
           top: `${y * gridSize}px`,
-          width: `${gridSize}px`,
-          height: `${gridSize}px`,
+          width: `${width}px`,
+          height: `${height}px`,
         }}
       >
-        <div className="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-600 flex items-center justify-center">
-          <span className="text-lg">❓</span>
+        <div className={`w-full h-full ${shapeClass} bg-gray-700 border-4 border-gray-600 flex items-center justify-center`}>
+          <span className="text-2xl">❓</span>
         </div>
       </div>
     );
@@ -95,8 +103,8 @@ export function ConnectionMarker({
       style={{
         left: `${x * gridSize}px`,
         top: `${y * gridSize}px`,
-        width: `${gridSize}px`,
-        height: `${gridSize}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         zIndex: 100,
       }}
       onClick={onClick}
@@ -106,20 +114,20 @@ export function ConnectionMarker({
       <div className="absolute inset-0 border-4 border-red-500 bg-red-500/20" />
       
       {/* Pulsing ring */}
-      <div className={`absolute w-12 h-12 rounded-full ${style.bg} opacity-20 animate-ping`} />
+      <div className={`absolute inset-0 ${shapeClass} ${style.bg} opacity-20 animate-ping`} />
       
       {/* Main marker */}
       <div
         className={`
-          relative w-10 h-10 rounded-full ${style.bg} border-3 ${style.border}
+          relative w-full h-full ${shapeClass} ${style.bg} border-4 ${style.border}
           flex items-center justify-center
           shadow-lg ${style.glow}
           transform transition-all duration-200
-          group-hover:scale-125 group-hover:rotate-12
+          group-hover:scale-110
           animate-bounce
         `}
       >
-        <span className="text-2xl drop-shadow-lg">{style.icon}</span>
+        <span className="text-3xl drop-shadow-lg">{style.icon}</span>
       </div>
 
       {/* Hover tooltip */}

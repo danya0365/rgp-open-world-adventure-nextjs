@@ -849,6 +849,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "world-aethoria",
       coordinates: { x: 10, y: 5 }, // Portal position on world map
+      gridSize: { width: 2, height: 2 }, // Medium portal
     },
     to: {
       locationId: "continent-northern",
@@ -864,6 +865,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "world-aethoria",
       coordinates: { x: 35, y: 15 }, // Portal position on world map
+      gridSize: { width: 2, height: 2 }, // Medium portal
     },
     to: {
       locationId: "continent-eastern",
@@ -900,6 +902,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "continent-northern",
       coordinates: { x: 8, y: 5 }, // Gate on continent
+      gridSize: { width: 2, height: 2 }, // Medium gate
     },
     to: {
       locationId: "region-frostpeak",
@@ -915,6 +918,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "continent-eastern",
       coordinates: { x: 15, y: 10 }, // Gate on continent
+      gridSize: { width: 2, height: 2 }, // Medium gate
     },
     to: {
       locationId: "region-elven-forest",
@@ -984,30 +988,15 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "city-silverhold",
       coordinates: { x: 3, y: 5 }, // Guild entrance on city map
+      gridSize: { width: 3, height: 4 }, // Large entrance matching guild size
     },
     to: {
       locationId: "building-guild-hall",
-      coordinates: { x: 7, y: 7 }, // Spawn at guild center
+      coordinates: { x: 7, y: 0 }, // Exit at bottom of guild (reverse spawn point)
     },
     connectionType: "entrance",
     isLocked: false,
-    isTwoWay: true,
-  },
-
-  // Reverse connection for two-way travel
-  {
-    id: "conn-2-reverse",
-    from: {
-      locationId: "building-guild-hall",
-      coordinates: { x: 7, y: 0 }, // Exit at bottom of guild
-    },
-    to: {
-      locationId: "city-silverhold",
-      coordinates: { x: 3, y: 5 }, // Return to guild entrance
-    },
-    connectionType: "entrance",
-    isLocked: false,
-    isTwoWay: true,
+    isTwoWay: true, // Auto-creates reverse connection
   },
 
   {
@@ -1015,6 +1004,7 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "city-elvenheim",
       coordinates: { x: 12, y: 8 }, // Tower entrance on city map
+      gridSize: { width: 2, height: 3 }, // Medium-large tower entrance
     },
     to: {
       locationId: "building-magic-tower",

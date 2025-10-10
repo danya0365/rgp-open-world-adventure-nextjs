@@ -125,6 +125,7 @@ export interface LocationConnection {
   from: {
     locationId: string;
     coordinates: Coordinates; // Position on parent map where entrance appears
+    gridSize?: POIGridSize; // Size of entrance marker on parent map (default: 1x1)
   };
   to: {
     locationId: string;

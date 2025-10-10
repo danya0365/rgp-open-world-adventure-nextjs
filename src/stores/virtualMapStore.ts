@@ -820,20 +820,56 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 
         getVisibleConnections: (locationId, viewport) => {
           const connections = getLocationConnections(locationId);
-          return connections.filter((conn) => {
-            if (conn.from.locationId !== locationId)
-              return false;
+          const visibleConnections: LocationConnection[] = [];
 
-            const tileX = Math.floor(conn.from.coordinates.x / 40);
-            const tileY = Math.floor(conn.from.coordinates.y / 40);
+          connections.forEach((conn) => {
+            // Add forward connection if it starts from this location
+            if (conn.from.locationId === locationId) {
+              const tileX = Math.floor(conn.from.coordinates.x / 40);
+              const tileY = Math.floor(conn.from.coordinates.y / 40);
 
-            return (
-              tileX >= viewport.viewportStartX &&
-              tileX < viewport.viewportEndX &&
-              tileY >= viewport.viewportStartY &&
-              tileY < viewport.viewportEndY
-            );
+              if (
+                tileX >= viewport.viewportStartX &&
+                tileX < viewport.viewportEndX &&
+                tileY >= viewport.viewportStartY &&
+                tileY < viewport.viewportEndY
+              ) {
+                visibleConnections.push(conn);
+              }
+            }
+
+            // Add reverse connection if isTwoWay and ends at this location
+            if (conn.isTwoWay && conn.to.locationId === locationId) {
+              // Create virtual reverse connection
+              const reverseConn: LocationConnection = {
+                ...conn,
+                id: `${conn.id}-reverse`,
+                from: {
+                  locationId: conn.to.locationId,
+                  coordinates: conn.to.coordinates,
+                  gridSize: conn.from.gridSize, // Use same gridSize as forward
+                },
+                to: {
+                  locationId: conn.from.locationId,
+                  coordinates: conn.from.coordinates,
+                },
+              };
+
+              const tileX = Math.floor(reverseConn.from.coordinates.x / 40);
+              const tileY = Math.floor(reverseConn.from.coordinates.y / 40);
+
+              if (
+                tileX >= viewport.viewportStartX &&
+                tileX < viewport.viewportEndX &&
+                tileY >= viewport.viewportStartY &&
+                tileY < viewport.viewportEndY
+              ) {
+                visibleConnections.push(reverseConn);
+              }
+            }
           });
+
+          return visibleConnections;
         },
 
         getVisibleLocations: (locations, viewport, gridSize) => {

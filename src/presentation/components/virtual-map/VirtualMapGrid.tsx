@@ -15,6 +15,7 @@ import { ShopMarker } from "./ShopMarker";
 import { ServiceMarker } from "./ServiceMarker";
 import { BattleMarkerComponent } from "./BattleMarkerComponent";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
+import { ConnectionMarker } from "./ConnectionMarker";
 import { NPCDialogueModal } from "./NPCDialogueModal";
 import { TreasureModal } from "./TreasureModal";
 import { InnModal } from "./InnModal";
@@ -454,7 +455,7 @@ export function VirtualMapGrid({
           );
         })}
 
-        {/* Connection Markers */}
+        {/* Connection Markers (supports multi-tile connections) */}
         {connections.map((connection) => {
           const tileX = Math.floor(connection.from.coordinates.x / gridSize);
           const tileY = Math.floor(connection.from.coordinates.y / gridSize);
@@ -467,33 +468,17 @@ export function VirtualMapGrid({
           const isDiscovered = target && discoveredLocations.has(target.id);
 
           return (
-            <div
+            <ConnectionMarker
               key={connection.id}
-              className="absolute pointer-events-auto cursor-pointer"
-              style={{
-                left: `${x * gridSize}px`,
-                top: `${y * gridSize}px`,
-                width: `${gridSize}px`,
-                height: `${gridSize}px`,
-                zIndex: 999,
-              }}
+              connection={connection}
+              x={x}
+              y={y}
+              gridSize={gridSize}
               onClick={() => {
                 if (target) onLocationClick(target);
               }}
-              title={
-                target ? `${target.name} - Click to enter` : "Unknown location"
-              }
-            >
-              <div
-                className={`w-full h-full ${
-                  isDiscovered ? "bg-green-500" : "bg-gray-500"
-                } border-4 border-white rounded-full flex items-center justify-center text-2xl ${
-                  isDiscovered ? "animate-bounce" : ""
-                }`}
-              >
-                {isDiscovered ? "🏛️" : "❓"}
-              </div>
-            </div>
+              isDiscovered={isDiscovered}
+            />
           );
         })}
 
