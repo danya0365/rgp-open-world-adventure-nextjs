@@ -825,8 +825,9 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           connections.forEach((conn) => {
             // Add forward connection if it starts from this location
             if (conn.from.locationId === locationId) {
-              const tileX = Math.floor(conn.from.coordinates.x / 40);
-              const tileY = Math.floor(conn.from.coordinates.y / 40);
+              // Coordinates are already in tile units
+              const tileX = conn.from.coordinates.x;
+              const tileY = conn.from.coordinates.y;
 
               if (
                 tileX >= viewport.viewportStartX &&
@@ -855,8 +856,9 @@ export const useVirtualMapStore = create<VirtualMapState>()(
                 },
               };
 
-              const tileX = Math.floor(reverseConn.from.coordinates.x / 40);
-              const tileY = Math.floor(reverseConn.from.coordinates.y / 40);
+              // Coordinates are already in tile units
+              const tileX = reverseConn.from.coordinates.x;
+              const tileY = reverseConn.from.coordinates.y;
 
               if (
                 tileX >= viewport.viewportStartX &&

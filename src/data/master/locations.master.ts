@@ -970,10 +970,11 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "area-crystal-valley",
       coordinates: { x: 10, y: 7 }, // Gate on area
+      gridSize: { width: 2, height: 2 }, // Medium city gate
     },
     to: {
       locationId: "city-silverhold",
-      coordinates: { x: 10, y: 7 }, // Spawn at city center
+      coordinates: { x: 10, y: 0 }, // Spawn at city entrance (bottom/south gate)
     },
     connectionType: "gate",
     isLocked: false,

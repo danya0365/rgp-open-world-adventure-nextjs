@@ -107,7 +107,15 @@ export function ConnectionMarker({
         height: `${height}px`,
         zIndex: 100,
       }}
-      onClick={onClick}
+      onClick={() => {
+        console.log('🎯 ConnectionMarker clicked!', {
+          connectionId: connection.id,
+          from: connection.from.locationId,
+          to: connection.to.locationId,
+          type: connection.connectionType
+        });
+        onClick();
+      }}
       title={`${connection.connectionType} - Click to enter`}
     >
       {/* Debug border */}

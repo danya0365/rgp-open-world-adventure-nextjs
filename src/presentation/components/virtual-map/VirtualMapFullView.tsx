@@ -40,7 +40,6 @@ export function VirtualMapFullView({
     discoverLocation,
     // Use cached data from store
     currentLocationData,
-    childLocations,
     discoveredLocationData,
     refreshCachedData,
     // UI State from store (persisted)
@@ -226,7 +225,6 @@ export function VirtualMapFullView({
       <div className="absolute inset-0">
         <VirtualMapGrid
           currentLocation={currentLocationData}
-          childLocations={childLocations}
           onLocationClick={handleLocationClick}
           onMinimapDataReady={setMinimapData}
           onMapInfoDataReady={setMapInfoData}

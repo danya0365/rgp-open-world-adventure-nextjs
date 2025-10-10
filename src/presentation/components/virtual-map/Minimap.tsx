@@ -2,7 +2,6 @@
 
 import { Location, MapTile } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { getLocationConnections } from "@/src/data/master/locations.master";
 
 interface MinimapProps {
   currentLocation: Location;
@@ -13,7 +12,6 @@ interface MinimapProps {
   viewportStartY: number;
   viewportEndX: number;
   viewportEndY: number;
-  childLocations: Location[];
   gridSize?: number;
   onClose?: () => void;
 }
@@ -27,7 +25,6 @@ export function Minimap({
   viewportStartY,
   viewportEndX,
   viewportEndY,
-  childLocations,
   gridSize = 40,
   onClose,
 }: MinimapProps) {
@@ -116,36 +113,7 @@ export function Minimap({
           }}
         />
 
-        {/* Child Location Markers */}
-        {(() => {
-          // Get connections from current location to child locations
-          const connections = getLocationConnections(currentLocation.id);
-          
-          return childLocations.map((location) => {
-            // Find connection to this child location
-            const connection = connections.find(
-              (conn) => conn.to.locationId === location.id
-            );
-            
-            if (!connection) return null;
-            
-            // Use entrance coordinates (from.coordinates)
-            const markerX = Math.floor((connection.from.coordinates.x / gridSize) * tileSize);
-            const markerY = Math.floor((connection.from.coordinates.y / gridSize) * tileSize);
-
-            return (
-              <div
-                key={`minimap-marker-${location.id}`}
-                className="absolute w-2 h-2 bg-purple-500 border border-white rounded-full"
-                style={{
-                  left: `${markerX - 4}px`,
-                  top: `${markerY - 4}px`,
-                }}
-                title={location.name}
-              />
-            );
-          });
-        })()}
+        {/* Connection markers are shown via ConnectionMarker component in main view */}
 
         {/* Player Marker */}
         {playerPosition.locationId === currentLocation.id && (

@@ -1,32 +1,29 @@
+import { getLocationById } from "@/src/data/master/locations.master";
 import {
   Location,
   MapTile as MapTileType,
-  LocationConnection,
 } from "@/src/domain/types/location.types";
+import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { getLocationConnections } from "@/src/data/master/locations.master";
+import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
 import { useEffect, useMemo } from "react";
-import { LocationMarker } from "./LocationMarker";
+import { BattleMarkerComponent } from "./BattleMarkerComponent";
+import { ConnectionMarker } from "./ConnectionMarker";
+import { InnModal } from "./InnModal";
 import { MapTile } from "./MapTile";
 import { Minimap } from "./Minimap";
-import { PlayerMarker } from "./PlayerMarker";
-import { NPCMarker } from "./NPCMarker";
-import { ShopMarker } from "./ShopMarker";
-import { ServiceMarker } from "./ServiceMarker";
-import { BattleMarkerComponent } from "./BattleMarkerComponent";
-import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
-import { ConnectionMarker } from "./ConnectionMarker";
 import { NPCDialogueModal } from "./NPCDialogueModal";
-import { TreasureModal } from "./TreasureModal";
-import { InnModal } from "./InnModal";
+import { NPCMarker } from "./NPCMarker";
+import { PlayerMarker } from "./PlayerMarker";
+import { ServiceMarker } from "./ServiceMarker";
 import { ServiceModal } from "./ServiceModal";
+import { ShopMarker } from "./ShopMarker";
 import { ShopModal } from "./ShopModal";
-import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
-import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
+import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
+import { TreasureModal } from "./TreasureModal";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
-  childLocations: Location[];
   onLocationClick: (location: Location) => void;
   gridSize?: number;
   onMinimapDataReady?: (data: MinimapViewProps | null) => void;
@@ -42,7 +39,6 @@ export interface MinimapViewProps {
   viewportStartY: number;
   viewportEndX: number;
   viewportEndY: number;
-  childLocations: Location[];
   gridSize: number;
 }
 
@@ -62,7 +58,6 @@ export interface MapInfoViewProps {
 
 export function VirtualMapGrid({
   currentLocation,
-  childLocations,
   onLocationClick,
   gridSize = 40,
   onMinimapDataReady,
@@ -80,11 +75,11 @@ export function VirtualMapGrid({
     cacheTiles,
     isTileVisited,
     getVisibleConnections,
-    getVisibleLocations,
   } = useVirtualMapStore();
 
   // POI Interaction Hook - handles SPACE key press for interactions
-  const { modals, closeNPCDialogue, closeTreasure, closeService, closeShop } = usePOIInteraction(currentLocation, gridSize);
+  const { modals, closeNPCDialogue, closeTreasure, closeService, closeShop } =
+    usePOIInteraction(currentLocation, gridSize);
 
   // Calculate grid dimensions based on location mapData
   const gridColumns = currentLocation.mapData?.dimensions.columns || 20;
@@ -143,10 +138,8 @@ export function VirtualMapGrid({
     return getVisibleConnections(currentLocation.id, viewport);
   }, [currentLocation.id, viewport, getVisibleConnections]);
 
-  const visibleChildLocations = useMemo(() => {
-    if (!viewport) return [];
-    return getVisibleLocations(childLocations, viewport, gridSize);
-  }, [childLocations, viewport, gridSize, getVisibleLocations]);
+  // Note: Child locations are now displayed via ConnectionMarkers only
+  // No need for visibleChildLocations anymore
 
   // Notify parent component when minimap data is ready
   useEffect(() => {
@@ -164,7 +157,6 @@ export function VirtualMapGrid({
       viewportStartY: viewport.viewportStartY,
       viewportEndX: viewport.viewportEndX,
       viewportEndY: viewport.viewportEndY,
-      childLocations,
       gridSize,
     };
 
@@ -173,7 +165,6 @@ export function VirtualMapGrid({
     viewport,
     tiles,
     currentLocation,
-    childLocations,
     gridColumns,
     gridRows,
     gridSize,
@@ -188,7 +179,8 @@ export function VirtualMapGrid({
     }
 
     const actualViewportWidth = viewport.viewportEndX - viewport.viewportStartX;
-    const actualViewportHeight = viewport.viewportEndY - viewport.viewportStartY;
+    const actualViewportHeight =
+      viewport.viewportEndY - viewport.viewportStartY;
 
     const mapInfoData: MapInfoViewProps = {
       currentLocation,
@@ -205,13 +197,7 @@ export function VirtualMapGrid({
     };
 
     onMapInfoDataReady?.(mapInfoData);
-  }, [
-    viewport,
-    currentLocation,
-    gridColumns,
-    gridRows,
-    onMapInfoDataReady,
-  ]);
+  }, [viewport, currentLocation, gridColumns, gridRows, onMapInfoDataReady]);
 
   // Handle tile click - start pathfinding movement
   const handleTileClick = (tile: MapTileType) => {
@@ -245,12 +231,8 @@ export function VirtualMapGrid({
     );
   }
 
-  const {
-    viewportStartX,
-    viewportStartY,
-    viewportEndX,
-    viewportEndY,
-  } = viewport;
+  const { viewportStartX, viewportStartY, viewportEndX, viewportEndY } =
+    viewport;
 
   // Viewport size in pixels (use actual viewport size, not max)
   const actualViewportWidth = viewportEndX - viewportStartX;
@@ -281,6 +263,8 @@ export function VirtualMapGrid({
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
+          position: "relative",
+          zIndex: 0,
         }}
       >
         {/* Render Only Visible Tiles (Viewport) */}
@@ -322,37 +306,7 @@ export function VirtualMapGrid({
             );
           })}
 
-        {/* Child Location Markers (on top of tiles) */}
-        {(() => {
-          // Get connections from current location
-          const connections = getLocationConnections(currentLocation.id);
-          
-          return visibleChildLocations.map((location) => {
-            // Find connection to this child location
-            const connection = connections.find(
-              (conn) => conn.to.locationId === location.id
-            );
-            
-            if (!connection) return null;
-            
-            // Use entrance coordinates (from.coordinates)
-            const markerX =
-              (connection.from.coordinates.x / gridSize - viewportStartX) * gridSize;
-            const markerY =
-              (connection.from.coordinates.y / gridSize - viewportStartY) * gridSize;
-
-            return (
-              <LocationMarker
-                key={location.id}
-                location={location}
-                coordinates={{ x: markerX, y: markerY }}
-                onClick={() => onLocationClick(location)}
-                isDiscovered={discoveredLocations.has(location.id)}
-                isCurrentLocation={location.id === playerPosition.locationId}
-              />
-            );
-          });
-        })()}
+        {/* Child locations are displayed via ConnectionMarkers below */}
 
         {/* Player Marker (only show if player is in this location) */}
         {playerPosition.locationId === currentLocation.id && (
@@ -367,10 +321,18 @@ export function VirtualMapGrid({
         {/* POI Markers - NPCs */}
         {currentLocation.metadata?.npcs?.map((npc) => {
           // Check if player is within NPC bounds (supports multi-tile NPCs)
-          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtNPC = isWithinPOIBounds(npc.coordinates, npc.gridSize, { x: playerTileX, y: playerTileY });
-          
+          const playerTileX = Math.floor(
+            playerPosition.coordinates.x / gridSize
+          );
+          const playerTileY = Math.floor(
+            playerPosition.coordinates.y / gridSize
+          );
+          const isPlayerAtNPC = isWithinPOIBounds(
+            npc.coordinates,
+            npc.gridSize,
+            { x: playerTileX, y: playerTileY }
+          );
+
           return (
             <NPCMarker
               key={npc.id}
@@ -385,10 +347,18 @@ export function VirtualMapGrid({
 
         {/* POI Markers - Shops */}
         {currentLocation.metadata?.shops?.map((shop) => {
-          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtShop = isWithinPOIBounds(shop.coordinates, shop.gridSize, { x: playerTileX, y: playerTileY });
-          
+          const playerTileX = Math.floor(
+            playerPosition.coordinates.x / gridSize
+          );
+          const playerTileY = Math.floor(
+            playerPosition.coordinates.y / gridSize
+          );
+          const isPlayerAtShop = isWithinPOIBounds(
+            shop.coordinates,
+            shop.gridSize,
+            { x: playerTileX, y: playerTileY }
+          );
+
           return (
             <ShopMarker
               key={shop.id}
@@ -403,10 +373,18 @@ export function VirtualMapGrid({
 
         {/* POI Markers - Services */}
         {currentLocation.metadata?.services?.map((service) => {
-          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtService = isWithinPOIBounds(service.coordinates, service.gridSize, { x: playerTileX, y: playerTileY });
-          
+          const playerTileX = Math.floor(
+            playerPosition.coordinates.x / gridSize
+          );
+          const playerTileY = Math.floor(
+            playerPosition.coordinates.y / gridSize
+          );
+          const isPlayerAtService = isWithinPOIBounds(
+            service.coordinates,
+            service.gridSize,
+            { x: playerTileX, y: playerTileY }
+          );
+
           return (
             <ServiceMarker
               key={service.id}
@@ -421,10 +399,18 @@ export function VirtualMapGrid({
 
         {/* POI Markers - Battle Triggers */}
         {currentLocation.metadata?.battleMaps?.map((battle) => {
-          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtBattle = isWithinPOIBounds(battle.coordinates, battle.gridSize, { x: playerTileX, y: playerTileY });
-          
+          const playerTileX = Math.floor(
+            playerPosition.coordinates.x / gridSize
+          );
+          const playerTileY = Math.floor(
+            playerPosition.coordinates.y / gridSize
+          );
+          const isPlayerAtBattle = isWithinPOIBounds(
+            battle.coordinates,
+            battle.gridSize,
+            { x: playerTileX, y: playerTileY }
+          );
+
           return (
             <BattleMarkerComponent
               key={battle.id}
@@ -439,10 +425,18 @@ export function VirtualMapGrid({
 
         {/* POI Markers - Treasures */}
         {currentLocation.metadata?.treasures?.map((treasure) => {
-          const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-          const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtTreasure = isWithinPOIBounds(treasure.coordinates, treasure.gridSize, { x: playerTileX, y: playerTileY });
-          
+          const playerTileX = Math.floor(
+            playerPosition.coordinates.x / gridSize
+          );
+          const playerTileY = Math.floor(
+            playerPosition.coordinates.y / gridSize
+          );
+          const isPlayerAtTreasure = isWithinPOIBounds(
+            treasure.coordinates,
+            treasure.gridSize,
+            { x: playerTileX, y: playerTileY }
+          );
+
           return (
             <TreasureMarkerComponent
               key={treasure.id}
@@ -455,17 +449,48 @@ export function VirtualMapGrid({
           );
         })}
 
-        {/* Connection Markers (supports multi-tile connections) */}
+        {/* Viewport Coordinate Indicators */}
+        <div className="absolute top-1 left-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
+          ({viewportStartX}, {viewportStartY})
+        </div>
+        <div className="absolute bottom-1 right-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
+          ({viewportEndX}, {viewportEndY})
+        </div>
+      </div>
+
+      {/* Connection Markers Layer - Above tiles to ensure clickability */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: `${mapWidth}px`,
+          height: `${mapHeight}px`,
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 200,
+        }}
+      >
         {connections.map((connection) => {
-          const tileX = Math.floor(connection.from.coordinates.x / gridSize);
-          const tileY = Math.floor(connection.from.coordinates.y / gridSize);
+          // Coordinates are already in tile units, no need to divide by gridSize
+          const tileX = connection.from.coordinates.x;
+          const tileY = connection.from.coordinates.y;
           const x = tileX - viewportStartX;
           const y = tileY - viewportStartY;
 
-          const target = childLocations.find(
-            (l) => l.id === connection.to.locationId
-          );
+          // Find target location from master data (supports both child and parent locations)
+          const target = getLocationById(connection.to.locationId);
           const isDiscovered = target && discoveredLocations.has(target.id);
+
+          // Debug logging
+          console.log('🔗 Connection:', connection.id, {
+            tileX, tileY, x, y,
+            from: connection.from.locationId,
+            to: connection.to.locationId,
+            target: target?.id,
+            targetName: target?.name,
+            isDiscovered,
+            gridSize: connection.from.gridSize
+          });
 
           return (
             <ConnectionMarker
@@ -475,20 +500,20 @@ export function VirtualMapGrid({
               y={y}
               gridSize={gridSize}
               onClick={() => {
-                if (target) onLocationClick(target);
+                if (target) {
+                  console.log('🚀 Navigating to:', target.name, target.id);
+                  onLocationClick(target);
+                } else {
+                  console.error(
+                    "❌ Target location not found:",
+                    connection.to.locationId
+                  );
+                }
               }}
               isDiscovered={isDiscovered}
             />
           );
         })}
-
-        {/* Viewport Coordinate Indicators */}
-        <div className="absolute top-1 left-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
-          ({viewportStartX}, {viewportStartY})
-        </div>
-        <div className="absolute bottom-1 right-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
-          ({viewportEndX}, {viewportEndY})
-        </div>
       </div>
 
       {/* POI Modals */}
@@ -571,7 +596,6 @@ export function MinimapView({
   viewportStartY,
   viewportEndX,
   viewportEndY,
-  childLocations,
   gridSize,
 }: MinimapViewProps) {
   return (
@@ -584,7 +608,6 @@ export function MinimapView({
       viewportStartY={viewportStartY}
       viewportEndX={viewportEndX}
       viewportEndY={viewportEndY}
-      childLocations={childLocations}
       gridSize={gridSize}
       onClose={undefined}
     />
@@ -615,7 +638,7 @@ export function MapInfoView({
           {currentLocation.description}
         </p>
       </div>
-      
+
       <div className="flex items-center gap-2 text-xs text-gray-500">
         <span className="capitalize">{currentLocation.type}</span>
         <span>•</span>
@@ -627,10 +650,10 @@ export function MapInfoView({
           View: {actualViewportWidth}x{actualViewportHeight}
         </span>
       </div>
-      
+
       <div className="text-[10px] text-gray-600">
-        Position: ({playerTileX}, {playerTileY}) | Viewport: (
-        {viewportStartX}, {viewportStartY})
+        Position: ({playerTileX}, {playerTileY}) | Viewport: ({viewportStartX},{" "}
+        {viewportStartY})
       </div>
     </div>
   );
