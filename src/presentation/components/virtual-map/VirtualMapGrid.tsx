@@ -480,11 +480,13 @@ export function VirtualMapGrid({
           // Find target location from master data (supports both child and parent locations)
           const target = getLocationById(connection.to.locationId);
           
-          // Check if target is discovered
-          // For parent locations (reverse connections), always show as discovered
-          // since player must have come from there
-          const isParentLocation = target && target.id === currentLocation.parentId;
-          const isDiscovered = target && (isParentLocation || discoveredLocations.has(target.id));
+          // TODO: Implement proper discovery system
+          // For now, show all connections as discovered for testing
+          const isDiscovered = true;
+          
+          // Check if target is discovered (COMMENTED OUT FOR TESTING)
+          // const isParentLocation = target && target.id === currentLocation.parentId;
+          // const isDiscovered = target && (isParentLocation || discoveredLocations.has(target.id));
 
           // Debug logging
           console.log('🔗 Connection:', connection.id, {

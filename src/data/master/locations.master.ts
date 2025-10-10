@@ -842,18 +842,20 @@ export const LOCATIONS_MASTER: Location[] = [
 // ========================================
 export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
-  // LEVEL 0-1: World → Continents
+  // LEVEL 0-1: World → Continents (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn = entrance position (ตำแหน่งเดียวกัน)
+  // world-aethoria: 50x50, continent: 30x30
   // ========================================
   {
     id: "conn-world-1",
     from: {
-      locationId: "world-aethoria",
-      coordinates: { x: 10, y: 5 }, // Portal position on world map
-      gridSize: { width: 2, height: 2 }, // Medium portal
+      locationId: "world-aethoria", // 50x50
+      coordinates: { x: 25, y: 25 }, // ตรงกลาง parent (50/2 = 25)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "continent-northern",
-      coordinates: { x: 15, y: 15 }, // Spawn point on continent
+      locationId: "continent-northern", // 30x30
+      coordinates: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "portal",
     isLocked: false,
@@ -863,13 +865,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-world-2",
     from: {
-      locationId: "world-aethoria",
-      coordinates: { x: 35, y: 15 }, // Portal position on world map
-      gridSize: { width: 2, height: 2 }, // Medium portal
+      locationId: "world-aethoria", // 50x50
+      coordinates: { x: 25, y: 25 }, // ตรงกลาง parent (แบ่ง space สำหรับ 2 children)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "continent-eastern",
-      coordinates: { x: 15, y: 15 }, // Spawn point on continent
+      locationId: "continent-eastern", // 30x30
+      coordinates: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "portal",
     isLocked: false,
@@ -877,17 +879,20 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 1-1: Between Continents
+  // LEVEL 1-1: Between Continents (Sibling ↔ Sibling)
+  // Pattern: entrance ชิดซ้าย/ขวา กลางแกน Y
+  // continent: 30x30
   // ========================================
   {
     id: "conn-1",
     from: {
-      locationId: "continent-northern",
-      coordinates: { x: 25, y: 15 }, // Bridge on northern continent
+      locationId: "continent-northern", // 30x30
+      coordinates: { x: 29, y: 15 }, // ชิดขวา กลางแกน Y (x = 29, y = 30/2 = 15)
+      gridSize: { width: 2, height: 1 }, // Sibling = 2x1
     },
     to: {
-      locationId: "continent-eastern",
-      coordinates: { x: 5, y: 15 }, // Bridge on eastern continent
+      locationId: "continent-eastern", // 30x30
+      coordinates: { x: 0, y: 15 }, // ชิดซ้าย กลางแกน Y (x = 0, y = 30/2 = 15)
     },
     connectionType: "bridge",
     isLocked: false,
@@ -895,18 +900,20 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 1-2: Continents → Regions
+  // LEVEL 1-2: Continents → Regions (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn ตรงกลางด้านล่าง child
+  // continent: 30x30, region: 25x25
   // ========================================
   {
     id: "conn-continent-1",
     from: {
-      locationId: "continent-northern",
-      coordinates: { x: 8, y: 5 }, // Gate on continent
-      gridSize: { width: 2, height: 2 }, // Medium gate
+      locationId: "continent-northern", // 30x30
+      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "region-frostpeak",
-      coordinates: { x: 12, y: 12 }, // Spawn in region
+      locationId: "region-frostpeak", // 25x25
+      coordinates: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -916,13 +923,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-continent-2",
     from: {
-      locationId: "continent-eastern",
-      coordinates: { x: 15, y: 10 }, // Gate on continent
-      gridSize: { width: 2, height: 2 }, // Medium gate
+      locationId: "continent-eastern", // 30x30
+      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "region-elven-forest",
-      coordinates: { x: 12, y: 12 }, // Spawn in region
+      locationId: "region-elven-forest", // 25x25
+      coordinates: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -930,17 +937,20 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 2-3: Regions → Areas/Cities
+  // LEVEL 2-3: Regions → Areas/Cities (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn ตรงกลางด้านล่าง child
+  // region: 25x25, area: 20x20, city: 20x15
   // ========================================
   {
     id: "conn-region-1",
     from: {
-      locationId: "region-frostpeak",
-      coordinates: { x: 10, y: 8 }, // Gate on region
+      locationId: "region-frostpeak", // 25x25
+      coordinates: { x: 12, y: 12 }, // ตรงกลาง parent (25/2 = 12.5 ≈ 12)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "area-crystal-valley",
-      coordinates: { x: 10, y: 10 }, // Spawn in area
+      locationId: "area-crystal-valley", // 20x20
+      coordinates: { x: 10, y: 0 }, // ตรงกลางด้านล่าง child (20/2 = 10, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -950,12 +960,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-region-2",
     from: {
-      locationId: "region-elven-forest",
-      coordinates: { x: 12, y: 5 }, // Gate on region
+      locationId: "region-elven-forest", // 25x25
+      coordinates: { x: 12, y: 12 }, // ตรงกลาง parent (25/2 = 12.5 ≈ 12)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "city-elvenheim",
-      coordinates: { x: 10, y: 7 }, // Spawn in city
+      locationId: "city-elvenheim", // 20x15
+      coordinates: { x: 10, y: 0 }, // ตรงกลางด้านล่าง child (20/2 = 10, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -963,18 +974,21 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 3-4: Areas → Cities
+  // LEVEL 3-4: Areas → Cities (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn ด้านล่างสุด child (y = rows - 1)
+  // Reverse: entrance ด้านล่างสุด child, spawn ตรงกลาง parent
+  // area: 20x20, city: 20x15 (rows = 15, so bottom = 14)
   // ========================================
   {
     id: "conn-area-1",
     from: {
-      locationId: "area-crystal-valley",
-      coordinates: { x: 10, y: 7 }, // Gate on area
-      gridSize: { width: 2, height: 2 }, // Medium city gate
+      locationId: "area-crystal-valley", // 20x20
+      coordinates: { x: 10, y: 10 }, // entrance on parent (reverse spawn here)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "city-silverhold",
-      coordinates: { x: 10, y: 0 }, // Spawn at city entrance (bottom/south gate)
+      locationId: "city-silverhold", // 20x15
+      coordinates: { x: 10, y: 14 }, // spawn ด้านล่างสุด child (15 - 1 = 14)
     },
     connectionType: "gate",
     isLocked: false,
@@ -982,34 +996,36 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 4-5: Cities → Buildings
+  // LEVEL 4-5: Cities → Buildings (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn ตรงกลางด้านล่าง child
+  // city: 20x15, building: 15x15
   // ========================================
   {
     id: "conn-2",
     from: {
-      locationId: "city-silverhold",
-      coordinates: { x: 3, y: 5 }, // Guild entrance on city map
-      gridSize: { width: 3, height: 4 }, // Large entrance matching guild size
+      locationId: "city-silverhold", // 20x15
+      coordinates: { x: 10, y: 7 }, // ตรงกลาง parent (20/2 = 10, 15/2 = 7.5 ≈ 7)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "building-guild-hall",
-      coordinates: { x: 7, y: 0 }, // Exit at bottom of guild (reverse spawn point)
+      locationId: "building-guild-hall", // 15x15
+      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "entrance",
     isLocked: false,
-    isTwoWay: true, // Auto-creates reverse connection
+    isTwoWay: true,
   },
 
   {
     id: "conn-6",
     from: {
-      locationId: "city-elvenheim",
-      coordinates: { x: 12, y: 8 }, // Tower entrance on city map
-      gridSize: { width: 2, height: 3 }, // Medium-large tower entrance
+      locationId: "city-elvenheim", // 20x15
+      coordinates: { x: 10, y: 7 }, // ตรงกลาง parent (20/2 = 10, 15/2 = 7.5 ≈ 7)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "building-magic-tower",
-      coordinates: { x: 7, y: 7 }, // Spawn at tower center
+      locationId: "building-magic-tower", // 15x15
+      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "entrance",
     isLocked: false,
@@ -1017,17 +1033,20 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 5-6: Buildings → Floors
+  // LEVEL 5-6: Buildings → Floors (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn ตรงกลางด้านล่าง child
+  // building: 15x15, floor: 15x10
   // ========================================
   {
     id: "conn-building-1",
     from: {
-      locationId: "building-guild-hall",
-      coordinates: { x: 7, y: 7 }, // Stairs at center
+      locationId: "building-guild-hall", // 15x15
+      coordinates: { x: 7, y: 7 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "floor-guild-1f",
-      coordinates: { x: 7, y: 5 }, // Spawn on 1F
+      locationId: "floor-guild-1f", // 15x10
+      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "stairs",
     isLocked: false,
@@ -1037,12 +1056,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-3",
     from: {
-      locationId: "floor-guild-1f",
-      coordinates: { x: 12, y: 5 }, // Stairs on 1F
+      locationId: "floor-guild-1f", // 15x10
+      coordinates: { x: 7, y: 5 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7, 10/2 = 5)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "floor-guild-2f",
-      coordinates: { x: 2, y: 5 }, // Spawn on 2F
+      locationId: "floor-guild-2f", // 15x10
+      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "stairs",
     isLocked: false,
@@ -1052,12 +1072,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-7",
     from: {
-      locationId: "building-magic-tower",
-      coordinates: { x: 7, y: 7 }, // Stairs at center
+      locationId: "building-magic-tower", // 15x15
+      coordinates: { x: 7, y: 7 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "floor-tower-1f",
-      coordinates: { x: 7, y: 5 }, // Spawn on 1F
+      locationId: "floor-tower-1f", // 12x12
+      coordinates: { x: 6, y: 0 }, // ตรงกลางด้านล่าง child (12/2 = 6, y = 0)
     },
     connectionType: "stairs",
     isLocked: false,
@@ -1065,17 +1086,21 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // LEVEL 6-7: Floors → Rooms
+  // LEVEL 6-7: Floors → Rooms (Parent → Child, Multiple Children)
+  // Pattern: entrance ตรงกลาง parent (แบ่งตามจำนวน children), spawn ตรงกลางด้านล่าง child
+  // floor: 15x10, room-guild-master: 10x8, room-meeting: 8x8
+  // floor-guild-2f มี 2 children: แบ่ง x เป็น 1/3 และ 2/3
   // ========================================
   {
     id: "conn-4",
     from: {
-      locationId: "floor-guild-2f",
-      coordinates: { x: 10, y: 3 }, // Door on 2F
+      locationId: "floor-guild-2f", // 15x10, มี 2 children
+      coordinates: { x: 5, y: 5 }, // 1/3 ของ width (15/3 = 5), กลาง Y (10/2 = 5)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "room-guild-master",
-      coordinates: { x: 5, y: 4 }, // Spawn in room
+      locationId: "room-guild-master", // 10x8
+      coordinates: { x: 5, y: 0 }, // ตรงกลางด้านล่าง child (10/2 = 5, y = 0)
     },
     connectionType: "door",
     isLocked: false,
@@ -1085,12 +1110,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-5",
     from: {
-      locationId: "floor-guild-2f",
-      coordinates: { x: 5, y: 3 }, // Door on 2F
+      locationId: "floor-guild-2f", // 15x10, มี 2 children
+      coordinates: { x: 10, y: 5 }, // 2/3 ของ width (15*2/3 = 10), กลาง Y (10/2 = 5)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "room-meeting-1",
-      coordinates: { x: 4, y: 4 }, // Spawn in room
+      locationId: "room-meeting-1", // 8x8
+      coordinates: { x: 4, y: 0 }, // ตรงกลางด้านล่าง child (8/2 = 4, y = 0)
     },
     connectionType: "door",
     isLocked: false,
@@ -1098,17 +1124,20 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // DUNGEONS
+  // DUNGEONS (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn ตรงกลางด้านล่าง child
+  // area: 20x20, dungeon: 25x25
   // ========================================
   {
     id: "conn-8",
     from: {
-      locationId: "area-crystal-valley",
-      coordinates: { x: 5, y: 5 }, // Dungeon entrance on area map
+      locationId: "area-crystal-valley", // 20x20
+      coordinates: { x: 10, y: 10 }, // ตรงกลาง parent (20/2 = 10)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "dungeon-frozen-depths",
-      coordinates: { x: 12, y: 12 }, // Spawn in dungeon
+      locationId: "dungeon-frozen-depths", // 25x25
+      coordinates: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
     },
     connectionType: "entrance",
     isLocked: true,
@@ -1117,17 +1146,20 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   },
 
   // ========================================
-  // ADDITIONAL CONNECTIONS
+  // ADDITIONAL CONNECTIONS (Parent → Child)
+  // Pattern: entrance ตรงกลาง parent, spawn = entrance position
+  // continent: 30x30, field: 30x25, town: 18x15
   // ========================================
   {
     id: "conn-9",
     from: {
-      locationId: "continent-northern",
-      coordinates: { x: 15, y: 10 }, // Gate on continent
+      locationId: "continent-northern", // 30x30
+      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "field-starting-plains",
-      coordinates: { x: 15, y: 12 }, // Spawn in field
+      locationId: "field-starting-plains", // 30x25
+      coordinates: { x: 15, y: 15 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "gate",
     isLocked: false,
@@ -1137,12 +1169,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   {
     id: "conn-10",
     from: {
-      locationId: "continent-eastern",
-      coordinates: { x: 20, y: 18 }, // Gate on continent
+      locationId: "continent-eastern", // 30x30
+      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
-      locationId: "town-riverside",
-      coordinates: { x: 9, y: 7 }, // Spawn in town
+      locationId: "town-riverside", // 18x15
+      coordinates: { x: 15, y: 15 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "gate",
     isLocked: false,
