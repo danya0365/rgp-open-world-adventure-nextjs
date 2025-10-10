@@ -9,6 +9,7 @@ import {
   TreasureMarker,
 } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
 
 interface POIAtPlayerPosition {
   type: "npc" | "shop" | "service" | "battle" | "treasure" | null;
@@ -38,56 +39,71 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
     treasure: { isOpen: false, treasure: null },
   });
 
-  // Check if player is at any POI
+  // Check if player is at any POI (supports multi-tile POIs)
   useEffect(() => {
     if (playerPosition.locationId !== currentLocation.id) {
       setCurrentPOI({ type: null, data: null });
       return;
     }
 
+    // Convert player pixel position to tile coordinates
     const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
     const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+    const playerTileCoords = { x: playerTileX, y: playerTileY };
 
-    // Check NPCs
-    const npcAtPosition = currentLocation.metadata?.npcs?.find(
-      (npc) => npc.coordinates.x === playerTileX && npc.coordinates.y === playerTileY
-    );
+    // Debug logging (comment out in production)
+    // console.log('🧍 Player at tile:', playerTileCoords);
+
+    // Check NPCs (supports multi-tile NPCs)
+    const npcAtPosition = currentLocation.metadata?.npcs?.find((npc) => {
+      const isInside = isWithinPOIBounds(npc.coordinates, npc.gridSize, playerTileCoords);
+      // console.log(`👤 ${npc.name}:`, { coords: npc.coordinates, gridSize: npc.gridSize, isInside });
+      return isInside;
+    });
     if (npcAtPosition) {
       setCurrentPOI({ type: "npc", data: npcAtPosition });
       return;
     }
 
-    // Check Shops
-    const shopAtPosition = currentLocation.metadata?.shops?.find(
-      (shop) => shop.coordinates.x === playerTileX && shop.coordinates.y === playerTileY
-    );
+    // Check Shops (supports multi-tile shops)
+    const shopAtPosition = currentLocation.metadata?.shops?.find((shop) => {
+      const isInside = isWithinPOIBounds(shop.coordinates, shop.gridSize, playerTileCoords);
+      // console.log(`🏪 ${shop.name}:`, { coords: shop.coordinates, gridSize: shop.gridSize, isInside });
+      return isInside;
+    });
     if (shopAtPosition) {
       setCurrentPOI({ type: "shop", data: shopAtPosition });
       return;
     }
 
-    // Check Services
-    const serviceAtPosition = currentLocation.metadata?.services?.find(
-      (service) => service.coordinates.x === playerTileX && service.coordinates.y === playerTileY
-    );
+    // Check Services (supports multi-tile services)
+    const serviceAtPosition = currentLocation.metadata?.services?.find((service) => {
+      const isInside = isWithinPOIBounds(service.coordinates, service.gridSize, playerTileCoords);
+      // console.log(`🏛️ ${service.name}:`, { coords: service.coordinates, gridSize: service.gridSize, isInside });
+      return isInside;
+    });
     if (serviceAtPosition) {
       setCurrentPOI({ type: "service", data: serviceAtPosition });
       return;
     }
 
-    // Check Battle Triggers
-    const battleAtPosition = currentLocation.metadata?.battleMaps?.find(
-      (battle) => battle.coordinates.x === playerTileX && battle.coordinates.y === playerTileY
-    );
+    // Check Battle Triggers (supports multi-tile battle areas)
+    const battleAtPosition = currentLocation.metadata?.battleMaps?.find((battle) => {
+      const isInside = isWithinPOIBounds(battle.coordinates, battle.gridSize, playerTileCoords);
+      // console.log(`⚔️ ${battle.name}:`, { coords: battle.coordinates, gridSize: battle.gridSize, isInside });
+      return isInside;
+    });
     if (battleAtPosition) {
       setCurrentPOI({ type: "battle", data: battleAtPosition });
       return;
     }
 
-    // Check Treasures
-    const treasureAtPosition = currentLocation.metadata?.treasures?.find(
-      (treasure) => treasure.coordinates.x === playerTileX && treasure.coordinates.y === playerTileY
-    );
+    // Check Treasures (supports multi-tile treasures)
+    const treasureAtPosition = currentLocation.metadata?.treasures?.find((treasure) => {
+      const isInside = isWithinPOIBounds(treasure.coordinates, treasure.gridSize, playerTileCoords);
+      // console.log(`💎 ${treasure.name}:`, { coords: treasure.coordinates, gridSize: treasure.gridSize, isInside });
+      return isInside;
+    });
     if (treasureAtPosition) {
       setCurrentPOI({ type: "treasure", data: treasureAtPosition });
       return;

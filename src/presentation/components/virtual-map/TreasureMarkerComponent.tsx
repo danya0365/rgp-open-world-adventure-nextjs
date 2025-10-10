@@ -1,5 +1,6 @@
 import { TreasureMarker } from "@/src/domain/types/location.types";
 import { Gem, Lock } from "lucide-react";
+import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
 interface TreasureMarkerComponentProps {
   treasure: TreasureMarker;
@@ -22,21 +23,28 @@ export function TreasureMarkerComponent({
 
   const isDiscovered = treasure.isDiscovered || false;
 
+  // Get POI size in pixels based on grid size
+  const { width, height } = getPOIPixelSize(treasure.gridSize, gridSize);
+  
+  // Determine if POI is 1x1 (use circle) or larger (use rounded rectangle)
+  const is1x1 = (!treasure.gridSize || (treasure.gridSize.width === 1 && treasure.gridSize.height === 1));
+  const shapeClass = is1x1 ? "rounded-full" : "rounded-lg";
+
   return (
     <div
       className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: `${gridSize}px`,
-        height: `${gridSize}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         zIndex: 50,
       }}
       title={treasure.name || "Treasure"}
     >
-      {/* Treasure Circle */}
+      {/* Treasure Marker */}
       <div
-        className={`w-full h-full rounded-full flex items-center justify-center transition-all border-4 group-hover:scale-110 group-hover:shadow-lg ${
+        className={`w-full h-full ${shapeClass} flex items-center justify-center transition-all border-4 group-hover:scale-110 group-hover:shadow-lg ${
           isDiscovered
             ? "bg-gray-500 border-gray-400 opacity-50"
             : "bg-yellow-500 border-yellow-300 animate-pulse"

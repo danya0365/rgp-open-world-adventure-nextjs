@@ -1,5 +1,6 @@
 import { BattleMarker } from "@/src/domain/types/location.types";
 import { Swords, Skull, Flame, Zap } from "lucide-react";
+import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
 interface BattleMarkerComponentProps {
   battle: BattleMarker;
@@ -40,21 +41,28 @@ export function BattleMarkerComponent({
   const Icon = DIFFICULTY_ICONS[difficulty];
   const colorClass = DIFFICULTY_COLORS[difficulty];
 
+  // Get POI size in pixels based on grid size
+  const { width, height } = getPOIPixelSize(battle.gridSize, gridSize);
+  
+  // Determine if POI is 1x1 (use circle) or larger (use rounded rectangle)
+  const is1x1 = (!battle.gridSize || (battle.gridSize.width === 1 && battle.gridSize.height === 1));
+  const shapeClass = is1x1 ? "rounded-full" : "rounded-lg";
+
   return (
     <div
       className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: `${gridSize}px`,
-        height: `${gridSize}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         zIndex: 50,
       }}
       title={battle.name || "Battle Area"}
     >
-      {/* Battle Circle with pulsing animation */}
+      {/* Battle Marker with pulsing animation */}
       <div
-        className={`w-full h-full rounded-full flex items-center justify-center transition-all ${colorClass} border-4 group-hover:scale-110 group-hover:shadow-lg animate-pulse`}
+        className={`w-full h-full ${shapeClass} flex items-center justify-center transition-all ${colorClass} border-4 group-hover:scale-110 group-hover:shadow-lg animate-pulse`}
       >
         <Swords className="w-1/2 h-1/2 text-white" />
       </div>

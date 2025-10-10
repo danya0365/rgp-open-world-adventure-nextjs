@@ -1,5 +1,6 @@
 import { ShopMarker as ShopMarkerType } from "@/src/domain/types/location.types";
 import { ShoppingBag, Sword, Shield, Sparkles, Droplet } from "lucide-react";
+import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
 interface ShopMarkerProps {
   shop: ShopMarkerType;
@@ -44,21 +45,28 @@ export function ShopMarker({
   const Icon = SHOP_ICONS[shopType];
   const colorClass = SHOP_COLORS[shopType];
 
+  // Get POI size in pixels based on grid size
+  const { width, height } = getPOIPixelSize(shop.gridSize, gridSize);
+  
+  // Determine if POI is 1x1 (use circle) or larger (use rounded rectangle)
+  const is1x1 = (!shop.gridSize || (shop.gridSize.width === 1 && shop.gridSize.height === 1));
+  const shapeClass = is1x1 ? "rounded-full" : "rounded-lg";
+
   return (
     <div
       className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: `${gridSize}px`,
-        height: `${gridSize}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         zIndex: 50,
       }}
       title={shop.name || "Shop"}
     >
-      {/* Shop Circle */}
+      {/* Shop Marker */}
       <div
-        className={`w-full h-full rounded-full flex items-center justify-center transition-all ${colorClass} border-4 group-hover:scale-110 group-hover:shadow-lg`}
+        className={`w-full h-full ${shapeClass} flex items-center justify-center transition-all ${colorClass} border-4 group-hover:scale-110 group-hover:shadow-lg`}
       >
         <Icon className="w-1/2 h-1/2 text-white" />
       </div>

@@ -73,11 +73,17 @@ export interface MapTile {
 }
 
 // POI (Point of Interest) Types
+export interface POIGridSize {
+  width: number; // Number of tiles horizontally (default: 1)
+  height: number; // Number of tiles vertically (default: 1)
+}
+
 export interface POIBase {
   id: string;
-  coordinates: Coordinates; // Position on the map grid (tile coordinates)
+  coordinates: Coordinates; // Position on the map grid (top-left corner of POI)
   name?: string; // Optional display name
   icon?: string; // Optional icon identifier
+  gridSize?: POIGridSize; // Size in tiles (default: { width: 1, height: 1 })
 }
 
 export interface NPCMarker extends POIBase {

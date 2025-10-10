@@ -21,6 +21,7 @@ import { InnModal } from "./InnModal";
 import { ServiceModal } from "./ServiceModal";
 import { ShopModal } from "./ShopModal";
 import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
+import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -364,10 +365,10 @@ export function VirtualMapGrid({
 
         {/* POI Markers - NPCs */}
         {currentLocation.metadata?.npcs?.map((npc) => {
-          // Check if player is at this NPC's position
+          // Check if player is within NPC bounds (supports multi-tile NPCs)
           const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
           const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtNPC = playerTileX === npc.coordinates.x && playerTileY === npc.coordinates.y;
+          const isPlayerAtNPC = isWithinPOIBounds(npc.coordinates, npc.gridSize, { x: playerTileX, y: playerTileY });
           
           return (
             <NPCMarker
@@ -385,7 +386,7 @@ export function VirtualMapGrid({
         {currentLocation.metadata?.shops?.map((shop) => {
           const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
           const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtShop = playerTileX === shop.coordinates.x && playerTileY === shop.coordinates.y;
+          const isPlayerAtShop = isWithinPOIBounds(shop.coordinates, shop.gridSize, { x: playerTileX, y: playerTileY });
           
           return (
             <ShopMarker
@@ -403,7 +404,7 @@ export function VirtualMapGrid({
         {currentLocation.metadata?.services?.map((service) => {
           const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
           const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtService = playerTileX === service.coordinates.x && playerTileY === service.coordinates.y;
+          const isPlayerAtService = isWithinPOIBounds(service.coordinates, service.gridSize, { x: playerTileX, y: playerTileY });
           
           return (
             <ServiceMarker
@@ -421,7 +422,7 @@ export function VirtualMapGrid({
         {currentLocation.metadata?.battleMaps?.map((battle) => {
           const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
           const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtBattle = playerTileX === battle.coordinates.x && playerTileY === battle.coordinates.y;
+          const isPlayerAtBattle = isWithinPOIBounds(battle.coordinates, battle.gridSize, { x: playerTileX, y: playerTileY });
           
           return (
             <BattleMarkerComponent
@@ -439,7 +440,7 @@ export function VirtualMapGrid({
         {currentLocation.metadata?.treasures?.map((treasure) => {
           const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
           const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
-          const isPlayerAtTreasure = playerTileX === treasure.coordinates.x && playerTileY === treasure.coordinates.y;
+          const isPlayerAtTreasure = isWithinPOIBounds(treasure.coordinates, treasure.gridSize, { x: playerTileX, y: playerTileY });
           
           return (
             <TreasureMarkerComponent

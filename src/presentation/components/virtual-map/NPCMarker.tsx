@@ -1,5 +1,6 @@
 import { NPCMarker as NPCMarkerType } from "@/src/domain/types/location.types";
 import { User, MessageCircle } from "lucide-react";
+import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
 interface NPCMarkerProps {
   npc: NPCMarkerType;
@@ -20,21 +21,28 @@ export function NPCMarker({
   const x = (npc.coordinates.x - viewportOffsetX) * gridSize;
   const y = (npc.coordinates.y - viewportOffsetY) * gridSize;
 
+  // Get POI size in pixels based on grid size
+  const { width, height } = getPOIPixelSize(npc.gridSize, gridSize);
+  
+  // Determine if POI is 1x1 (use circle) or larger (use rounded rectangle)
+  const is1x1 = (!npc.gridSize || (npc.gridSize.width === 1 && npc.gridSize.height === 1));
+  const shapeClass = is1x1 ? "rounded-full" : "rounded-lg";
+
   return (
     <div
       className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: `${gridSize}px`,
-        height: `${gridSize}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         zIndex: 50,
       }}
       title={npc.name || "NPC"}
     >
-      {/* NPC Circle */}
+      {/* NPC Marker */}
       <div
-        className={`w-full h-full rounded-full flex items-center justify-center transition-all ${
+        className={`w-full h-full ${shapeClass} flex items-center justify-center transition-all ${
           npc.hasQuest
             ? "bg-yellow-500 border-4 border-yellow-300 animate-pulse"
             : "bg-blue-500 border-4 border-blue-300"

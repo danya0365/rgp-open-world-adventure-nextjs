@@ -1,5 +1,6 @@
 import { ServiceMarker as ServiceMarkerType } from "@/src/domain/types/location.types";
 import { Hotel, Users, Landmark, Church, Hammer, ScrollText, Shield, Target } from "lucide-react";
+import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
 interface ServiceMarkerProps {
   service: ServiceMarkerType;
@@ -47,21 +48,28 @@ export function ServiceMarker({
   const Icon = SERVICE_ICONS[service.serviceType];
   const colorClass = SERVICE_COLORS[service.serviceType];
 
+  // Get POI size in pixels based on grid size
+  const { width, height } = getPOIPixelSize(service.gridSize, gridSize);
+  
+  // Determine if POI is 1x1 (use circle) or larger (use rounded rectangle)
+  const is1x1 = (!service.gridSize || (service.gridSize.width === 1 && service.gridSize.height === 1));
+  const shapeClass = is1x1 ? "rounded-full" : "rounded-xl";
+
   return (
     <div
       className="absolute pointer-events-none group"
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: `${gridSize}px`,
-        height: `${gridSize}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         zIndex: 50,
       }}
       title={service.name || service.serviceType}
     >
-      {/* Service Circle */}
+      {/* Service Marker */}
       <div
-        className={`w-full h-full rounded-full flex items-center justify-center transition-all ${colorClass} border-4 group-hover:scale-110 group-hover:shadow-lg`}
+        className={`w-full h-full ${shapeClass} flex items-center justify-center transition-all ${colorClass} border-4 group-hover:scale-110 group-hover:shadow-lg`}
       >
         <Icon className="w-1/2 h-1/2 text-white" />
       </div>

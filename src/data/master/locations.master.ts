@@ -229,20 +229,23 @@ export const LOCATIONS_MASTER: Location[] = [
           coordinates: { x: 10, y: 5 }, // Center of city hall
           name: "Mayor Aldric",
           hasQuest: true,
-          questId: "quest-main-1"
+          questId: "quest-main-1",
+          gridSize: { width: 2, height: 2 } // Important NPC - larger size
         },
         { 
           id: "npc-blacksmith", 
           coordinates: { x: 15, y: 8 }, // Near forge
           name: "Blacksmith Gorin",
-          hasQuest: false
+          hasQuest: false,
+          gridSize: { width: 1, height: 1 } // Regular NPC
         },
         { 
           id: "npc-merchant", 
           coordinates: { x: 7, y: 6 }, // Market square
           name: "Merchant Lyra",
           hasQuest: true,
-          questId: "quest-side-1"
+          questId: "quest-side-1",
+          gridSize: { width: 1, height: 1 } // Regular NPC
         },
       ],
       
@@ -252,19 +255,22 @@ export const LOCATIONS_MASTER: Location[] = [
           id: "shop-weapons", 
           coordinates: { x: 14, y: 7 }, // Near blacksmith
           name: "Weapon Shop",
-          shopType: "weapons" as const
+          shopType: "weapons" as const,
+          gridSize: { width: 2, height: 2 } // Medium shop
         },
         { 
           id: "shop-armor", 
           coordinates: { x: 16, y: 9 }, // Armor district
           name: "Armor Shop",
-          shopType: "armor" as const
+          shopType: "armor" as const,
+          gridSize: { width: 2, height: 2 } // Medium shop
         },
         { 
           id: "shop-items", 
           coordinates: { x: 8, y: 7 }, // Market area
           name: "General Store",
-          shopType: "items" as const
+          shopType: "items" as const,
+          gridSize: { width: 2, height: 2 } // Medium shop
         },
       ],
       
@@ -274,19 +280,22 @@ export const LOCATIONS_MASTER: Location[] = [
           id: "inn", 
           coordinates: { x: 5, y: 10 }, // Residential area
           name: "The Frozen Hearth Inn",
-          serviceType: "inn" as const
+          serviceType: "inn" as const,
+          gridSize: { width: 3, height: 3 } // Large building
         },
         { 
           id: "guild", 
           coordinates: { x: 3, y: 5 }, // Guild district (matches building-guild-hall connection)
           name: "Adventurer's Guild",
-          serviceType: "guild" as const
+          serviceType: "guild" as const,
+          gridSize: { width: 3, height: 4 } // Very large building
         },
         { 
           id: "bank", 
           coordinates: { x: 12, y: 4 }, // Financial district
           name: "Silverhold Bank",
-          serviceType: "bank" as const
+          serviceType: "bank" as const,
+          gridSize: { width: 2, height: 3 } // Medium-large building
         },
       ],
       
@@ -297,14 +306,16 @@ export const LOCATIONS_MASTER: Location[] = [
           battleMapId: "map-forest-clearing",
           coordinates: { x: 2, y: 12 }, // Forest entrance (south)
           name: "Forest Clearing",
-          difficulty: "normal" as const
+          difficulty: "normal" as const,
+          gridSize: { width: 2, height: 2 } // Battle area
         },
         {
           id: "map-cave-entrance",
           battleMapId: "map-cave-entrance",
           coordinates: { x: 18, y: 3 }, // Cave entrance (north-east)
           name: "Cave Entrance",
-          difficulty: "hard" as const
+          difficulty: "hard" as const,
+          gridSize: { width: 2, height: 2 } // Battle area
         },
       ],
       
@@ -314,7 +325,8 @@ export const LOCATIONS_MASTER: Location[] = [
           id: "treasure-city-1",
           treasureId: "treasure-city-1",
           coordinates: { x: 1, y: 1 }, // Hidden corner
-          name: "Hidden Chest"
+          name: "Hidden Chest",
+          gridSize: { width: 1, height: 1 } // Small treasure
         },
       ],
     },
@@ -363,20 +375,23 @@ export const LOCATIONS_MASTER: Location[] = [
           coordinates: { x: 10, y: 7 }, // Elder's tree house
           name: "Elder Thalion",
           hasQuest: true,
-          questId: "quest-elven-1"
+          questId: "quest-elven-1",
+          gridSize: { width: 3, height: 3 } // Very important elder - large size
         },
         { 
           id: "npc-archer-trainer", 
           coordinates: { x: 15, y: 5 }, // Training grounds
           name: "Archer Trainer Sylvara",
-          hasQuest: false
+          hasQuest: false,
+          gridSize: { width: 1, height: 1 } // Regular NPC
         },
         { 
           id: "npc-herbalist", 
           coordinates: { x: 5, y: 9 }, // Herb garden
           name: "Herbalist Elara",
           hasQuest: true,
-          questId: "quest-herbs-1"
+          questId: "quest-herbs-1",
+          gridSize: { width: 1, height: 1 } // Regular NPC
         },
       ],
       
@@ -386,19 +401,22 @@ export const LOCATIONS_MASTER: Location[] = [
           id: "shop-magic", 
           coordinates: { x: 12, y: 8 }, // Magic district
           name: "Arcane Emporium",
-          shopType: "magic" as const
+          shopType: "magic" as const,
+          gridSize: { width: 3, height: 2 } // Large magic shop
         },
         { 
           id: "shop-bows", 
           coordinates: { x: 16, y: 6 }, // Near training grounds
           name: "Elven Bowyer",
-          shopType: "weapons" as const
+          shopType: "weapons" as const,
+          gridSize: { width: 2, height: 2 } // Medium shop
         },
         { 
           id: "shop-potions", 
           coordinates: { x: 6, y: 10 }, // Near herb garden
           name: "Potion Shop",
-          shopType: "potions" as const
+          shopType: "potions" as const,
+          gridSize: { width: 2, height: 2 } // Medium shop
         },
       ],
       
@@ -408,19 +426,22 @@ export const LOCATIONS_MASTER: Location[] = [
           id: "inn", 
           coordinates: { x: 8, y: 12 }, // Residential area
           name: "The Moonlit Rest",
-          serviceType: "inn" as const
+          serviceType: "inn" as const,
+          gridSize: { width: 3, height: 3 } // Large building
         },
         { 
           id: "guild", 
           coordinates: { x: 13, y: 4 }, // Guild hall
           name: "Elven Rangers Guild",
-          serviceType: "guild" as const
+          serviceType: "guild" as const,
+          gridSize: { width: 3, height: 4 } // Very large building
         },
         { 
           id: "temple", 
           coordinates: { x: 3, y: 3 }, // Sacred grove
           name: "Temple of Moonlight",
-          serviceType: "temple" as const
+          serviceType: "temple" as const,
+          gridSize: { width: 4, height: 4 } // Massive temple
         },
       ],
     },
