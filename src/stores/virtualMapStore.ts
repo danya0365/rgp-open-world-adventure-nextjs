@@ -195,20 +195,15 @@ const buildLocationMap = (): Map<string, Location> => {
 };
 
 // Helper: Get nearby locations within radius
+// NOTE: Deprecated - locations no longer have coordinates
+// Use getLocationConnections() instead to find connected locations
 const getNearbyLocations = (
   currentLocationId: string,
   radius: number = 200
 ): Location[] => {
-  const currentLoc = getLocationById(currentLocationId);
-  if (!currentLoc?.coordinates) return [];
-
-  return LOCATIONS_MASTER.filter((loc) => {
-    if (!loc.coordinates || loc.id === currentLocationId) return false;
-    const dx = loc.coordinates.x - currentLoc.coordinates!.x;
-    const dy = loc.coordinates.y - currentLoc.coordinates!.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance <= radius;
-  });
+  // Return empty array - this function is deprecated
+  // Use connections to find nearby/connected locations instead
+  return [];
 };
 
 // Helper: Compute cached data from state (extracted to top level)
@@ -334,12 +329,11 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           );
 
           for (const connection of connections) {
-            if (connection.fromLocationId !== currentPosition.locationId)
+            if (connection.from.locationId !== currentPosition.locationId)
               continue;
-            if (!connection.coordinates) continue;
 
-            const connTileX = Math.floor(connection.coordinates.x / 40);
-            const connTileY = Math.floor(connection.coordinates.y / 40);
+            const connTileX = Math.floor(connection.from.coordinates.x / 40);
+            const connTileY = Math.floor(connection.from.coordinates.y / 40);
             const playerTileX = Math.floor(coordinates.x / 40);
             const playerTileY = Math.floor(coordinates.y / 40);
 
@@ -354,7 +348,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
                   new CustomEvent("connection-trigger", {
                     detail: {
                       connectionId: connection.id,
-                      toLocationId: connection.toLocationId,
+                      toLocationId: connection.to.locationId,
                     },
                   })
                 );
@@ -827,11 +821,11 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         getVisibleConnections: (locationId, viewport) => {
           const connections = getLocationConnections(locationId);
           return connections.filter((conn) => {
-            if (conn.fromLocationId !== locationId || !conn.coordinates)
+            if (conn.from.locationId !== locationId)
               return false;
 
-            const tileX = Math.floor(conn.coordinates.x / 40);
-            const tileY = Math.floor(conn.coordinates.y / 40);
+            const tileX = Math.floor(conn.from.coordinates.x / 40);
+            const tileY = Math.floor(conn.from.coordinates.y / 40);
 
             return (
               tileX >= viewport.viewportStartX &&
@@ -843,28 +837,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         },
 
         getVisibleLocations: (locations, viewport, gridSize) => {
-          const mapWidth =
-            (viewport.viewportEndX - viewport.viewportStartX) * gridSize;
-          const mapHeight =
-            (viewport.viewportEndY - viewport.viewportStartY) * gridSize;
-
-          return locations.filter((location) => {
-            if (!location.coordinates) return false;
-
-            const markerX =
-              (location.coordinates.x / gridSize - viewport.viewportStartX) *
-              gridSize;
-            const markerY =
-              (location.coordinates.y / gridSize - viewport.viewportStartY) *
-              gridSize;
-
-            return (
-              markerX >= -gridSize &&
-              markerX <= mapWidth + gridSize &&
-              markerY >= -gridSize &&
-              markerY <= mapHeight + gridSize
-            );
-          });
+          // NOTE: Locations no longer have coordinates
+          // This function now returns all child locations
+          // The actual positioning is handled by connections in the rendering layer
+          return locations;
         },
       };
     },

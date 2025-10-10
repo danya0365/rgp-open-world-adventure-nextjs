@@ -2,6 +2,7 @@
 
 import { Location, MapTile } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { getLocationConnections } from "@/src/data/master/locations.master";
 
 interface MinimapProps {
   currentLocation: Location;
@@ -116,11 +117,21 @@ export function Minimap({
         />
 
         {/* Child Location Markers */}
-        {childLocations
-          .filter((loc) => loc.coordinates)
-          .map((location) => {
-            const markerX = Math.floor((location.coordinates!.x / gridSize) * tileSize);
-            const markerY = Math.floor((location.coordinates!.y / gridSize) * tileSize);
+        {(() => {
+          // Get connections from current location to child locations
+          const connections = getLocationConnections(currentLocation.id);
+          
+          return childLocations.map((location) => {
+            // Find connection to this child location
+            const connection = connections.find(
+              (conn) => conn.to.locationId === location.id
+            );
+            
+            if (!connection) return null;
+            
+            // Use entrance coordinates (from.coordinates)
+            const markerX = Math.floor((connection.from.coordinates.x / gridSize) * tileSize);
+            const markerY = Math.floor((connection.from.coordinates.y / gridSize) * tileSize);
 
             return (
               <div
@@ -133,7 +144,8 @@ export function Minimap({
                 title={location.name}
               />
             );
-          })}
+          });
+        })()}
 
         {/* Player Marker */}
         {playerPosition.locationId === currentLocation.id && (

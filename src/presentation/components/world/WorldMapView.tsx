@@ -273,15 +273,15 @@ export function WorldMapView({
     ? viewModel.connections
         .filter((conn) => {
           // แสดง connections ที่เชื่อมจาก/ถึง current location
-          const isFromCurrent = conn.fromLocationId === currentLocation.id;
-          const isToCurrent = conn.toLocationId === currentLocation.id;
+          const isFromCurrent = conn.from.locationId === currentLocation.id;
+          const isToCurrent = conn.to.locationId === currentLocation.id;
           return (isFromCurrent || isToCurrent) && conn.isTwoWay;
         })
         .map((conn) => {
           const targetLocationId =
-            conn.fromLocationId === currentLocation.id
-              ? conn.toLocationId
-              : conn.fromLocationId;
+            conn.from.locationId === currentLocation.id
+              ? conn.to.locationId
+              : conn.from.locationId;
           const targetLocation = viewModel.locations.find(
             (loc) => loc.id === targetLocationId
           );

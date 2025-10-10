@@ -116,13 +116,18 @@ export interface LocationMetadata {
 
 export interface LocationConnection {
   id: string;
-  fromLocationId: string;
-  toLocationId: string;
+  from: {
+    locationId: string;
+    coordinates: Coordinates; // Position on parent map where entrance appears
+  };
+  to: {
+    locationId: string;
+    coordinates: Coordinates; // Position on child map where player spawns
+  };
   connectionType: ConnectionType;
   isLocked: boolean;
   requiredItemId?: string;
   isTwoWay: boolean;
-  coordinates?: Coordinates;
 }
 
 export interface Location {
@@ -135,7 +140,7 @@ export interface Location {
   path: string[]; // Full path array
   slug: string;
   description: string;
-  coordinates?: Coordinates;
+  // ❌ Removed: coordinates - Use LocationConnection instead
   mapData?: MapData;
   isDiscoverable: boolean;
   isFastTravelPoint: boolean;

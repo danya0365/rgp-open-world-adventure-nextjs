@@ -1,8 +1,10 @@
 import {
   Location,
   MapTile as MapTileType,
+  LocationConnection,
 } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { getLocationConnections } from "@/src/data/master/locations.master";
 import { useEffect, useMemo } from "react";
 import { LocationMarker } from "./LocationMarker";
 import { MapTile } from "./MapTile";
@@ -319,27 +321,36 @@ export function VirtualMapGrid({
           })}
 
         {/* Child Location Markers (on top of tiles) */}
-        {visibleChildLocations.map((location) => {
-          const markerX =
-            (location.coordinates!.x / gridSize - viewportStartX) * gridSize;
-          const markerY =
-            (location.coordinates!.y / gridSize - viewportStartY) * gridSize;
+        {(() => {
+          // Get connections from current location
+          const connections = getLocationConnections(currentLocation.id);
+          
+          return visibleChildLocations.map((location) => {
+            // Find connection to this child location
+            const connection = connections.find(
+              (conn) => conn.to.locationId === location.id
+            );
+            
+            if (!connection) return null;
+            
+            // Use entrance coordinates (from.coordinates)
+            const markerX =
+              (connection.from.coordinates.x / gridSize - viewportStartX) * gridSize;
+            const markerY =
+              (connection.from.coordinates.y / gridSize - viewportStartY) * gridSize;
 
-          const adjustedLocation = {
-            ...location,
-            coordinates: { x: markerX, y: markerY },
-          };
-
-          return (
-            <LocationMarker
-              key={location.id}
-              location={adjustedLocation}
-              onClick={() => onLocationClick(location)}
-              isDiscovered={discoveredLocations.has(location.id)}
-              isCurrentLocation={location.id === playerPosition.locationId}
-            />
-          );
-        })}
+            return (
+              <LocationMarker
+                key={location.id}
+                location={location}
+                coordinates={{ x: markerX, y: markerY }}
+                onClick={() => onLocationClick(location)}
+                isDiscovered={discoveredLocations.has(location.id)}
+                isCurrentLocation={location.id === playerPosition.locationId}
+              />
+            );
+          });
+        })()}
 
         {/* Player Marker (only show if player is in this location) */}
         {playerPosition.locationId === currentLocation.id && (
@@ -444,13 +455,13 @@ export function VirtualMapGrid({
 
         {/* Connection Markers */}
         {connections.map((connection) => {
-          const tileX = Math.floor(connection.coordinates!.x / gridSize);
-          const tileY = Math.floor(connection.coordinates!.y / gridSize);
+          const tileX = Math.floor(connection.from.coordinates.x / gridSize);
+          const tileY = Math.floor(connection.from.coordinates.y / gridSize);
           const x = tileX - viewportStartX;
           const y = tileY - viewportStartY;
 
           const target = childLocations.find(
-            (l) => l.id === connection.toLocationId
+            (l) => l.id === connection.to.locationId
           );
           const isDiscovered = target && discoveredLocations.has(target.id);
 

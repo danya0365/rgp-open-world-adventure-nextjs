@@ -1,8 +1,9 @@
-import { Location } from "@/src/domain/types/location.types";
+import { Location, Coordinates } from "@/src/domain/types/location.types";
 import { MapPin, Building2, Castle, Home, Mountain, Trees, Lock } from "lucide-react";
 
 interface LocationMarkerProps {
   location: Location;
+  coordinates: Coordinates; // Position on parent map (from connection)
   onClick: () => void;
   isDiscovered: boolean;
   isCurrentLocation: boolean;
@@ -52,6 +53,7 @@ const LOCATION_COLORS = {
 
 export function LocationMarker({
   location,
+  coordinates,
   onClick,
   isDiscovered,
   isCurrentLocation,
@@ -70,8 +72,8 @@ export function LocationMarker({
         disabled
         className="absolute transform -translate-x-1/2 -translate-y-1/2 opacity-40 cursor-not-allowed"
         style={{
-          left: `${location.coordinates?.x || 0}px`,
-          top: `${location.coordinates?.y || 0}px`,
+          left: `${coordinates.x}px`,
+          top: `${coordinates.y}px`,
         }}
       >
         <div className="w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 rounded-full bg-gray-700 border-2 border-gray-600 flex items-center justify-center">
@@ -84,12 +86,10 @@ export function LocationMarker({
   return (
     <button
       onClick={onClick}
-      className={`absolute group transform -translate-x-1/2 -translate-y-1/2 ${
-        isCurrentLocation ? "z-40" : "z-30"
-      }`}
+      className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-110"
       style={{
-        left: `${location.coordinates?.x || 0}px`,
-        top: `${location.coordinates?.y || 0}px`,
+        left: `${coordinates.x}px`,
+        top: `${coordinates.y}px`,
       }}
     >
       {/* Glow Effect */}

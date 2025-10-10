@@ -30,7 +30,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria"],
     slug: "aethoria",
     description: "โลกแฟนตาซีที่เต็มไปด้วยเวทมนตร์และการผจญภัย",
-    coordinates: { x: 25, y: 25 }, // ✅ TILE position - Center of world map (50x50)
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
@@ -55,7 +54,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-northern"],
     slug: "northern-continent",
     description: "ดินแดนที่หนาวเย็นและเต็มไปด้วยภูเขาสูง",
-    coordinates: { x: 10, y: 5 }, // ✅ TILE position - Northwest of world map
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: true,
@@ -78,7 +76,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-eastern"],
     slug: "eastern-continent",
     description: "ดินแดนแห่งป่าไม้และธรรมชาติอันอุดมสมบูรณ์",
-    coordinates: { x: 35, y: 15 }, // ✅ TILE position - Southeast of world map
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: true,
@@ -104,7 +101,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-northern", "region-frostpeak"],
     slug: "frostpeak-mountains",
     description: "เทือกเขาน้ำแข็งที่สูงตระหง่าน",
-    coordinates: { x: 8, y: 5 }, // ✅ TILE position - North area of Northern Continent
     isDiscoverable: true,
     isFastTravelPoint: false,
     requiredLevel: 10,
@@ -130,7 +126,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-eastern", "region-elven-forest"],
     slug: "elven-forest",
     description: "ป่าโบราณที่เป็นที่อยู่ของเผ่าเอลฟ์",
-    coordinates: { x: 15, y: 10 }, // ✅ TILE position - Center of Eastern Continent
     isDiscoverable: true,
     isFastTravelPoint: false,
     requiredLevel: 5,
@@ -164,7 +159,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "crystal-valley",
     description: "หุบเขาที่เต็มไปด้วยคริสตัลน้ำแข็งเรืองแสง",
-    coordinates: { x: 10, y: 8 }, // ✅ TILE position - Valley in Frostpeak region
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 15,
@@ -207,7 +201,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "silverhold",
     description: "เมืองป้อมปราการที่สร้างจากหินและน้ำแข็ง",
-    coordinates: { x: 10, y: 7 }, // ✅ TILE position - Center of Crystal Valley map
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 10,
@@ -342,7 +335,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "elvenheim",
     description: "เมืองหลวงของเผ่าเอลฟ์ที่สร้างบนต้นไม้ยักษ์",
-    coordinates: { x: 12, y: 5 }, // ✅ TILE position - Center of Elven Forest region
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 5,
@@ -454,7 +446,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "guild-hall",
     description: "สำนักงานใหญ่ของสมาคมนักผจญภัย",
-    coordinates: { x: 3, y: 5 }, // ✅ TILE position - matches Guild service in city-silverhold
     isDiscoverable: true,
     isFastTravelPoint: true,
     weatherEnabled: false,
@@ -490,7 +481,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "magic-tower",
     description: "หอคอยสูงที่เป็นศูนย์กลางการศึกษาเวทมนตร์",
-    coordinates: { x: 12, y: 8 }, // ✅ TILE position - matches Magic shop in city-elvenheim
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 10,
@@ -645,7 +635,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "guild-master-office",
     description: "ห้องทำงานของหัวหน้าสมาคมนักผจญภัย",
-    coordinates: { x: 200, y: 160 }, // Center: (5*40, 4*40)
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
@@ -684,7 +673,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "meeting-room-a",
     description: "ห้องประชุมสำหรับวางแผนภารกิจ",
-    coordinates: { x: 160, y: 160 }, // Center: (4*40, 4*40)
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
@@ -722,7 +710,6 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "frozen-depths",
     description: "ดันเจี้ยนใต้ดินที่เต็มไปด้วยมอนสเตอร์น้ำแข็ง",
-    coordinates: { x: 110, y: 70 },
     isDiscoverable: true,
     isFastTravelPoint: false,
     requiredLevel: 20,
@@ -760,7 +747,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-northern", "field-starting-plains"],
     slug: "starting-plains",
     description: "ทุ่งหญ้ากว้างใหญ่สำหรับผู้เริ่มต้นการผจญภัย",
-    coordinates: { x: 250, y: 150 },
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 1,
@@ -801,7 +787,6 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-eastern", "town-riverside"],
     slug: "riverside-town",
     description: "เมืองเล็กๆ ริมฝั่งแม่น้ำที่เงียบสงบ",
-    coordinates: { x: 550, y: 350 },
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 5,
@@ -840,22 +825,32 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-world-1",
-    fromLocationId: "world-aethoria",
-    toLocationId: "continent-northern",
+    from: {
+      locationId: "world-aethoria",
+      coordinates: { x: 10, y: 5 }, // Portal position on world map
+    },
+    to: {
+      locationId: "continent-northern",
+      coordinates: { x: 15, y: 15 }, // Spawn point on continent
+    },
     connectionType: "portal",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 200, y: 100 },
   },
 
   {
     id: "conn-world-2",
-    fromLocationId: "world-aethoria",
-    toLocationId: "continent-eastern",
+    from: {
+      locationId: "world-aethoria",
+      coordinates: { x: 35, y: 15 }, // Portal position on world map
+    },
+    to: {
+      locationId: "continent-eastern",
+      coordinates: { x: 15, y: 15 }, // Spawn point on continent
+    },
     connectionType: "portal",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 600, y: 300 },
   },
 
   // ========================================
@@ -863,12 +858,17 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-1",
-    fromLocationId: "continent-northern",
-    toLocationId: "continent-eastern",
+    from: {
+      locationId: "continent-northern",
+      coordinates: { x: 25, y: 15 }, // Bridge on northern continent
+    },
+    to: {
+      locationId: "continent-eastern",
+      coordinates: { x: 5, y: 15 }, // Bridge on eastern continent
+    },
     connectionType: "bridge",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 400, y: 200 },
   },
 
   // ========================================
@@ -876,22 +876,32 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-continent-1",
-    fromLocationId: "continent-northern",
-    toLocationId: "region-frostpeak",
+    from: {
+      locationId: "continent-northern",
+      coordinates: { x: 8, y: 5 }, // Gate on continent
+    },
+    to: {
+      locationId: "region-frostpeak",
+      coordinates: { x: 12, y: 12 }, // Spawn in region
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 150, y: 80 },
   },
 
   {
     id: "conn-continent-2",
-    fromLocationId: "continent-eastern",
-    toLocationId: "region-elven-forest",
+    from: {
+      locationId: "continent-eastern",
+      coordinates: { x: 15, y: 10 }, // Gate on continent
+    },
+    to: {
+      locationId: "region-elven-forest",
+      coordinates: { x: 12, y: 12 }, // Spawn in region
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 500, y: 250 },
   },
 
   // ========================================
@@ -899,22 +909,32 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-region-1",
-    fromLocationId: "region-frostpeak",
-    toLocationId: "area-crystal-valley",
+    from: {
+      locationId: "region-frostpeak",
+      coordinates: { x: 10, y: 8 }, // Gate on region
+    },
+    to: {
+      locationId: "area-crystal-valley",
+      coordinates: { x: 10, y: 10 }, // Spawn in area
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 120, y: 60 },
   },
 
   {
     id: "conn-region-2",
-    fromLocationId: "region-elven-forest",
-    toLocationId: "city-elvenheim",
+    from: {
+      locationId: "region-elven-forest",
+      coordinates: { x: 12, y: 5 }, // Gate on region
+    },
+    to: {
+      locationId: "city-elvenheim",
+      coordinates: { x: 10, y: 7 }, // Spawn in city
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 480, y: 230 },
   },
 
   // ========================================
@@ -922,12 +942,17 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-area-1",
-    fromLocationId: "area-crystal-valley",
-    toLocationId: "city-silverhold",
+    from: {
+      locationId: "area-crystal-valley",
+      coordinates: { x: 10, y: 7 }, // Gate on area
+    },
+    to: {
+      locationId: "city-silverhold",
+      coordinates: { x: 10, y: 7 }, // Spawn at city center
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 400, y: 280 }, // Grid-aligned: (10*40, 7*40)
   },
 
   // ========================================
@@ -935,33 +960,48 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-2",
-    fromLocationId: "city-silverhold",
-    toLocationId: "building-guild-hall",
+    from: {
+      locationId: "city-silverhold",
+      coordinates: { x: 3, y: 5 }, // Guild entrance on city map
+    },
+    to: {
+      locationId: "building-guild-hall",
+      coordinates: { x: 7, y: 7 }, // Spawn at guild center
+    },
     connectionType: "entrance",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 120, y: 200 }, // Grid-aligned: (3*40, 5*40) - Guild entrance
   },
 
   // Reverse connection for two-way travel
   {
     id: "conn-2-reverse",
-    fromLocationId: "building-guild-hall",
-    toLocationId: "city-silverhold",
+    from: {
+      locationId: "building-guild-hall",
+      coordinates: { x: 7, y: 0 }, // Exit at bottom of guild
+    },
+    to: {
+      locationId: "city-silverhold",
+      coordinates: { x: 3, y: 5 }, // Return to guild entrance
+    },
     connectionType: "entrance",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 120, y: 200 }, // Same position - exit point
   },
 
   {
     id: "conn-6",
-    fromLocationId: "city-elvenheim",
-    toLocationId: "building-magic-tower",
+    from: {
+      locationId: "city-elvenheim",
+      coordinates: { x: 12, y: 8 }, // Tower entrance on city map
+    },
+    to: {
+      locationId: "building-magic-tower",
+      coordinates: { x: 7, y: 7 }, // Spawn at tower center
+    },
     connectionType: "entrance",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 470, y: 220 },
   },
 
   // ========================================
@@ -969,8 +1009,14 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-building-1",
-    fromLocationId: "building-guild-hall",
-    toLocationId: "floor-guild-1f",
+    from: {
+      locationId: "building-guild-hall",
+      coordinates: { x: 7, y: 7 }, // Stairs at center
+    },
+    to: {
+      locationId: "floor-guild-1f",
+      coordinates: { x: 7, y: 5 }, // Spawn on 1F
+    },
     connectionType: "stairs",
     isLocked: false,
     isTwoWay: true,
@@ -978,8 +1024,14 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
 
   {
     id: "conn-3",
-    fromLocationId: "floor-guild-1f",
-    toLocationId: "floor-guild-2f",
+    from: {
+      locationId: "floor-guild-1f",
+      coordinates: { x: 12, y: 5 }, // Stairs on 1F
+    },
+    to: {
+      locationId: "floor-guild-2f",
+      coordinates: { x: 2, y: 5 }, // Spawn on 2F
+    },
     connectionType: "stairs",
     isLocked: false,
     isTwoWay: true,
@@ -987,8 +1039,14 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
 
   {
     id: "conn-7",
-    fromLocationId: "building-magic-tower",
-    toLocationId: "floor-tower-1f",
+    from: {
+      locationId: "building-magic-tower",
+      coordinates: { x: 7, y: 7 }, // Stairs at center
+    },
+    to: {
+      locationId: "floor-tower-1f",
+      coordinates: { x: 7, y: 5 }, // Spawn on 1F
+    },
     connectionType: "stairs",
     isLocked: false,
     isTwoWay: true,
@@ -999,8 +1057,14 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-4",
-    fromLocationId: "floor-guild-2f",
-    toLocationId: "room-guild-master",
+    from: {
+      locationId: "floor-guild-2f",
+      coordinates: { x: 10, y: 3 }, // Door on 2F
+    },
+    to: {
+      locationId: "room-guild-master",
+      coordinates: { x: 5, y: 4 }, // Spawn in room
+    },
     connectionType: "door",
     isLocked: false,
     isTwoWay: true,
@@ -1008,8 +1072,14 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
 
   {
     id: "conn-5",
-    fromLocationId: "floor-guild-2f",
-    toLocationId: "room-meeting-1",
+    from: {
+      locationId: "floor-guild-2f",
+      coordinates: { x: 5, y: 3 }, // Door on 2F
+    },
+    to: {
+      locationId: "room-meeting-1",
+      coordinates: { x: 4, y: 4 }, // Spawn in room
+    },
     connectionType: "door",
     isLocked: false,
     isTwoWay: true,
@@ -1020,13 +1090,18 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-8",
-    fromLocationId: "area-crystal-valley",
-    toLocationId: "dungeon-frozen-depths",
+    from: {
+      locationId: "area-crystal-valley",
+      coordinates: { x: 5, y: 5 }, // Dungeon entrance on area map
+    },
+    to: {
+      locationId: "dungeon-frozen-depths",
+      coordinates: { x: 12, y: 12 }, // Spawn in dungeon
+    },
     connectionType: "entrance",
     isLocked: true,
     requiredItemId: "item-crystal-key",
     isTwoWay: true,
-    coordinates: { x: 110, y: 70 },
   },
 
   // ========================================
@@ -1034,22 +1109,32 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
   // ========================================
   {
     id: "conn-9",
-    fromLocationId: "continent-northern",
-    toLocationId: "field-starting-plains",
+    from: {
+      locationId: "continent-northern",
+      coordinates: { x: 15, y: 10 }, // Gate on continent
+    },
+    to: {
+      locationId: "field-starting-plains",
+      coordinates: { x: 15, y: 12 }, // Spawn in field
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 250, y: 150 },
   },
 
   {
     id: "conn-10",
-    fromLocationId: "continent-eastern",
-    toLocationId: "town-riverside",
+    from: {
+      locationId: "continent-eastern",
+      coordinates: { x: 20, y: 18 }, // Gate on continent
+    },
+    to: {
+      locationId: "town-riverside",
+      coordinates: { x: 9, y: 7 }, // Spawn in town
+    },
     connectionType: "gate",
     isLocked: false,
     isTwoWay: true,
-    coordinates: { x: 550, y: 350 },
   },
 ];
 
@@ -1135,7 +1220,7 @@ export function getConnectionById(id: string): LocationConnection | undefined {
  */
 export function getLocationConnections(locationId: string): LocationConnection[] {
   return LOCATION_CONNECTIONS_MASTER.filter(
-    (conn) => conn.fromLocationId === locationId || conn.toLocationId === locationId
+    (conn) => conn.from.locationId === locationId || conn.to.locationId === locationId
   );
 }
 

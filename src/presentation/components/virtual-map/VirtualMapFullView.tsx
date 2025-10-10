@@ -123,20 +123,20 @@ export function VirtualMapFullView({
       if (target) {
         console.log(`  → Auto-navigating to:`, target.id);
 
-        // Find reverse connection to get spawn point
-        const reverseConnections = getLocationConnections(toLocationId);
-        const reverseConn = reverseConnections.find(
+        // Find connection to get spawn point
+        const connections = getLocationConnections(currentLocationData?.id || "");
+        const connection = connections.find(
           (conn) =>
-            conn.fromLocationId === toLocationId &&
-            conn.toLocationId === currentLocationData?.id
+            conn.from.locationId === currentLocationData?.id &&
+            conn.to.locationId === toLocationId
         );
 
-        // Use reverse connection coordinates as spawn point, fallback to target center
-        const spawnCoords = reverseConn?.coordinates || target.coordinates;
+        // Use connection spawn point (to.coordinates), fallback to center
+        const spawnCoords = connection?.to.coordinates || { x: 10, y: 7 };
         console.log(
           `  - Spawn at:`,
           spawnCoords,
-          reverseConn ? "(from reverse connection)" : "(center)"
+          connection ? "(from connection)" : "(center)"
         );
 
         // Auto-discover and teleport
@@ -177,8 +177,15 @@ export function VirtualMapFullView({
 
     console.log(`  ✓ Teleporting to ${location.id}`);
 
+    // Find connection to get spawn point
+    const connections = getLocationConnections(currentLocationData?.id || "");
+    const connection = connections.find(
+      (conn) => conn.to.locationId === location.id
+    );
+    const spawnCoords = connection?.to.coordinates || { x: 10, y: 7 };
+
     // Teleport to location (updates store)
-    teleportToLocation(location.id, location.coordinates);
+    teleportToLocation(location.id, spawnCoords);
 
     // Update URL to match new location
     router.push(`/virtual-world/${location.id}`);
@@ -191,8 +198,11 @@ export function VirtualMapFullView({
     // Breadcrumbs are always accessible (parent locations)
     console.log(`  ✓ Teleporting to ${location.id}`);
 
+    // For breadcrumbs (going back), spawn at center
+    const spawnCoords = { x: 10, y: 7 }; // Default center
+
     // Teleport to location (updates store)
-    teleportToLocation(location.id, location.coordinates);
+    teleportToLocation(location.id, spawnCoords);
 
     // Update URL to match new location
     router.push(`/virtual-world/${location.id}`);
