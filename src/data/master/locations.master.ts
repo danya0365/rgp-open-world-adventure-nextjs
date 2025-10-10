@@ -30,7 +30,7 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria"],
     slug: "aethoria",
     description: "โลกแฟนตาซีที่เต็มไปด้วยเวทมนตร์และการผจญภัย",
-    coordinates: { x: 500, y: 500 },
+    coordinates: { x: 25, y: 25 }, // ✅ TILE position - Center of world map (50x50)
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: false,
@@ -55,7 +55,7 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-northern"],
     slug: "northern-continent",
     description: "ดินแดนที่หนาวเย็นและเต็มไปด้วยภูเขาสูง",
-    coordinates: { x: 200, y: 100 },
+    coordinates: { x: 10, y: 5 }, // ✅ TILE position - Northwest of world map
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: true,
@@ -78,7 +78,7 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-eastern"],
     slug: "eastern-continent",
     description: "ดินแดนแห่งป่าไม้และธรรมชาติอันอุดมสมบูรณ์",
-    coordinates: { x: 600, y: 300 },
+    coordinates: { x: 35, y: 15 }, // ✅ TILE position - Southeast of world map
     isDiscoverable: true,
     isFastTravelPoint: false,
     weatherEnabled: true,
@@ -104,7 +104,7 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-northern", "region-frostpeak"],
     slug: "frostpeak-mountains",
     description: "เทือกเขาน้ำแข็งที่สูงตระหง่าน",
-    coordinates: { x: 150, y: 80 },
+    coordinates: { x: 8, y: 5 }, // ✅ TILE position - North area of Northern Continent
     isDiscoverable: true,
     isFastTravelPoint: false,
     requiredLevel: 10,
@@ -130,7 +130,7 @@ export const LOCATIONS_MASTER: Location[] = [
     path: ["world-aethoria", "continent-eastern", "region-elven-forest"],
     slug: "elven-forest",
     description: "ป่าโบราณที่เป็นที่อยู่ของเผ่าเอลฟ์",
-    coordinates: { x: 500, y: 250 },
+    coordinates: { x: 15, y: 10 }, // ✅ TILE position - Center of Eastern Continent
     isDiscoverable: true,
     isFastTravelPoint: false,
     requiredLevel: 5,
@@ -164,7 +164,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "crystal-valley",
     description: "หุบเขาที่เต็มไปด้วยคริสตัลน้ำแข็งเรืองแสง",
-    coordinates: { x: 120, y: 60 },
+    coordinates: { x: 10, y: 8 }, // ✅ TILE position - Valley in Frostpeak region
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 15,
@@ -207,7 +207,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "silverhold",
     description: "เมืองป้อมปราการที่สร้างจากหินและน้ำแข็ง",
-    coordinates: { x: 400, y: 280 }, // Center of map: (10*40, 7*40)
+    coordinates: { x: 10, y: 7 }, // ✅ TILE position - Center of Crystal Valley map
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 10,
@@ -342,7 +342,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "elvenheim",
     description: "เมืองหลวงของเผ่าเอลฟ์ที่สร้างบนต้นไม้ยักษ์",
-    coordinates: { x: 480, y: 230 },
+    coordinates: { x: 12, y: 5 }, // ✅ TILE position - Center of Elven Forest region
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 5,
@@ -454,7 +454,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "guild-hall",
     description: "สำนักงานใหญ่ของสมาคมนักผจญภัย",
-    coordinates: { x: 120, y: 200 }, // Grid-aligned: (3*40, 5*40) - Same as connection
+    coordinates: { x: 3, y: 5 }, // ✅ TILE position - matches Guild service in city-silverhold
     isDiscoverable: true,
     isFastTravelPoint: true,
     weatherEnabled: false,
@@ -490,7 +490,7 @@ export const LOCATIONS_MASTER: Location[] = [
     ],
     slug: "magic-tower",
     description: "หอคอยสูงที่เป็นศูนย์กลางการศึกษาเวทมนตร์",
-    coordinates: { x: 470, y: 220 },
+    coordinates: { x: 12, y: 8 }, // ✅ TILE position - matches Magic shop in city-elvenheim
     isDiscoverable: true,
     isFastTravelPoint: true,
     requiredLevel: 10,
