@@ -93,7 +93,7 @@ export function VirtualMapFullView({
         conn.to.locationId === toLocationId
     );
     if (forward) {
-      return forward.to.coordinates;
+      return forward.to.tileCoordinate;
     }
 
     // Try reverse using two-way connection
@@ -105,7 +105,7 @@ export function VirtualMapFullView({
     );
     if (reverse) {
       // When traversing reverse, spawn should be at the target side which is 'from' in this entry
-      return reverse.from.coordinates;
+      return reverse.from.tileCoordinate;
     }
 
     // Fallback center
@@ -253,10 +253,16 @@ export function VirtualMapFullView({
     // Find connection to get spawn point
     const spawnCoords = currentLocationData
       ? getSpawnFromConnections(currentLocationData.id, location.id)
-      : { x: 10, y: 7 };
+      : { x: 10, y: 7 }; // TILE coordinate
+
+    // Convert TILE → PIXEL before teleporting
+    const spawnPixel = {
+      x: spawnCoords.x * 40,
+      y: spawnCoords.y * 40,
+    };
 
     // Teleport to location (updates store)
-    teleportToLocation(location.id, spawnCoords);
+    teleportToLocation(location.id, spawnPixel);
 
     // Update URL to match new location
     const fromId = currentLocationData?.id;
@@ -275,10 +281,16 @@ export function VirtualMapFullView({
     console.log(`  ✓ Teleporting to ${location.id}`);
 
     // For breadcrumbs (going back), spawn at center
-    const spawnCoords = { x: 10, y: 7 }; // Default center
+    const spawnCoords = { x: 10, y: 7 }; // TILE coordinate
+
+    // Convert TILE → PIXEL before teleporting
+    const spawnPixel = {
+      x: spawnCoords.x * 40,
+      y: spawnCoords.y * 40,
+    };
 
     // Teleport to location (updates store)
-    teleportToLocation(location.id, spawnCoords);
+    teleportToLocation(location.id, spawnPixel);
 
     // Update URL to match new location
     router.push(`/virtual-world/${location.id}`);

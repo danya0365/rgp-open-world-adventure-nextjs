@@ -18,8 +18,8 @@ export function TreasureMarkerComponent({
   isPlayerNearby = false,
 }: TreasureMarkerComponentProps) {
   // Calculate position relative to viewport
-  const x = (treasure.coordinates.x - viewportOffsetX) * gridSize;
-  const y = (treasure.coordinates.y - viewportOffsetY) * gridSize;
+  const x = (treasure.tileCoordinate.x - viewportOffsetX) * gridSize;
+  const y = (treasure.tileCoordinate.y - viewportOffsetY) * gridSize;
 
   const isDiscovered = treasure.isDiscovered || false;
 

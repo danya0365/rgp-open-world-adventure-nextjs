@@ -31,13 +31,13 @@ import { useGameStore } from "./gameStore";
 
 export interface PlayerPosition {
   locationId: string; // Current location ID (references LOCATIONS_MASTER)
-  coordinates: Coordinates; // Exact position within the location
+  pixelCoordinate: Coordinates; // Exact position within the location - PIXEL units for rendering
   facing: "north" | "south" | "east" | "west"; // Direction player is facing
 }
 
 export interface MovementState {
   isMoving: boolean;
-  currentPath: Coordinates[];
+  pathPixelCoordinates: Coordinates[]; // Movement path in PIXEL units
   currentPathIndex: number;
   movementSpeed: number; // tiles per second
 }
@@ -180,7 +180,7 @@ interface VirtualMapState {
 // Default player starting position
 const DEFAULT_PLAYER_POSITION: PlayerPosition = {
   locationId: "city-silverhold", // Start at Silverhold City
-  coordinates: { x: 0, y: 0 },
+  pixelCoordinate: { x: 0, y: 0 }, // PIXEL units
   facing: "south",
 };
 
@@ -235,7 +235,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         playerPosition: DEFAULT_PLAYER_POSITION,
         discoveredLocations: new Set([DEFAULT_PLAYER_POSITION.locationId]),
         visitedTiles: new Map(),
-        cameraPosition: DEFAULT_PLAYER_POSITION.coordinates,
+        cameraPosition: DEFAULT_PLAYER_POSITION.pixelCoordinate,
         zoom: 1,
         showMinimap: true,
         showLocationInfo: true,
@@ -261,7 +261,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         // ========================================
         movementState: {
           isMoving: false,
-          currentPath: [],
+          pathPixelCoordinates: [],
           currentPathIndex: 0,
           movementSpeed: 3, // 3 tiles per second
         },
@@ -279,31 +279,31 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           // Auto-discover location when player moves there
           get().discoverLocation(position.locationId);
           // Auto-center camera on player
-          get().setCameraPosition(position.coordinates);
+          get().setCameraPosition(position.pixelCoordinate);
           // Refresh cached data
           get().refreshCachedData();
 
           // ✅ Sync to gameStore
           useGameStore.getState().setPlayerWorldPosition({
             locationId: position.locationId,
-            x: position.coordinates.x,
-            y: position.coordinates.y,
+            x: position.pixelCoordinate.x,
+            y: position.pixelCoordinate.y,
             facing: position.facing,
           });
         },
 
-        movePlayer: (coordinates) => {
+        movePlayer: (pixelCoordinate) => {
           const currentPosition = get().playerPosition;
           set({
             playerPosition: {
               ...currentPosition,
-              coordinates,
+              pixelCoordinate,
             },
           });
           // Record visited tile
-          get().visitTile(currentPosition.locationId, coordinates);
+          get().visitTile(currentPosition.locationId, pixelCoordinate);
           // Update camera
-          get().setCameraPosition(coordinates);
+          get().setCameraPosition(pixelCoordinate);
 
           // Check for connection triggers
           const connections = getLocationConnections(
@@ -314,10 +314,12 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             if (connection.from.locationId !== currentPosition.locationId)
               continue;
 
-            const connTileX = Math.floor(connection.from.coordinates.x / 40);
-            const connTileY = Math.floor(connection.from.coordinates.y / 40);
-            const playerTileX = Math.floor(coordinates.x / 40);
-            const playerTileY = Math.floor(coordinates.y / 40);
+            // Master data uses TILE coordinates (no need to convert)
+            const connTileX = connection.from.tileCoordinate.x; // TILE
+            const connTileY = connection.from.tileCoordinate.y; // TILE
+            // Convert player PIXEL → TILE
+            const playerTileX = Math.floor(pixelCoordinate.x / 40);
+            const playerTileY = Math.floor(pixelCoordinate.y / 40);
 
             if (connTileX === playerTileX && connTileY === playerTileY) {
               console.log(
@@ -342,8 +344,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           // ✅ Sync to gameStore
           useGameStore.getState().setPlayerWorldPosition({
             locationId: currentPosition.locationId,
-            x: coordinates.x,
-            y: coordinates.y,
+            x: pixelCoordinate.x,
+            y: pixelCoordinate.y,
             facing: currentPosition.facing,
           });
         },
@@ -358,16 +360,16 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           });
         },
 
-        teleportToLocation: (locationId, coordinates) => {
+        teleportToLocation: (locationId, pixelCoordinate) => {
           // Calculate center of map if coordinates not specified
-          let newCoords = coordinates;
-          if (!newCoords) {
+          let newPixelCoord = pixelCoordinate;
+          if (!newPixelCoord) {
             const location = getLocationById(locationId);
             const gridColumns = location?.mapData?.dimensions.columns || 20;
             const gridRows = location?.mapData?.dimensions.rows || 15;
             const tileSize = location?.mapData?.tileSize || 40;
-            // Center of map
-            newCoords = {
+            // Center of map (PIXEL)
+            newPixelCoord = {
               x: Math.floor(gridColumns / 2) * tileSize,
               y: Math.floor(gridRows / 2) * tileSize,
             };
@@ -376,10 +378,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({
             playerPosition: {
               locationId,
-              coordinates: newCoords,
+              pixelCoordinate: newPixelCoord,
               facing: "south",
             },
-            cameraPosition: newCoords,
+            cameraPosition: newPixelCoord,
           });
           get().discoverLocation(locationId);
           get().refreshCachedData();
@@ -387,8 +389,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           // ✅ Sync to gameStore
           useGameStore.getState().setPlayerWorldPosition({
             locationId,
-            x: newCoords.x,
-            y: newCoords.y,
+            x: newPixelCoord.x,
+            y: newPixelCoord.y,
             facing: "south",
           });
         },
@@ -491,8 +493,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           const currentPos = state.playerPosition;
 
           // Get current tile position
-          const currentTileX = Math.floor(currentPos.coordinates.x / 40); // gridSize = 40
-          const currentTileY = Math.floor(currentPos.coordinates.y / 40);
+          const currentTileX = Math.floor(currentPos.pixelCoordinate.x / 40); // gridSize = 40
+          const currentTileY = Math.floor(currentPos.pixelCoordinate.y / 40);
 
           // Get map tiles from current location
           const currentLocation = state.currentLocationData;
@@ -530,7 +532,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({
             movementState: {
               isMoving: true,
-              currentPath: pathToWalk.map((p) => ({
+              pathPixelCoordinates: pathToWalk.map((p) => ({
                 x: p.x * 40,
                 y: p.y * 40,
               })),
@@ -548,7 +550,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           set({
             movementState: {
               isMoving: false,
-              currentPath: [],
+              pathPixelCoordinates: [],
               currentPathIndex: 0,
               movementSpeed: 3,
             },
@@ -559,10 +561,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           const state = get();
           const movement = state.movementState;
 
-          if (!movement.isMoving || movement.currentPath.length === 0) return;
+          if (!movement.isMoving || movement.pathPixelCoordinates.length === 0) return;
 
-          const targetPos = movement.currentPath[movement.currentPathIndex];
-          const currentPos = state.playerPosition.coordinates;
+          const targetPos = movement.pathPixelCoordinates[movement.currentPathIndex];
+          const currentPos = state.playerPosition.pixelCoordinate;
 
           // Calculate direction to target
           const dx = targetPos.x - currentPos.x;
@@ -586,7 +588,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 
             // Move to next tile in path
             const nextIndex = movement.currentPathIndex + 1;
-            if (nextIndex >= movement.currentPath.length) {
+            if (nextIndex >= movement.pathPixelCoordinates.length) {
               // Finished path
               get().stopMovement();
               console.log("Reached destination!");
@@ -608,7 +610,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             set({
               playerPosition: {
                 ...state.playerPosition,
-                coordinates: { x: newX, y: newY },
+                pixelCoordinate: { x: newX, y: newY },
               },
             });
 
@@ -639,7 +641,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             playerPosition: DEFAULT_PLAYER_POSITION,
             discoveredLocations: new Set([DEFAULT_PLAYER_POSITION.locationId]),
             visitedTiles: new Map(),
-            cameraPosition: DEFAULT_PLAYER_POSITION.coordinates,
+            cameraPosition: DEFAULT_PLAYER_POSITION.pixelCoordinate,
             zoom: 1,
             showMinimap: true,
             showLocationInfo: true,
@@ -669,10 +671,10 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           const viewportSize = state.viewportSize;
 
           const playerTileX = Math.floor(
-            playerPosition.coordinates.x / gridSize
+            playerPosition.pixelCoordinate.x / gridSize
           );
           const playerTileY = Math.floor(
-            playerPosition.coordinates.y / gridSize
+            playerPosition.pixelCoordinate.y / gridSize
           );
 
           // Adjust viewport to map size (don't exceed map dimensions)
@@ -810,8 +812,8 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             // Add forward connection if it starts from this location
             if (conn.from.locationId === locationId) {
               // Coordinates are already in tile units
-              const tileX = conn.from.coordinates.x;
-              const tileY = conn.from.coordinates.y;
+              const tileX = conn.from.tileCoordinate.x;
+              const tileY = conn.from.tileCoordinate.y;
 
               if (
                 tileX >= viewport.viewportStartX &&
@@ -831,18 +833,18 @@ export const useVirtualMapStore = create<VirtualMapState>()(
                 id: `${conn.id}-reverse`,
                 from: {
                   locationId: conn.to.locationId,
-                  coordinates: conn.to.coordinates,
+                  tileCoordinate: conn.to.tileCoordinate,
                   gridSize: conn.from.gridSize, // Use same gridSize as forward
                 },
                 to: {
                   locationId: conn.from.locationId,
-                  coordinates: conn.from.coordinates,
+                  tileCoordinate: conn.from.tileCoordinate,
                 },
               };
 
               // Coordinates are already in tile units
-              const tileX = reverseConn.from.coordinates.x;
-              const tileY = reverseConn.from.coordinates.y;
+              const tileX = reverseConn.from.tileCoordinate.x;
+              const tileY = reverseConn.from.tileCoordinate.y;
 
               if (
                 tileX >= viewport.viewportStartX &&
@@ -903,7 +905,7 @@ export const useVirtualMapStore = create<VirtualMapState>()(
 export const getPlayerLocation = () =>
   useVirtualMapStore.getState().playerPosition.locationId;
 export const getPlayerCoordinates = () =>
-  useVirtualMapStore.getState().playerPosition.coordinates;
+  useVirtualMapStore.getState().playerPosition.pixelCoordinate;
 export const isLocationDiscovered = (locationId: string) =>
   useVirtualMapStore.getState().discoveredLocations.has(locationId);
 export const getVisitedTiles = (locationId: string) =>

@@ -38,8 +38,8 @@ export function ShopMarker({
   isPlayerNearby = false,
 }: ShopMarkerProps) {
   // Calculate position relative to viewport
-  const x = (shop.coordinates.x - viewportOffsetX) * gridSize;
-  const y = (shop.coordinates.y - viewportOffsetY) * gridSize;
+  const x = (shop.tileCoordinate.x - viewportOffsetX) * gridSize;
+  const y = (shop.tileCoordinate.y - viewportOffsetY) * gridSize;
 
   const shopType = shop.shopType || "general";
   const Icon = SHOP_ICONS[shopType];

@@ -43,8 +43,8 @@ export function Minimap({
   const tileSize = minimapScale * scale;
   
   // Calculate player position on minimap
-  const playerTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-  const playerTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+  const playerTileX = Math.floor(playerPosition.pixelCoordinate.x / gridSize);
+  const playerTileY = Math.floor(playerPosition.pixelCoordinate.y / gridSize);
 
   return (
     <div className="inline-flex flex-col">

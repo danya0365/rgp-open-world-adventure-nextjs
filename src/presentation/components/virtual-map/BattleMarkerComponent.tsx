@@ -34,8 +34,8 @@ export function BattleMarkerComponent({
   isPlayerNearby = false,
 }: BattleMarkerComponentProps) {
   // Calculate position relative to viewport
-  const x = (battle.coordinates.x - viewportOffsetX) * gridSize;
-  const y = (battle.coordinates.y - viewportOffsetY) * gridSize;
+  const x = (battle.tileCoordinate.x - viewportOffsetX) * gridSize;
+  const y = (battle.tileCoordinate.y - viewportOffsetY) * gridSize;
 
   const difficulty = battle.difficulty || "normal";
   const Icon = DIFFICULTY_ICONS[difficulty];

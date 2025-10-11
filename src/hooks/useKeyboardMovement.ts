@@ -19,8 +19,8 @@ export function useKeyboardMovement(enabled: boolean = true) {
   // Calculate target tile based on pressed keys
   const calculateTargetTile = useCallback(() => {
     const gridSize = 40;
-    const currentTileX = Math.floor(playerPosition.coordinates.x / gridSize);
-    const currentTileY = Math.floor(playerPosition.coordinates.y / gridSize);
+    const currentTileX = Math.floor(playerPosition.pixelCoordinate.x / gridSize);
+    const currentTileY = Math.floor(playerPosition.pixelCoordinate.y / gridSize);
 
     let dx = 0;
     let dy = 0;
@@ -55,7 +55,7 @@ export function useKeyboardMovement(enabled: boolean = true) {
       y: currentTileY + dy,
     };
     return target;
-  }, [playerPosition.coordinates]);
+  }, [playerPosition.pixelCoordinate]);
 
   // Handle movement based on pressed keys
   const handleMovement = useCallback(() => {

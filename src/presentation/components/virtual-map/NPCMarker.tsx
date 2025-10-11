@@ -18,8 +18,8 @@ export function NPCMarker({
   isPlayerNearby = false,
 }: NPCMarkerProps) {
   // Calculate position relative to viewport
-  const x = (npc.coordinates.x - viewportOffsetX) * gridSize;
-  const y = (npc.coordinates.y - viewportOffsetY) * gridSize;
+  const x = (npc.tileCoordinate.x - viewportOffsetX) * gridSize;
+  const y = (npc.tileCoordinate.y - viewportOffsetY) * gridSize;
 
   // Get POI size in pixels based on grid size
   const { width, height } = getPOIPixelSize(npc.gridSize, gridSize);

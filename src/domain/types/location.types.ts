@@ -69,7 +69,7 @@ export interface MapTile {
   type: TerrainType;
   isWalkable: boolean;
   height: number;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 // POI (Point of Interest) Types
@@ -80,7 +80,7 @@ export interface POIGridSize {
 
 export interface POIBase {
   id: string;
-  coordinates: Coordinates; // Position on the map grid (top-left corner of POI)
+  tileCoordinate: Coordinates; // Position on the map grid (top-left corner of POI) - TILE units
   name?: string; // Optional display name
   icon?: string; // Optional icon identifier
   gridSize?: POIGridSize; // Size in tiles (default: { width: 1, height: 1 })
@@ -124,12 +124,12 @@ export interface LocationConnection {
   id: string;
   from: {
     locationId: string;
-    coordinates: Coordinates; // Position on parent map where entrance appears
+    tileCoordinate: Coordinates; // Position on parent map where entrance appears - TILE units
     gridSize?: POIGridSize; // Size of entrance marker on parent map (default: 1x1)
   };
   to: {
     locationId: string;
-    coordinates: Coordinates; // Position on child map where player spawns
+    tileCoordinate: Coordinates; // Position on child map where player spawns - TILE units
   };
   connectionType: ConnectionType;
   isLocked: boolean;

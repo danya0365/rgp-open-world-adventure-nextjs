@@ -42,8 +42,8 @@ export function ServiceMarker({
   isPlayerNearby = false,
 }: ServiceMarkerProps) {
   // Calculate position relative to viewport
-  const x = (service.coordinates.x - viewportOffsetX) * gridSize;
-  const y = (service.coordinates.y - viewportOffsetY) * gridSize;
+  const x = (service.tileCoordinate.x - viewportOffsetX) * gridSize;
+  const y = (service.tileCoordinate.y - viewportOffsetY) * gridSize;
 
   const Icon = SERVICE_ICONS[service.serviceType];
   const colorClass = SERVICE_COLORS[service.serviceType];

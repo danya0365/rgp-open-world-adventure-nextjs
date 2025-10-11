@@ -124,7 +124,7 @@ export function VirtualMapGrid({
   useEffect(() => {
     calculateViewport(gridSize, gridColumns, gridRows);
   }, [
-    playerPosition.coordinates,
+    playerPosition.pixelCoordinate,
     gridSize,
     gridColumns,
     gridRows,
@@ -279,8 +279,8 @@ export function VirtualMapGrid({
           .map((tile, index) => {
             const isPlayerPos =
               playerPosition.locationId === currentLocation.id &&
-              tile.x === Math.floor(playerPosition.coordinates.x / gridSize) &&
-              tile.y === Math.floor(playerPosition.coordinates.y / gridSize);
+              tile.x === Math.floor(playerPosition.pixelCoordinate.x / gridSize) &&
+              tile.y === Math.floor(playerPosition.pixelCoordinate.y / gridSize);
 
             // Offset tile position relative to viewport
             const offsetTile = {
@@ -311,8 +311,8 @@ export function VirtualMapGrid({
         {/* Player Marker (only show if player is in this location) */}
         {playerPosition.locationId === currentLocation.id && (
           <PlayerMarker
-            x={playerPosition.coordinates.x / gridSize - viewportStartX}
-            y={playerPosition.coordinates.y / gridSize - viewportStartY}
+            x={playerPosition.pixelCoordinate.x / gridSize - viewportStartX}
+            y={playerPosition.pixelCoordinate.y / gridSize - viewportStartY}
             facing={playerPosition.facing}
             gridSize={gridSize}
           />
@@ -322,13 +322,13 @@ export function VirtualMapGrid({
         {currentLocation.metadata?.npcs?.map((npc) => {
           // Check if player is within NPC bounds (supports multi-tile NPCs)
           const playerTileX = Math.floor(
-            playerPosition.coordinates.x / gridSize
+            playerPosition.pixelCoordinate.x / gridSize
           );
           const playerTileY = Math.floor(
-            playerPosition.coordinates.y / gridSize
+            playerPosition.pixelCoordinate.y / gridSize
           );
           const isPlayerAtNPC = isWithinPOIBounds(
-            npc.coordinates,
+            npc.tileCoordinate,
             npc.gridSize,
             { x: playerTileX, y: playerTileY }
           );
@@ -348,13 +348,13 @@ export function VirtualMapGrid({
         {/* POI Markers - Shops */}
         {currentLocation.metadata?.shops?.map((shop) => {
           const playerTileX = Math.floor(
-            playerPosition.coordinates.x / gridSize
+            playerPosition.pixelCoordinate.x / gridSize
           );
           const playerTileY = Math.floor(
-            playerPosition.coordinates.y / gridSize
+            playerPosition.pixelCoordinate.y / gridSize
           );
           const isPlayerAtShop = isWithinPOIBounds(
-            shop.coordinates,
+            shop.tileCoordinate,
             shop.gridSize,
             { x: playerTileX, y: playerTileY }
           );
@@ -374,13 +374,13 @@ export function VirtualMapGrid({
         {/* POI Markers - Services */}
         {currentLocation.metadata?.services?.map((service) => {
           const playerTileX = Math.floor(
-            playerPosition.coordinates.x / gridSize
+            playerPosition.pixelCoordinate.x / gridSize
           );
           const playerTileY = Math.floor(
-            playerPosition.coordinates.y / gridSize
+            playerPosition.pixelCoordinate.y / gridSize
           );
           const isPlayerAtService = isWithinPOIBounds(
-            service.coordinates,
+            service.tileCoordinate,
             service.gridSize,
             { x: playerTileX, y: playerTileY }
           );
@@ -400,13 +400,13 @@ export function VirtualMapGrid({
         {/* POI Markers - Battle Triggers */}
         {currentLocation.metadata?.battleMaps?.map((battle) => {
           const playerTileX = Math.floor(
-            playerPosition.coordinates.x / gridSize
+            playerPosition.pixelCoordinate.x / gridSize
           );
           const playerTileY = Math.floor(
-            playerPosition.coordinates.y / gridSize
+            playerPosition.pixelCoordinate.y / gridSize
           );
           const isPlayerAtBattle = isWithinPOIBounds(
-            battle.coordinates,
+            battle.tileCoordinate,
             battle.gridSize,
             { x: playerTileX, y: playerTileY }
           );
@@ -426,13 +426,13 @@ export function VirtualMapGrid({
         {/* POI Markers - Treasures */}
         {currentLocation.metadata?.treasures?.map((treasure) => {
           const playerTileX = Math.floor(
-            playerPosition.coordinates.x / gridSize
+            playerPosition.pixelCoordinate.x / gridSize
           );
           const playerTileY = Math.floor(
-            playerPosition.coordinates.y / gridSize
+            playerPosition.pixelCoordinate.y / gridSize
           );
           const isPlayerAtTreasure = isWithinPOIBounds(
-            treasure.coordinates,
+            treasure.tileCoordinate,
             treasure.gridSize,
             { x: playerTileX, y: playerTileY }
           );
@@ -472,8 +472,8 @@ export function VirtualMapGrid({
       >
         {connections.map((connection) => {
           // Coordinates are already in tile units, no need to divide by gridSize
-          const tileX = connection.from.coordinates.x;
-          const tileY = connection.from.coordinates.y;
+          const tileX = connection.from.tileCoordinate.x;
+          const tileY = connection.from.tileCoordinate.y;
           const x = tileX - viewportStartX;
           const y = tileY - viewportStartY;
 

@@ -226,7 +226,7 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [
         { 
           id: "npc-mayor", 
-          coordinates: { x: 10, y: 5 }, // Center of city hall
+          tileCoordinate: { x: 10, y: 5 }, // Center of city hall
           name: "Mayor Aldric",
           hasQuest: true,
           questId: "quest-main-1",
@@ -234,14 +234,14 @@ export const LOCATIONS_MASTER: Location[] = [
         },
         { 
           id: "npc-blacksmith", 
-          coordinates: { x: 15, y: 8 }, // Near forge
+          tileCoordinate: { x: 15, y: 8 }, // Near forge
           name: "Blacksmith Gorin",
           hasQuest: false,
           gridSize: { width: 1, height: 1 } // Regular NPC
         },
         { 
           id: "npc-merchant", 
-          coordinates: { x: 7, y: 6 }, // Market square
+          tileCoordinate: { x: 7, y: 6 }, // Market square
           name: "Merchant Lyra",
           hasQuest: true,
           questId: "quest-side-1",
@@ -253,21 +253,21 @@ export const LOCATIONS_MASTER: Location[] = [
       shops: [
         { 
           id: "shop-weapons", 
-          coordinates: { x: 14, y: 7 }, // Near blacksmith
+          tileCoordinate: { x: 14, y: 7 }, // Near blacksmith
           name: "Weapon Shop",
           shopType: "weapons" as const,
           gridSize: { width: 2, height: 2 } // Medium shop
         },
         { 
           id: "shop-armor", 
-          coordinates: { x: 16, y: 9 }, // Armor district
+          tileCoordinate: { x: 16, y: 9 }, // Armor district
           name: "Armor Shop",
           shopType: "armor" as const,
           gridSize: { width: 2, height: 2 } // Medium shop
         },
         { 
           id: "shop-items", 
-          coordinates: { x: 8, y: 7 }, // Market area
+          tileCoordinate: { x: 8, y: 7 }, // Market area
           name: "General Store",
           shopType: "items" as const,
           gridSize: { width: 2, height: 2 } // Medium shop
@@ -278,21 +278,21 @@ export const LOCATIONS_MASTER: Location[] = [
       services: [
         { 
           id: "inn", 
-          coordinates: { x: 5, y: 10 }, // Residential area
+          tileCoordinate: { x: 5, y: 10 }, // Residential area
           name: "The Frozen Hearth Inn",
           serviceType: "inn" as const,
           gridSize: { width: 3, height: 3 } // Large building
         },
         { 
           id: "guild", 
-          coordinates: { x: 3, y: 5 }, // Guild district (matches building-guild-hall connection)
+          tileCoordinate: { x: 3, y: 5 }, // Guild district (matches building-guild-hall connection)
           name: "Adventurer's Guild",
           serviceType: "guild" as const,
           gridSize: { width: 3, height: 4 } // Very large building
         },
         { 
           id: "bank", 
-          coordinates: { x: 12, y: 4 }, // Financial district
+          tileCoordinate: { x: 12, y: 4 }, // Financial district
           name: "Silverhold Bank",
           serviceType: "bank" as const,
           gridSize: { width: 2, height: 3 } // Medium-large building
@@ -304,7 +304,7 @@ export const LOCATIONS_MASTER: Location[] = [
         {
           id: "map-forest-clearing",
           battleMapId: "map-forest-clearing",
-          coordinates: { x: 2, y: 12 }, // Forest entrance (south)
+          tileCoordinate: { x: 2, y: 12 }, // Forest entrance (south)
           name: "Forest Clearing",
           difficulty: "normal" as const,
           gridSize: { width: 2, height: 2 } // Battle area
@@ -312,7 +312,7 @@ export const LOCATIONS_MASTER: Location[] = [
         {
           id: "map-cave-entrance",
           battleMapId: "map-cave-entrance",
-          coordinates: { x: 18, y: 3 }, // Cave entrance (north-east)
+          tileCoordinate: { x: 18, y: 3 }, // Cave entrance (north-east)
           name: "Cave Entrance",
           difficulty: "hard" as const,
           gridSize: { width: 2, height: 2 } // Battle area
@@ -324,7 +324,7 @@ export const LOCATIONS_MASTER: Location[] = [
         {
           id: "treasure-city-1",
           treasureId: "treasure-city-1",
-          coordinates: { x: 1, y: 1 }, // Hidden corner
+          tileCoordinate: { x: 1, y: 1 }, // Hidden corner
           name: "Hidden Chest",
           gridSize: { width: 1, height: 1 } // Small treasure
         },
@@ -372,7 +372,7 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [
         { 
           id: "npc-elder", 
-          coordinates: { x: 10, y: 7 }, // Elder's tree house
+          tileCoordinate: { x: 10, y: 7 }, // Elder's tree house
           name: "Elder Thalion",
           hasQuest: true,
           questId: "quest-elven-1",
@@ -380,14 +380,14 @@ export const LOCATIONS_MASTER: Location[] = [
         },
         { 
           id: "npc-archer-trainer", 
-          coordinates: { x: 15, y: 5 }, // Training grounds
+          tileCoordinate: { x: 15, y: 5 }, // Training grounds
           name: "Archer Trainer Sylvara",
           hasQuest: false,
           gridSize: { width: 1, height: 1 } // Regular NPC
         },
         { 
           id: "npc-herbalist", 
-          coordinates: { x: 5, y: 9 }, // Herb garden
+          tileCoordinate: { x: 5, y: 9 }, // Herb garden
           name: "Herbalist Elara",
           hasQuest: true,
           questId: "quest-herbs-1",
@@ -399,21 +399,21 @@ export const LOCATIONS_MASTER: Location[] = [
       shops: [
         { 
           id: "shop-magic", 
-          coordinates: { x: 12, y: 8 }, // Magic district
+          tileCoordinate: { x: 12, y: 8 }, // Magic district
           name: "Arcane Emporium",
           shopType: "magic" as const,
           gridSize: { width: 3, height: 2 } // Large magic shop
         },
         { 
           id: "shop-bows", 
-          coordinates: { x: 16, y: 6 }, // Near training grounds
+          tileCoordinate: { x: 16, y: 6 }, // Near training grounds
           name: "Elven Bowyer",
           shopType: "weapons" as const,
           gridSize: { width: 2, height: 2 } // Medium shop
         },
         { 
           id: "shop-potions", 
-          coordinates: { x: 6, y: 10 }, // Near herb garden
+          tileCoordinate: { x: 6, y: 10 }, // Near herb garden
           name: "Potion Shop",
           shopType: "potions" as const,
           gridSize: { width: 2, height: 2 } // Medium shop
@@ -424,21 +424,21 @@ export const LOCATIONS_MASTER: Location[] = [
       services: [
         { 
           id: "inn", 
-          coordinates: { x: 8, y: 12 }, // Residential area
+          tileCoordinate: { x: 8, y: 12 }, // Residential area
           name: "The Moonlit Rest",
           serviceType: "inn" as const,
           gridSize: { width: 3, height: 3 } // Large building
         },
         { 
           id: "guild", 
-          coordinates: { x: 13, y: 4 }, // Guild hall
+          tileCoordinate: { x: 13, y: 4 }, // Guild hall
           name: "Elven Rangers Guild",
           serviceType: "guild" as const,
           gridSize: { width: 3, height: 4 } // Very large building
         },
         { 
           id: "temple", 
-          coordinates: { x: 3, y: 3 }, // Sacred grove
+          tileCoordinate: { x: 3, y: 3 }, // Sacred grove
           name: "Temple of Moonlight",
           serviceType: "temple" as const,
           gridSize: { width: 4, height: 4 } // Massive temple
@@ -850,12 +850,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-world-1",
     from: {
       locationId: "world-aethoria", // 50x50
-      coordinates: { x: 25, y: 25 }, // ตรงกลาง parent (50/2 = 25)
+      tileCoordinate: { x: 25, y: 25 }, // ตรงกลาง parent (50/2 = 25)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "continent-northern", // 30x30
-      coordinates: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
+      tileCoordinate: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "portal",
     isLocked: false,
@@ -866,12 +866,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-world-2",
     from: {
       locationId: "world-aethoria", // 50x50
-      coordinates: { x: 25, y: 25 }, // ตรงกลาง parent (แบ่ง space สำหรับ 2 children)
+      tileCoordinate: { x: 25, y: 25 }, // ตรงกลาง parent (แบ่ง space สำหรับ 2 children)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "continent-eastern", // 30x30
-      coordinates: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
+      tileCoordinate: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "portal",
     isLocked: false,
@@ -887,12 +887,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-1",
     from: {
       locationId: "continent-northern", // 30x30
-      coordinates: { x: 29, y: 15 }, // ชิดขวา กลางแกน Y (x = 29, y = 30/2 = 15)
+      tileCoordinate: { x: 29, y: 15 }, // ชิดขวา กลางแกน Y (x = 29, y = 30/2 = 15)
       gridSize: { width: 2, height: 1 }, // Sibling = 2x1
     },
     to: {
       locationId: "continent-eastern", // 30x30
-      coordinates: { x: 0, y: 15 }, // ชิดซ้าย กลางแกน Y (x = 0, y = 30/2 = 15)
+      tileCoordinate: { x: 0, y: 15 }, // ชิดซ้าย กลางแกน Y (x = 0, y = 30/2 = 15)
     },
     connectionType: "bridge",
     isLocked: false,
@@ -908,12 +908,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-continent-1",
     from: {
       locationId: "continent-northern", // 30x30
-      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      tileCoordinate: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "region-frostpeak", // 25x25
-      coordinates: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
+      tileCoordinate: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -924,12 +924,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-continent-2",
     from: {
       locationId: "continent-eastern", // 30x30
-      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      tileCoordinate: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "region-elven-forest", // 25x25
-      coordinates: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
+      tileCoordinate: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -945,12 +945,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-region-1",
     from: {
       locationId: "region-frostpeak", // 25x25
-      coordinates: { x: 12, y: 12 }, // ตรงกลาง parent (25/2 = 12.5 ≈ 12)
+      tileCoordinate: { x: 12, y: 12 }, // ตรงกลาง parent (25/2 = 12.5 ≈ 12)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "area-crystal-valley", // 20x20
-      coordinates: { x: 10, y: 0 }, // ตรงกลางด้านล่าง child (20/2 = 10, y = 0)
+      tileCoordinate: { x: 10, y: 0 }, // ตรงกลางด้านล่าง child (20/2 = 10, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -961,12 +961,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-region-2",
     from: {
       locationId: "region-elven-forest", // 25x25
-      coordinates: { x: 12, y: 12 }, // ตรงกลาง parent (25/2 = 12.5 ≈ 12)
+      tileCoordinate: { x: 12, y: 12 }, // ตรงกลาง parent (25/2 = 12.5 ≈ 12)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "city-elvenheim", // 20x15
-      coordinates: { x: 10, y: 0 }, // ตรงกลางด้านล่าง child (20/2 = 10, y = 0)
+      tileCoordinate: { x: 10, y: 0 }, // ตรงกลางด้านล่าง child (20/2 = 10, y = 0)
     },
     connectionType: "gate",
     isLocked: false,
@@ -983,12 +983,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-area-1",
     from: {
       locationId: "area-crystal-valley", // 20x20
-      coordinates: { x: 10, y: 10 }, // entrance on parent (reverse spawn here)
+      tileCoordinate: { x: 10, y: 10 }, // entrance on parent (reverse spawn here)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "city-silverhold", // 20x15
-      coordinates: { x: 10, y: 14 }, // spawn ด้านล่างสุด child (15 - 1 = 14)
+      tileCoordinate: { x: 10, y: 14 }, // spawn ด้านล่างสุด child (15 - 1 = 14)
     },
     connectionType: "gate",
     isLocked: false,
@@ -1004,12 +1004,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-2",
     from: {
       locationId: "city-silverhold", // 20x15
-      coordinates: { x: 10, y: 7 }, // ตรงกลาง parent (20/2 = 10, 15/2 = 7.5 ≈ 7)
+      tileCoordinate: { x: 10, y: 7 }, // ตรงกลาง parent (20/2 = 10, 15/2 = 7.5 ≈ 7)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "building-guild-hall", // 15x15
-      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
+      tileCoordinate: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "entrance",
     isLocked: false,
@@ -1020,12 +1020,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-6",
     from: {
       locationId: "city-elvenheim", // 20x15
-      coordinates: { x: 10, y: 7 }, // ตรงกลาง parent (20/2 = 10, 15/2 = 7.5 ≈ 7)
+      tileCoordinate: { x: 10, y: 7 }, // ตรงกลาง parent (20/2 = 10, 15/2 = 7.5 ≈ 7)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "building-magic-tower", // 15x15
-      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
+      tileCoordinate: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "entrance",
     isLocked: false,
@@ -1041,12 +1041,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-building-1",
     from: {
       locationId: "building-guild-hall", // 15x15
-      coordinates: { x: 7, y: 7 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7)
+      tileCoordinate: { x: 7, y: 7 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "floor-guild-1f", // 15x10
-      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
+      tileCoordinate: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "stairs",
     isLocked: false,
@@ -1057,12 +1057,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-3",
     from: {
       locationId: "floor-guild-1f", // 15x10
-      coordinates: { x: 7, y: 5 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7, 10/2 = 5)
+      tileCoordinate: { x: 7, y: 5 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7, 10/2 = 5)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "floor-guild-2f", // 15x10
-      coordinates: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
+      tileCoordinate: { x: 7, y: 0 }, // ตรงกลางด้านล่าง child (15/2 = 7.5 ≈ 7, y = 0)
     },
     connectionType: "stairs",
     isLocked: false,
@@ -1073,12 +1073,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-7",
     from: {
       locationId: "building-magic-tower", // 15x15
-      coordinates: { x: 7, y: 7 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7)
+      tileCoordinate: { x: 7, y: 7 }, // ตรงกลาง parent (15/2 = 7.5 ≈ 7)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "floor-tower-1f", // 12x12
-      coordinates: { x: 6, y: 0 }, // ตรงกลางด้านล่าง child (12/2 = 6, y = 0)
+      tileCoordinate: { x: 6, y: 0 }, // ตรงกลางด้านล่าง child (12/2 = 6, y = 0)
     },
     connectionType: "stairs",
     isLocked: false,
@@ -1095,12 +1095,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-4",
     from: {
       locationId: "floor-guild-2f", // 15x10, มี 2 children
-      coordinates: { x: 5, y: 5 }, // 1/3 ของ width (15/3 = 5), กลาง Y (10/2 = 5)
+      tileCoordinate: { x: 5, y: 5 }, // 1/3 ของ width (15/3 = 5), กลาง Y (10/2 = 5)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "room-guild-master", // 10x8
-      coordinates: { x: 5, y: 0 }, // ตรงกลางด้านล่าง child (10/2 = 5, y = 0)
+      tileCoordinate: { x: 5, y: 0 }, // ตรงกลางด้านล่าง child (10/2 = 5, y = 0)
     },
     connectionType: "door",
     isLocked: false,
@@ -1111,12 +1111,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-5",
     from: {
       locationId: "floor-guild-2f", // 15x10, มี 2 children
-      coordinates: { x: 10, y: 5 }, // 2/3 ของ width (15*2/3 = 10), กลาง Y (10/2 = 5)
+      tileCoordinate: { x: 10, y: 5 }, // 2/3 ของ width (15*2/3 = 10), กลาง Y (10/2 = 5)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "room-meeting-1", // 8x8
-      coordinates: { x: 4, y: 0 }, // ตรงกลางด้านล่าง child (8/2 = 4, y = 0)
+      tileCoordinate: { x: 4, y: 0 }, // ตรงกลางด้านล่าง child (8/2 = 4, y = 0)
     },
     connectionType: "door",
     isLocked: false,
@@ -1132,12 +1132,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-8",
     from: {
       locationId: "area-crystal-valley", // 20x20
-      coordinates: { x: 10, y: 10 }, // ตรงกลาง parent (20/2 = 10)
+      tileCoordinate: { x: 10, y: 10 }, // ตรงกลาง parent (20/2 = 10)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "dungeon-frozen-depths", // 25x25
-      coordinates: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
+      tileCoordinate: { x: 12, y: 0 }, // ตรงกลางด้านล่าง child (25/2 = 12.5 ≈ 12, y = 0)
     },
     connectionType: "entrance",
     isLocked: true,
@@ -1154,12 +1154,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-9",
     from: {
       locationId: "continent-northern", // 30x30
-      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      tileCoordinate: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "field-starting-plains", // 30x25
-      coordinates: { x: 15, y: 15 }, // spawn ตำแหน่งเดียวกับ entrance
+      tileCoordinate: { x: 15, y: 15 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "gate",
     isLocked: false,
@@ -1170,12 +1170,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-10",
     from: {
       locationId: "continent-eastern", // 30x30
-      coordinates: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
+      tileCoordinate: { x: 15, y: 15 }, // ตรงกลาง parent (30/2 = 15)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "town-riverside", // 18x15
-      coordinates: { x: 15, y: 15 }, // spawn ตำแหน่งเดียวกับ entrance
+      tileCoordinate: { x: 15, y: 15 }, // spawn ตำแหน่งเดียวกับ entrance
     },
     connectionType: "gate",
     isLocked: false,
