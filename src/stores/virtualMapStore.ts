@@ -831,60 +831,21 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         },
 
         getVisibleConnections: (locationId, viewport) => {
-          const connections = getLocationConnections(locationId);
-          const visibleConnections: LocationConnection[] = [];
-
-          connections.forEach((conn) => {
-            // Add forward connection if it starts from this location
-            if (conn.from.locationId === locationId) {
-              // Coordinates are already in tile units
-              const tileX = conn.from.tileCoordinate.x;
-              const tileY = conn.from.tileCoordinate.y;
-
-              if (
-                tileX >= viewport.viewportStartX &&
-                tileX < viewport.viewportEndX &&
-                tileY >= viewport.viewportStartY &&
-                tileY < viewport.viewportEndY
-              ) {
-                visibleConnections.push(conn);
-              }
-            }
-
-            // Add reverse connection if isTwoWay and ends at this location
-            if (conn.isTwoWay && conn.to.locationId === locationId) {
-              // Create virtual reverse connection
-              const reverseConn: LocationConnection = {
-                ...conn,
-                id: `${conn.id}-reverse`,
-                from: {
-                  locationId: conn.to.locationId,
-                  tileCoordinate: conn.to.tileCoordinate,
-                  gridSize: conn.to.gridSize,
-                },
-                to: {
-                  locationId: conn.from.locationId,
-                  tileCoordinate: conn.from.tileCoordinate,
-                  gridSize: conn.from.gridSize,
-                },
-              };
-
-              // Coordinates are already in tile units
-              const tileX = reverseConn.from.tileCoordinate.x;
-              const tileY = reverseConn.from.tileCoordinate.y;
-
-              if (
-                tileX >= viewport.viewportStartX &&
-                tileX < viewport.viewportEndX &&
-                tileY >= viewport.viewportStartY &&
-                tileY < viewport.viewportEndY
-              ) {
-                visibleConnections.push(reverseConn);
-              }
-            }
+          // First get all connections
+          const allConnections = get().getAllConnections(locationId);
+          
+          // Then filter by viewport
+          return allConnections.filter(conn => {
+            const tileX = conn.from.tileCoordinate.x;
+            const tileY = conn.from.tileCoordinate.y;
+            
+            return (
+              tileX >= viewport.viewportStartX &&
+              tileX < viewport.viewportEndX &&
+              tileY >= viewport.viewportStartY &&
+              tileY < viewport.viewportEndY
+            );
           });
-
-          return visibleConnections;
         },
 
         getAllConnections: (locationId) => {
