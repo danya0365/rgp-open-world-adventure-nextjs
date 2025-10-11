@@ -93,7 +93,11 @@ export function VirtualMapFullView({
         conn.to.locationId === toLocationId
     );
     if (forward) {
-      return forward.to.tileCoordinate;
+      const { x, y } = forward.to.tileCoordinate;
+      // Ensure coordinates are within map boundaries (0-24 for x, 0-19 for y)
+      const safeX = x >= 0 && x <= 24 ? x : 0;
+      const safeY = y >= 0 && y <= 19 ? y : 0;
+      return { x: safeX, y: safeY };
     }
 
     // Try reverse using two-way connection
@@ -105,11 +109,15 @@ export function VirtualMapFullView({
     );
     if (reverse) {
       // When traversing reverse, spawn should be at the target side which is 'from' in this entry
-      return reverse.from.tileCoordinate;
+      const { x, y } = reverse.from.tileCoordinate;
+      // Ensure coordinates are within map boundaries (0-24 for x, 0-19 for y)
+      const safeX = x >= 0 && x <= 24 ? x : 0;
+      const safeY = y >= 0 && y <= 19 ? y : 0;
+      return { x: safeX, y: safeY };
     }
 
-    // Fallback center
-    return { x: 10, y: 7 };
+    // Fallback to (0, 0) if no valid spawn point found
+    return { x: 0, y: 0 };
   };
 
   // Sync URL with player's actual location on mount
