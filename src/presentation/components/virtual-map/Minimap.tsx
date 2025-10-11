@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Location,
-  LocationConnection,
-  MapTile,
-} from "@/src/domain/types/location.types";
+import { Location, MapTile } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 
 interface MinimapProps {
@@ -17,7 +13,6 @@ interface MinimapProps {
   viewportEndX: number;
   viewportEndY: number;
   gridSize?: number;
-  connections?: LocationConnection[];
   onClose?: () => void;
 }
 
@@ -25,16 +20,18 @@ export function Minimap({
   currentLocation,
   tiles,
   gridWidth,
-  gridHeight,
   viewportStartX,
   viewportStartY,
   viewportEndX,
   viewportEndY,
   gridSize = 40,
-  connections = [],
+  gridHeight,
   onClose,
 }: MinimapProps) {
-  const { playerPosition } = useVirtualMapStore();
+  const { playerPosition, getAllConnections } = useVirtualMapStore();
+
+  // Get all connections for the current location
+  const connections = getAllConnections(currentLocation.id);
 
   // Minimap settings
   const minimapScale = 4; // Each tile = 4px on minimap

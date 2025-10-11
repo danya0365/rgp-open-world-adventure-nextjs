@@ -170,11 +170,7 @@ interface VirtualMapState {
     locationId: string,
     viewport: ViewportState
   ) => LocationConnection[];
-  getVisibleLocations: (
-    locations: Location[],
-    viewport: ViewportState,
-    gridSize: number
-  ) => Location[];
+  getAllConnections: (locationId: string) => LocationConnection[];
 }
 
 // Default player starting position
@@ -589,9 +585,11 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           const state = get();
           const movement = state.movementState;
 
-          if (!movement.isMoving || movement.pathPixelCoordinates.length === 0) return;
+          if (!movement.isMoving || movement.pathPixelCoordinates.length === 0)
+            return;
 
-          const targetPos = movement.pathPixelCoordinates[movement.currentPathIndex];
+          const targetPos =
+            movement.pathPixelCoordinates[movement.currentPathIndex];
           const currentPos = state.playerPosition.pixelCoordinate;
 
           // Calculate direction to target
@@ -862,11 +860,12 @@ export const useVirtualMapStore = create<VirtualMapState>()(
                 from: {
                   locationId: conn.to.locationId,
                   tileCoordinate: conn.to.tileCoordinate,
-                  gridSize: conn.from.gridSize, // Use same gridSize as forward
+                  gridSize: conn.to.gridSize,
                 },
                 to: {
                   locationId: conn.from.locationId,
                   tileCoordinate: conn.from.tileCoordinate,
+                  gridSize: conn.from.gridSize,
                 },
               };
 
@@ -888,11 +887,38 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           return visibleConnections;
         },
 
-        getVisibleLocations: (locations, viewport, gridSize) => {
-          // NOTE: Locations no longer have coordinates
-          // This function now returns all child locations
-          // The actual positioning is handled by connections in the rendering layer
-          return locations;
+        getAllConnections: (locationId) => {
+          const connections = getLocationConnections(locationId);
+          const allConnections: LocationConnection[] = [];
+
+          connections.forEach((conn) => {
+            // Add forward connection if it starts from this location
+            if (conn.from.locationId === locationId) {
+              allConnections.push(conn);
+            }
+
+            // Add reverse connection if isTwoWay and ends at this location
+            if (conn.isTwoWay && conn.to.locationId === locationId) {
+              // Create virtual reverse connection
+              const reverseConn: LocationConnection = {
+                ...conn,
+                id: `${conn.id}-reverse`,
+                from: {
+                  locationId: conn.to.locationId,
+                  tileCoordinate: conn.to.tileCoordinate,
+                  gridSize: conn.to.gridSize,
+                },
+                to: {
+                  locationId: conn.from.locationId,
+                  tileCoordinate: conn.from.tileCoordinate,
+                  gridSize: conn.from.gridSize,
+                },
+              };
+              allConnections.push(reverseConn);
+            }
+          });
+
+          return allConnections;
         },
       };
     },

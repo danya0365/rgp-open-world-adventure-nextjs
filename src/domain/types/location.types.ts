@@ -96,7 +96,15 @@ export interface ShopMarker extends POIBase {
 }
 
 export interface ServiceMarker extends POIBase {
-  serviceType: "inn" | "guild" | "bank" | "temple" | "blacksmith" | "quest-board" | "party-formation" | "bounties";
+  serviceType:
+    | "inn"
+    | "guild"
+    | "bank"
+    | "temple"
+    | "blacksmith"
+    | "quest-board"
+    | "party-formation"
+    | "bounties";
 }
 
 export interface BattleMarker extends POIBase {
@@ -130,6 +138,7 @@ export interface LocationConnection {
   to: {
     locationId: string;
     tileCoordinate: Coordinates; // Position on child map where player spawns - TILE units
+    gridSize?: POIGridSize; // Size of entrance marker on child map (default: 1x1)
   };
   connectionType: ConnectionType;
   isLocked: boolean;

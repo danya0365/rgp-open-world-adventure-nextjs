@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { useEffect, useRef } from "react";
 
 /**
  * Hook to animate player movement
@@ -26,7 +26,7 @@ export function useMovementAnimation() {
         lastTimeRef.current = currentTime;
       }
 
-      const deltaTime = (currentTime - lastTimeRef.current) / 1000; // Convert to seconds
+      const deltaTime = (currentTime - lastTimeRef.current) / 100; // Convert to seconds
       lastTimeRef.current = currentTime;
 
       // Update movement

@@ -1,4 +1,7 @@
-import { getLocationById, getLocationConnections } from "@/src/data/master/locations.master";
+import {
+  getLocationById,
+  getLocationConnections,
+} from "@/src/data/master/locations.master";
 import {
   Location,
   LocationConnection,
@@ -143,8 +146,9 @@ export function VirtualMapGrid({
   // Get ALL connections FROM this location for Minimap (not filtered by viewport)
   // Only include connections that START from this location (from.locationId)
   const allConnectionsFromThisLocation = useMemo(() => {
-    return getLocationConnections(currentLocation.id)
-      .filter(conn => conn.from.locationId === currentLocation.id);
+    return getLocationConnections(currentLocation.id).filter(
+      (conn) => conn.from.locationId === currentLocation.id
+    );
   }, [currentLocation.id]);
 
   // Note: Child locations are now displayed via ConnectionMarkers only
@@ -290,8 +294,10 @@ export function VirtualMapGrid({
           .map((tile, index) => {
             const isPlayerPos =
               playerPosition.locationId === currentLocation.id &&
-              tile.x === Math.floor(playerPosition.pixelCoordinate.x / gridSize) &&
-              tile.y === Math.floor(playerPosition.pixelCoordinate.y / gridSize);
+              tile.x ===
+                Math.floor(playerPosition.pixelCoordinate.x / gridSize) &&
+              tile.y ===
+                Math.floor(playerPosition.pixelCoordinate.y / gridSize);
 
             // Offset tile position relative to viewport
             const offsetTile = {
@@ -592,7 +598,6 @@ export function MinimapView({
   viewportEndX,
   viewportEndY,
   gridSize,
-  connections,
 }: MinimapViewProps) {
   return (
     <Minimap
@@ -605,7 +610,6 @@ export function MinimapView({
       viewportEndX={viewportEndX}
       viewportEndY={viewportEndY}
       gridSize={gridSize}
-      connections={connections}
       onClose={undefined}
     />
   );

@@ -1,4 +1,7 @@
-import { Location, LocationConnection } from "@/src/domain/types/location.types";
+import {
+  Location,
+  LocationConnection,
+} from "@/src/domain/types/location.types";
 
 /**
  * Master Data: Hierarchical World Map
@@ -224,81 +227,81 @@ export const LOCATIONS_MASTER: Location[] = [
     metadata: {
       // NPCs with positions on map (tile coordinates)
       npcs: [
-        { 
-          id: "npc-mayor", 
+        {
+          id: "npc-mayor",
           tileCoordinate: { x: 10, y: 5 }, // Center of city hall
           name: "Mayor Aldric",
           hasQuest: true,
           questId: "quest-main-1",
-          gridSize: { width: 2, height: 2 } // Important NPC - larger size
+          gridSize: { width: 2, height: 2 }, // Important NPC - larger size
         },
-        { 
-          id: "npc-blacksmith", 
+        {
+          id: "npc-blacksmith",
           tileCoordinate: { x: 15, y: 8 }, // Near forge
           name: "Blacksmith Gorin",
           hasQuest: false,
-          gridSize: { width: 1, height: 1 } // Regular NPC
+          gridSize: { width: 1, height: 1 }, // Regular NPC
         },
-        { 
-          id: "npc-merchant", 
+        {
+          id: "npc-merchant",
           tileCoordinate: { x: 7, y: 6 }, // Market square
           name: "Merchant Lyra",
           hasQuest: true,
           questId: "quest-side-1",
-          gridSize: { width: 1, height: 1 } // Regular NPC
+          gridSize: { width: 1, height: 1 }, // Regular NPC
         },
       ],
-      
+
       // Shops with positions
       shops: [
-        { 
-          id: "shop-weapons", 
+        {
+          id: "shop-weapons",
           tileCoordinate: { x: 14, y: 7 }, // Near blacksmith
           name: "Weapon Shop",
           shopType: "weapons" as const,
-          gridSize: { width: 2, height: 2 } // Medium shop
+          gridSize: { width: 2, height: 2 }, // Medium shop
         },
-        { 
-          id: "shop-armor", 
+        {
+          id: "shop-armor",
           tileCoordinate: { x: 16, y: 9 }, // Armor district
           name: "Armor Shop",
           shopType: "armor" as const,
-          gridSize: { width: 2, height: 2 } // Medium shop
+          gridSize: { width: 2, height: 2 }, // Medium shop
         },
-        { 
-          id: "shop-items", 
+        {
+          id: "shop-items",
           tileCoordinate: { x: 8, y: 7 }, // Market area
           name: "General Store",
           shopType: "items" as const,
-          gridSize: { width: 2, height: 2 } // Medium shop
+          gridSize: { width: 2, height: 2 }, // Medium shop
         },
       ],
-      
+
       // Services with positions
       services: [
-        { 
-          id: "inn", 
+        {
+          id: "inn",
           tileCoordinate: { x: 5, y: 10 }, // Residential area
           name: "The Frozen Hearth Inn",
           serviceType: "inn" as const,
-          gridSize: { width: 3, height: 3 } // Large building
+          gridSize: { width: 3, height: 3 }, // Large building
         },
-        { 
-          id: "guild", 
+        {
+          id: "guild",
           tileCoordinate: { x: 3, y: 5 }, // Guild district (matches building-guild-hall connection)
           name: "Adventurer's Guild",
           serviceType: "guild" as const,
-          gridSize: { width: 3, height: 4 } // Very large building
+          gridSize: { width: 3, height: 4 }, // Very large building
         },
-        { 
-          id: "bank", 
+        {
+          id: "bank",
           tileCoordinate: { x: 12, y: 4 }, // Financial district
           name: "Silverhold Bank",
           serviceType: "bank" as const,
-          gridSize: { width: 2, height: 3 } // Medium-large building
+          gridSize: { width: 2, height: 3 }, // Medium-large building
         },
       ],
-      
+
       // Battle triggers with positions
       battleMaps: [
         {
@@ -307,7 +310,7 @@ export const LOCATIONS_MASTER: Location[] = [
           tileCoordinate: { x: 2, y: 12 }, // Forest entrance (south)
           name: "Forest Clearing",
           difficulty: "normal" as const,
-          gridSize: { width: 2, height: 2 } // Battle area
+          gridSize: { width: 2, height: 2 }, // Battle area
         },
         {
           id: "map-cave-entrance",
@@ -315,10 +318,10 @@ export const LOCATIONS_MASTER: Location[] = [
           tileCoordinate: { x: 18, y: 3 }, // Cave entrance (north-east)
           name: "Cave Entrance",
           difficulty: "hard" as const,
-          gridSize: { width: 2, height: 2 } // Battle area
+          gridSize: { width: 2, height: 2 }, // Battle area
         },
       ],
-      
+
       // Treasure chests
       treasures: [
         {
@@ -326,7 +329,7 @@ export const LOCATIONS_MASTER: Location[] = [
           treasureId: "treasure-city-1",
           tileCoordinate: { x: 1, y: 1 }, // Hidden corner
           name: "Hidden Chest",
-          gridSize: { width: 1, height: 1 } // Small treasure
+          gridSize: { width: 1, height: 1 }, // Small treasure
         },
       ],
     },
@@ -370,78 +373,78 @@ export const LOCATIONS_MASTER: Location[] = [
     metadata: {
       // NPCs with positions
       npcs: [
-        { 
-          id: "npc-elder", 
+        {
+          id: "npc-elder",
           tileCoordinate: { x: 10, y: 7 }, // Elder's tree house
           name: "Elder Thalion",
           hasQuest: true,
           questId: "quest-elven-1",
-          gridSize: { width: 3, height: 3 } // Very important elder - large size
+          gridSize: { width: 3, height: 3 }, // Very important elder - large size
         },
-        { 
-          id: "npc-archer-trainer", 
+        {
+          id: "npc-archer-trainer",
           tileCoordinate: { x: 15, y: 5 }, // Training grounds
           name: "Archer Trainer Sylvara",
           hasQuest: false,
-          gridSize: { width: 1, height: 1 } // Regular NPC
+          gridSize: { width: 1, height: 1 }, // Regular NPC
         },
-        { 
-          id: "npc-herbalist", 
+        {
+          id: "npc-herbalist",
           tileCoordinate: { x: 5, y: 9 }, // Herb garden
           name: "Herbalist Elara",
           hasQuest: true,
           questId: "quest-herbs-1",
-          gridSize: { width: 1, height: 1 } // Regular NPC
+          gridSize: { width: 1, height: 1 }, // Regular NPC
         },
       ],
-      
+
       // Shops with positions
       shops: [
-        { 
-          id: "shop-magic", 
+        {
+          id: "shop-magic",
           tileCoordinate: { x: 12, y: 8 }, // Magic district
           name: "Arcane Emporium",
           shopType: "magic" as const,
-          gridSize: { width: 3, height: 2 } // Large magic shop
+          gridSize: { width: 3, height: 2 }, // Large magic shop
         },
-        { 
-          id: "shop-bows", 
+        {
+          id: "shop-bows",
           tileCoordinate: { x: 16, y: 6 }, // Near training grounds
           name: "Elven Bowyer",
           shopType: "weapons" as const,
-          gridSize: { width: 2, height: 2 } // Medium shop
+          gridSize: { width: 2, height: 2 }, // Medium shop
         },
-        { 
-          id: "shop-potions", 
+        {
+          id: "shop-potions",
           tileCoordinate: { x: 6, y: 10 }, // Near herb garden
           name: "Potion Shop",
           shopType: "potions" as const,
-          gridSize: { width: 2, height: 2 } // Medium shop
+          gridSize: { width: 2, height: 2 }, // Medium shop
         },
       ],
-      
+
       // Services with positions
       services: [
-        { 
-          id: "inn", 
+        {
+          id: "inn",
           tileCoordinate: { x: 8, y: 12 }, // Residential area
           name: "The Moonlit Rest",
           serviceType: "inn" as const,
-          gridSize: { width: 3, height: 3 } // Large building
+          gridSize: { width: 3, height: 3 }, // Large building
         },
-        { 
-          id: "guild", 
+        {
+          id: "guild",
           tileCoordinate: { x: 13, y: 4 }, // Guild hall
           name: "Elven Rangers Guild",
           serviceType: "guild" as const,
-          gridSize: { width: 3, height: 4 } // Very large building
+          gridSize: { width: 3, height: 4 }, // Very large building
         },
-        { 
-          id: "temple", 
+        {
+          id: "temple",
           tileCoordinate: { x: 3, y: 3 }, // Sacred grove
           name: "Temple of Moonlight",
           serviceType: "temple" as const,
-          gridSize: { width: 4, height: 4 } // Massive temple
+          gridSize: { width: 4, height: 4 }, // Massive temple
         },
       ],
     },
@@ -850,12 +853,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-world-1",
     from: {
       locationId: "world-aethoria", // 50x50
-      tileCoordinate: { x: 25, y: 25 }, // ตรงกลาง parent (50/2 = 25)
+      tileCoordinate: { x: 16, y: 24 }, // ตรงกลาง parent (50/2 = 25)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "continent-northern", // 30x30
-      tileCoordinate: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
+      tileCoordinate: { x: 14, y: 29 }, // ตรงกลางล่างสุด child (30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Child → Parent = 2x1
     },
     connectionType: "portal",
     isLocked: false,
@@ -866,12 +870,13 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     id: "conn-world-2",
     from: {
       locationId: "world-aethoria", // 50x50
-      tileCoordinate: { x: 25, y: 25 }, // ตรงกลาง parent (แบ่ง space สำหรับ 2 children)
+      tileCoordinate: { x: 33, y: 24 }, // ตรงกลาง parent (แบ่ง space สำหรับ 2 children)
       gridSize: { width: 1, height: 1 }, // Parent → Child = 1x1
     },
     to: {
       locationId: "continent-eastern", // 30x30
-      tileCoordinate: { x: 25, y: 25 }, // spawn ตำแหน่งเดียวกับ entrance
+      tileCoordinate: { x: 14, y: 29 }, // ตรงกลางล่างสุด child (30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Child → Parent = 2x1
     },
     connectionType: "portal",
     isLocked: false,
@@ -888,11 +893,12 @@ export const LOCATION_CONNECTIONS_MASTER: LocationConnection[] = [
     from: {
       locationId: "continent-northern", // 30x30
       tileCoordinate: { x: 29, y: 15 }, // ชิดขวา กลางแกน Y (x = 29, y = 30/2 = 15)
-      gridSize: { width: 2, height: 1 }, // Sibling = 2x1
+      gridSize: { width: 1, height: 1 }, // Sibling = 1x1
     },
     to: {
       locationId: "continent-eastern", // 30x30
       tileCoordinate: { x: 0, y: 15 }, // ชิดซ้าย กลางแกน Y (x = 0, y = 30/2 = 15)
+      gridSize: { width: 1, height: 1 }, // Sibling = 1x1
     },
     connectionType: "bridge",
     isLocked: false,
@@ -1263,9 +1269,12 @@ export function getConnectionById(id: string): LocationConnection | undefined {
 /**
  * Get connections for a location
  */
-export function getLocationConnections(locationId: string): LocationConnection[] {
+export function getLocationConnections(
+  locationId: string
+): LocationConnection[] {
   return LOCATION_CONNECTIONS_MASTER.filter(
-    (conn) => conn.from.locationId === locationId || conn.to.locationId === locationId
+    (conn) =>
+      conn.from.locationId === locationId || conn.to.locationId === locationId
   );
 }
 
