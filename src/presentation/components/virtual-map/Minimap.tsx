@@ -126,10 +126,11 @@ export function Minimap({
               key={`minimap-connection-${connection.id}`}
               className="absolute bg-purple-500 border-2 border-white rounded-full shadow-lg"
               style={{
-                left: `${x - size / 4}px`,
-                top: `${y - size / 4}px`,
+                left: `${x}px`,
+                top: `${y}px`,
                 width: `${size}px`,
                 height: `${size}px`,
+                transform: 'translate(-50%, -50%)', // Center on tile
                 zIndex: 90,
               }}
               title={connection.connectionType}
@@ -151,10 +152,11 @@ export function Minimap({
               key={`minimap-treasure-${treasure.id}`}
               className="absolute bg-yellow-400 border border-yellow-600 rounded shadow-md"
               style={{
-                left: `${x - size / 4}px`,
-                top: `${y - size / 4}px`,
+                left: `${x}px`,
+                top: `${y}px`,
                 width: `${size}px`,
                 height: `${size}px`,
+                transform: 'translate(-50%, -50%)', // Center on tile
                 zIndex: 85,
               }}
               title="Treasure"
@@ -177,10 +179,11 @@ export function Minimap({
               key={`minimap-battle-${battle.id}`}
               className={`absolute ${color} border border-red-300 shadow-md`}
               style={{
-                left: `${x - size / 4}px`,
-                top: `${y - size / 4}px`,
+                left: `${x}px`,
+                top: `${y}px`,
                 width: `${size}px`,
                 height: `${size}px`,
+                transform: 'translate(-50%, -50%)', // Center on tile
                 zIndex: 85,
               }}
               title={`Battle (${battle.difficulty || 'normal'})`}
@@ -203,10 +206,11 @@ export function Minimap({
               key={`minimap-service-${service.id}`}
               className={`absolute ${color} border border-white rounded-sm shadow-sm`}
               style={{
-                left: `${x - size / 4}px`,
-                top: `${y - size / 4}px`,
+                left: `${x}px`,
+                top: `${y}px`,
                 width: `${size}px`,
                 height: `${size}px`,
+                transform: 'translate(-50%, -50%)', // Center on tile
                 zIndex: 80,
               }}
               title={service.serviceType}
@@ -224,10 +228,11 @@ export function Minimap({
               key={`minimap-shop-${shop.id}`}
               className="absolute bg-orange-400 border border-white rounded-sm shadow-sm"
               style={{
-                left: `${x - size / 4}px`,
-                top: `${y - size / 4}px`,
+                left: `${x}px`,
+                top: `${y}px`,
                 width: `${size}px`,
                 height: `${size}px`,
+                transform: 'translate(-50%, -50%)', // Center on tile
                 zIndex: 80,
               }}
               title={shop.shopType || 'Shop'}

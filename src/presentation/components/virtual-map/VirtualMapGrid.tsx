@@ -1,4 +1,4 @@
-import { getLocationById } from "@/src/data/master/locations.master";
+import { getLocationById, getLocationConnections } from "@/src/data/master/locations.master";
 import {
   Location,
   LocationConnection,
@@ -134,11 +134,18 @@ export function VirtualMapGrid({
     calculateViewport,
   ]);
 
-  // Get visible connections and locations from store (must be before early return)
+  // Get visible connections for main map (filtered by viewport)
   const connections = useMemo(() => {
     if (!viewport) return [];
     return getVisibleConnections(currentLocation.id, viewport);
   }, [currentLocation.id, viewport, getVisibleConnections]);
+
+  // Get ALL connections FROM this location for Minimap (not filtered by viewport)
+  // Only include connections that START from this location (from.locationId)
+  const allConnectionsFromThisLocation = useMemo(() => {
+    return getLocationConnections(currentLocation.id)
+      .filter(conn => conn.from.locationId === currentLocation.id);
+  }, [currentLocation.id]);
 
   // Note: Child locations are now displayed via ConnectionMarkers only
   // No need for visibleChildLocations anymore
@@ -160,7 +167,7 @@ export function VirtualMapGrid({
       viewportEndX: viewport.viewportEndX,
       viewportEndY: viewport.viewportEndY,
       gridSize,
-      connections,
+      connections: allConnectionsFromThisLocation, // Use all connections FROM this location
     };
 
     onMinimapDataReady?.(minimapData);
@@ -171,7 +178,7 @@ export function VirtualMapGrid({
     gridColumns,
     gridRows,
     gridSize,
-    connections,
+    allConnectionsFromThisLocation,
     onMinimapDataReady,
   ]);
 
