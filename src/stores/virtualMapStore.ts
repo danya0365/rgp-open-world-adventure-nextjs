@@ -234,12 +234,12 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         cameraPosition: DEFAULT_PLAYER_POSITION.pixelCoordinate,
         zoom: 1,
         showMinimap: true,
-        showLocationInfo: true,
+        showLocationInfo: false,
         showLocationListPanel: false, // Default to closed to avoid blocking screen
         showBreadcrumbPanel: false, // Default to closed to avoid blocking screen
         showMinimapPanel: true, // Default to open for easy access
-        showMapInfoPanel: true, // Default to open for map info
-        showKeyboardHintPanel: true, // Default to open for keyboard hints
+        showMapInfoPanel: false, // Default to open for map info
+        showKeyboardHintPanel: false, // Default to open for keyboard hints
 
         // ========================================
         // Viewport State
@@ -833,12 +833,12 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         getVisibleConnections: (locationId, viewport) => {
           // First get all connections
           const allConnections = get().getAllConnections(locationId);
-          
+
           // Then filter by viewport
-          return allConnections.filter(conn => {
+          return allConnections.filter((conn) => {
             const tileX = conn.from.tileCoordinate.x;
             const tileY = conn.from.tileCoordinate.y;
-            
+
             return (
               tileX >= viewport.viewportStartX &&
               tileX < viewport.viewportEndX &&
