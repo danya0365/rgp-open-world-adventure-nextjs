@@ -305,39 +305,67 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           // Update camera
           get().setCameraPosition(pixelCoordinate);
 
-          // Check for connection triggers
+          // Check for connection triggers (with two-way support)
           const connections = getLocationConnections(
             currentPosition.locationId
           );
 
           for (const connection of connections) {
-            if (connection.from.locationId !== currentPosition.locationId)
-              continue;
-
-            // Master data uses TILE coordinates (no need to convert)
-            const connTileX = connection.from.tileCoordinate.x; // TILE
-            const connTileY = connection.from.tileCoordinate.y; // TILE
             // Convert player PIXEL → TILE
             const playerTileX = Math.floor(pixelCoordinate.x / 40);
             const playerTileY = Math.floor(pixelCoordinate.y / 40);
 
-            if (connTileX === playerTileX && connTileY === playerTileY) {
-              console.log(
-                `[Store] Player stepped on connection:`,
-                connection.id
-              );
-              // Trigger connection via custom event
-              if (typeof window !== "undefined") {
-                window.dispatchEvent(
-                  new CustomEvent("connection-trigger", {
-                    detail: {
-                      connectionId: connection.id,
-                      toLocationId: connection.to.locationId,
-                    },
-                  })
+            // Check forward direction: from → to
+            if (connection.from.locationId === currentPosition.locationId) {
+              const connTileX = connection.from.tileCoordinate.x; // TILE
+              const connTileY = connection.from.tileCoordinate.y; // TILE
+
+              if (connTileX === playerTileX && connTileY === playerTileY) {
+                console.log(
+                  `[Store] Player stepped on connection (forward):`,
+                  connection.id
                 );
+                // Trigger connection via custom event
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(
+                    new CustomEvent("connection-trigger", {
+                      detail: {
+                        connectionId: connection.id,
+                        toLocationId: connection.to.locationId,
+                      },
+                    })
+                  );
+                }
+                break;
               }
-              break;
+            }
+
+            // Check reverse direction: to → from (only if two-way)
+            if (
+              connection.isTwoWay &&
+              connection.to.locationId === currentPosition.locationId
+            ) {
+              const connTileX = connection.to.tileCoordinate.x; // TILE (spawn point on reverse)
+              const connTileY = connection.to.tileCoordinate.y; // TILE
+
+              if (connTileX === playerTileX && connTileY === playerTileY) {
+                console.log(
+                  `[Store] Player stepped on connection (reverse two-way):`,
+                  connection.id
+                );
+                // Trigger connection via custom event (going back)
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(
+                    new CustomEvent("connection-trigger", {
+                      detail: {
+                        connectionId: connection.id,
+                        toLocationId: connection.from.locationId, // Going back to 'from'
+                      },
+                    })
+                  );
+                }
+                break;
+              }
             }
           }
 
