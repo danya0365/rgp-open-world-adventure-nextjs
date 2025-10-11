@@ -70,7 +70,7 @@ export function Minimap({
         </div>
       )}
 
-      <div className="p-2 w-full flex-1 flex items-center justify-center">
+      <div className="p-2 w-full flex-1 flex items-center justify-center gap-4">
         {/* Minimap Canvas */}
         <div
           className="relative border border-slate-700 rounded bg-slate-950 shrink-0"
@@ -264,37 +264,45 @@ export function Minimap({
         </div>
       </div>
 
-      {/* Legend */}
+      {/* Legend - Right Side */}
       <div
-        className={`mt-1.5 pt-1.5 border-t border-slate-700 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[8px] text-gray-400 ${
-          onClose
-            ? "bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 border-t-0 rounded-b-lg p-2"
-            : ""
+        className={`flex flex-col items-start gap-1.5 p-2 border border-slate-700 rounded bg-slate-900/95 backdrop-blur-sm text-[10px] text-gray-300 ${
+          onClose ? "border-purple-500/50" : ""
         }`}
+        style={{
+          height: `${finalHeight}px`,
+          minWidth: '100px',
+          overflowY: 'auto',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(139, 92, 246, 0.5) transparent',
+        }}
       >
-        <div className="flex items-center gap-0.5">
-          <div className="w-2 h-2 bg-blue-400 border border-white rounded-full shrink-0" />
-          <span>You</span>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <div className="w-2 h-2 bg-purple-500 border-2 border-white rounded-full shrink-0" />
-          <span>Exit</span>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <div className="w-2 h-2 bg-yellow-400 border border-yellow-600 shrink-0" />
-          <span>Treasure</span>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <div className="w-2 h-2 bg-red-500 border border-red-300 shrink-0" />
-          <span>Battle</span>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <div className="w-2 h-2 bg-cyan-400 border border-white rounded-sm shrink-0" />
-          <span>Service</span>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <div className="w-2 h-2 bg-orange-400 border border-white rounded-sm shrink-0" />
-          <span>Shop</span>
+        <div className="text-xs font-semibold text-purple-300 mb-1">Legend</div>
+        <div className="flex flex-col gap-1.5 w-full">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 bg-blue-400 border border-white rounded-full flex-shrink-0" />
+            <span className="whitespace-nowrap">You</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 bg-purple-500 border-2 border-white rounded-full flex-shrink-0" />
+            <span className="whitespace-nowrap">Exit</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 bg-yellow-400 border border-yellow-600 flex-shrink-0" />
+            <span className="whitespace-nowrap">Treasure</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 bg-red-500 border border-red-300 flex-shrink-0" />
+            <span className="whitespace-nowrap">Battle</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 bg-cyan-400 border border-white rounded-sm flex-shrink-0" />
+            <span className="whitespace-nowrap">Service</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 bg-orange-400 border border-white rounded-sm flex-shrink-0" />
+            <span className="whitespace-nowrap">Shop</span>
+          </div>
         </div>
       </div>
     </div>
