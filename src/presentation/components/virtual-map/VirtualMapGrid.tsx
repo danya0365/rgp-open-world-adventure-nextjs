@@ -479,25 +479,14 @@ export function VirtualMapGrid({
 
           // Find target location from master data (supports both child and parent locations)
           const target = getLocationById(connection.to.locationId);
-          
+
           // TODO: Implement proper discovery system
           // For now, show all connections as discovered for testing
           const isDiscovered = true;
-          
+
           // Check if target is discovered (COMMENTED OUT FOR TESTING)
           // const isParentLocation = target && target.id === currentLocation.parentId;
           // const isDiscovered = target && (isParentLocation || discoveredLocations.has(target.id));
-
-          // Debug logging
-          console.log('🔗 Connection:', connection.id, {
-            tileX, tileY, x, y,
-            from: connection.from.locationId,
-            to: connection.to.locationId,
-            target: target?.id,
-            targetName: target?.name,
-            isDiscovered,
-            gridSize: connection.from.gridSize
-          });
 
           return (
             <ConnectionMarker
@@ -508,7 +497,7 @@ export function VirtualMapGrid({
               gridSize={gridSize}
               onClick={() => {
                 if (target) {
-                  console.log('🚀 Navigating to:', target.name, target.id);
+                  console.log("🚀 Navigating to:", target.name, target.id);
                   onLocationClick(target);
                 } else {
                   console.error(

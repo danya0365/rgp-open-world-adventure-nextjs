@@ -183,7 +183,7 @@ interface VirtualMapState {
 // Default player starting position
 const DEFAULT_PLAYER_POSITION: PlayerPosition = {
   locationId: "city-silverhold", // Start at Silverhold City
-  coordinates: { x: 400, y: 280 }, // Center of 20x15 grid (10*40, 7*40)
+  coordinates: { x: 10, y: 7 }, // Center of 20x15 grid (10*40, 7*40)
   facing: "south",
 };
 
@@ -496,7 +496,9 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         },
 
         toggleKeyboardHintPanel: () => {
-          set((state) => ({ showKeyboardHintPanel: !state.showKeyboardHintPanel }));
+          set((state) => ({
+            showKeyboardHintPanel: !state.showKeyboardHintPanel,
+          }));
         },
 
         // ========================================

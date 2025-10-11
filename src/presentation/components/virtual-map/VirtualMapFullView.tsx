@@ -14,8 +14,16 @@ import {
   HUDPanelToggle,
 } from "@/src/presentation/components/layout/HUDPanel";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { ChevronRight, Home, Info, Keyboard, Map, MapPin, Navigation } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  ChevronRight,
+  Home,
+  Info,
+  Keyboard,
+  Map,
+  MapPin,
+  Navigation,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { KeyboardHintContent } from "./KeyboardHint";
 import {
@@ -34,6 +42,7 @@ export function VirtualMapFullView({
   initialLocationId,
 }: VirtualMapFullViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     discoveredLocations,
     teleportToLocation,
@@ -70,21 +79,87 @@ export function VirtualMapFullView({
     ? getLocationPath(currentLocationData.id)
     : [];
 
+  // Resolve spawn coordinates considering two-way connections
+  const getSpawnFromConnections = (
+    fromLocationId: string,
+    toLocationId: string
+  ): { x: number; y: number } => {
+    const connections = getLocationConnections(fromLocationId);
+
+    // Try forward direction
+    const forward = connections.find(
+      (conn) =>
+        conn.from.locationId === fromLocationId &&
+        conn.to.locationId === toLocationId
+    );
+    if (forward) {
+      return forward.to.coordinates;
+    }
+
+    // Try reverse using two-way connection
+    const reverse = connections.find(
+      (conn) =>
+        conn.isTwoWay &&
+        conn.to.locationId === fromLocationId &&
+        conn.from.locationId === toLocationId
+    );
+    if (reverse) {
+      // When traversing reverse, spawn should be at the target side which is 'from' in this entry
+      return reverse.from.coordinates;
+    }
+
+    // Fallback center
+    return { x: 10, y: 7 };
+  };
+
   // Sync URL with player's actual location on mount
   useEffect(() => {
     console.log(`[VirtualMapFullView] Initializing...`);
     console.log(`  - URL locationId:`, initialLocationId);
+    const fromParam = searchParams?.get("from");
+    if (fromParam) {
+      console.log(`  - Spawn context from:`, fromParam);
+    }
 
     const currentPos = useVirtualMapStore.getState().playerPosition;
     console.log(`  - Player's actual location:`, currentPos.locationId);
 
-    // If URL doesn't match player's actual location, redirect to correct location
+    // If URL doesn't match player's actual location
     if (initialLocationId && currentPos.locationId !== initialLocationId) {
       console.log(
         `  ⚠️ URL mismatch! Player is at ${currentPos.locationId}, but URL shows ${initialLocationId}`
       );
-      console.log(`  ↻ Redirecting to player's actual location...`);
-      router.push(`/virtual-world/${currentPos.locationId}`);
+
+      // If we have spawn context (?from=prevLocation), compute spawn using connections
+      if (fromParam) {
+        const spawnCoords = getSpawnFromConnections(
+          fromParam,
+          initialLocationId
+        );
+        console.log(
+          `  → Spawning at ${initialLocationId} using connection from ${fromParam} at`,
+          spawnCoords,
+          "(resolved two-way)"
+        );
+
+        // Ensure discovered and teleport
+        if (!discoveredLocations.has(initialLocationId)) {
+          discoverLocation(initialLocationId);
+        }
+        teleportToLocation(initialLocationId, {
+          x: spawnCoords.x * 40,
+          y: spawnCoords.y * 40,
+        });
+
+        // Clean URL (remove ?from)
+        router.replace(`/virtual-world/${initialLocationId}`);
+      } else {
+        // No spawn context → keep previous behavior: redirect to player's actual location
+        console.log(
+          `  ↻ No spawn context (?from), redirecting to player location...`
+        );
+        router.push(`/virtual-world/${currentPos.locationId}`);
+      }
     } else if (!initialLocationId && currentPos.locationId) {
       // If no URL param, redirect to player's current location
       console.log(
@@ -123,27 +198,26 @@ export function VirtualMapFullView({
         console.log(`  → Auto-navigating to:`, target.id);
 
         // Find connection to get spawn point
-        const connections = getLocationConnections(currentLocationData?.id || "");
-        const connection = connections.find(
-          (conn) =>
-            conn.from.locationId === currentLocationData?.id &&
-            conn.to.locationId === toLocationId
-        );
-
-        // Use connection spawn point (to.coordinates), fallback to center
-        const spawnCoords = connection?.to.coordinates || { x: 10, y: 7 };
-        console.log(
-          `  - Spawn at:`,
-          spawnCoords,
-          connection ? "(from connection)" : "(center)"
-        );
+        // Resolve spawn considering two-way connections
+        const spawnCoords = currentLocationData
+          ? getSpawnFromConnections(currentLocationData.id, toLocationId)
+          : { x: 10, y: 7 };
+        console.log(`  - Spawn at:`, spawnCoords, "(resolved two-way)");
 
         // Auto-discover and teleport
         if (!discoveredLocations.has(target.id)) {
           discoverLocation(target.id);
         }
-        teleportToLocation(target.id, spawnCoords);
-        router.push(`/virtual-world/${target.id}`);
+        teleportToLocation(target.id, {
+          x: spawnCoords.x * 40,
+          y: spawnCoords.y * 40,
+        });
+        const fromId = currentLocationData?.id;
+        router.push(
+          fromId
+            ? `/virtual-world/${target.id}?from=${fromId}`
+            : `/virtual-world/${target.id}`
+        );
       }
     };
 
@@ -177,17 +251,20 @@ export function VirtualMapFullView({
     console.log(`  ✓ Teleporting to ${location.id}`);
 
     // Find connection to get spawn point
-    const connections = getLocationConnections(currentLocationData?.id || "");
-    const connection = connections.find(
-      (conn) => conn.to.locationId === location.id
-    );
-    const spawnCoords = connection?.to.coordinates || { x: 10, y: 7 };
+    const spawnCoords = currentLocationData
+      ? getSpawnFromConnections(currentLocationData.id, location.id)
+      : { x: 10, y: 7 };
 
     // Teleport to location (updates store)
     teleportToLocation(location.id, spawnCoords);
 
     // Update URL to match new location
-    router.push(`/virtual-world/${location.id}`);
+    const fromId = currentLocationData?.id;
+    router.push(
+      fromId
+        ? `/virtual-world/${location.id}?from=${fromId}`
+        : `/virtual-world/${location.id}`
+    );
   };
 
   // Handle breadcrumb click - teleport + update URL
