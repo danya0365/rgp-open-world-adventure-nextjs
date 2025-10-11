@@ -1,5 +1,6 @@
 "use client";
 
+import { getLocationById } from "@/src/data/master/locations.master";
 import { LocationConnection } from "@/src/domain/types/location.types";
 import { getPOIPixelSize } from "@/src/utils/poiGridUtils";
 
@@ -12,6 +13,28 @@ interface ConnectionMarkerProps {
   isDiscovered?: boolean;
 }
 
+// Location type icons mapping
+const locationTypeIcons: Record<string, string> = {
+  world: "🌍",
+  continent: "🗺️",
+  region: "🏞️",
+  area: "🗾",
+  city: "🏙️",
+  town: "🏘️",
+  village: "🏡",
+  building: "🏢",
+  floor: "🏢",
+  room: "🛋️",
+  dungeon: "🏰",
+  field: "🌾",
+  forest: "🌲",
+  mountain: "⛰️",
+  cave: "🕳️",
+  castle: "🏰",
+  temple: "🛕",
+  tower: "🗼",
+};
+
 export function ConnectionMarker({
   connection,
   x,
@@ -23,6 +46,14 @@ export function ConnectionMarker({
   // Get connection marker size in pixels
   const { width, height } = getPOIPixelSize(connection.from.gridSize, gridSize);
 
+  // Get the target location for the connection
+  const targetLocation = getLocationById(connection.to.locationId);
+  const fromLocation = getLocationById(connection.from.locationId);
+  const isFromParent = targetLocation?.parentId === fromLocation?.id;
+  const locationTypeIcon = targetLocation
+    ? locationTypeIcons[targetLocation.type] || "📍"
+    : "📍";
+
   // Determine if connection is 1x1 (use circle) or larger (use rounded rectangle)
   const is1x1 =
     !connection.from.gridSize ||
@@ -30,51 +61,62 @@ export function ConnectionMarker({
       connection.from.gridSize.height === 1);
   const shapeClass = is1x1 ? "rounded-full" : "rounded-xl";
 
-  // Connection type icons and colors (must be before any early returns)
+  // Connection type icons and colors
   const getConnectionStyle = () => {
     switch (connection.connectionType) {
       case "portal":
         return {
-          icon: "🌀",
           bg: "bg-purple-600",
           border: "border-purple-400",
           glow: "shadow-purple-500/50",
         };
       case "gate":
         return {
-          icon: "🚪",
           bg: "bg-blue-600",
           border: "border-blue-400",
           glow: "shadow-blue-500/50",
         };
       case "entrance":
         return {
-          icon: "🏛️",
           bg: "bg-green-600",
           border: "border-green-400",
           glow: "shadow-green-500/50",
         };
       case "stairs":
         return {
-          icon: "🪜",
           bg: "bg-yellow-600",
           border: "border-yellow-400",
           glow: "shadow-yellow-500/50",
         };
       case "bridge":
         return {
-          icon: "🌉",
           bg: "bg-orange-600",
           border: "border-orange-400",
           glow: "shadow-orange-500/50",
         };
       default:
         return {
-          icon: "📍",
           bg: "bg-gray-600",
           border: "border-gray-400",
           glow: "shadow-gray-500/50",
         };
+    }
+  };
+
+  const getConnectionIcon = () => {
+    switch (connection.connectionType) {
+      case "portal":
+        return "🌀";
+      case "gate":
+        return "🚪";
+      case "entrance":
+        return "🏛️";
+      case "stairs":
+        return "🪜";
+      case "bridge":
+        return "🌉";
+      default:
+        return "📍";
     }
   };
 
@@ -97,6 +139,11 @@ export function ConnectionMarker({
         >
           <span className="text-2xl">❓</span>
         </div>
+        {targetLocation && (
+          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs">
+            {locationTypeIcon}
+          </div>
+        )}
       </div>
     );
   }
@@ -104,7 +151,7 @@ export function ConnectionMarker({
   // Render discovered state
   return (
     <div
-      className="absolute flex items-center justify-center cursor-pointer group pointer-events-auto"
+      className="absolute flex items-center justify-center group"
       style={{
         left: `${x * gridSize}px`,
         top: `${y * gridSize}px`,
@@ -136,10 +183,22 @@ export function ConnectionMarker({
           shadow-lg ${style.glow}
           transform transition-all duration-200
           group-hover:scale-110
-          animate-bounce
         `}
       >
-        <span className="text-3xl drop-shadow-lg">{style.icon}</span>
+        {isFromParent ? (
+          <>
+            <span className="text-3xl drop-shadow-lg">{locationTypeIcon}</span>
+
+            {/* Location type icon overlay */}
+            {targetLocation && (
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs">
+                {getConnectionIcon()}
+              </div>
+            )}
+          </>
+        ) : (
+          <span className="text-3xl drop-shadow-lg">{getConnectionIcon()}</span>
+        )}
       </div>
 
       {/* Hover tooltip */}
@@ -148,7 +207,9 @@ export function ConnectionMarker({
           <div className="font-bold capitalize">
             {connection.connectionType}
           </div>
-          <div className="text-gray-400 text-[10px]">Click to enter</div>
+          <div className="text-gray-400 text-[10px]">
+            {targetLocation ? `To: ${targetLocation.name}` : "Unknown location"}
+          </div>
         </div>
       </div>
 
