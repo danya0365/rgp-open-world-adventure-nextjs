@@ -98,9 +98,6 @@ interface VirtualMapState {
   // Child locations of current location (computed from master)
   childLocations: Location[];
 
-  // Nearby locations within radius (computed)
-  nearbyLocations: Location[];
-
   // Discovered locations with full data (computed)
   discoveredLocationData: Location[];
 
@@ -183,7 +180,7 @@ interface VirtualMapState {
 // Default player starting position
 const DEFAULT_PLAYER_POSITION: PlayerPosition = {
   locationId: "city-silverhold", // Start at Silverhold City
-  coordinates: { x: 10, y: 7 }, // Center of 20x15 grid (10*40, 7*40)
+  coordinates: { x: 0, y: 0 },
   facing: "south",
 };
 
@@ -194,18 +191,6 @@ const buildLocationMap = (): Map<string, Location> => {
   return map;
 };
 
-// Helper: Get nearby locations within radius
-// NOTE: Deprecated - locations no longer have coordinates
-// Use getLocationConnections() instead to find connected locations
-const getNearbyLocations = (
-  currentLocationId: string,
-  radius: number = 200
-): Location[] => {
-  // Return empty array - this function is deprecated
-  // Use connections to find nearby/connected locations instead
-  return [];
-};
-
 // Helper: Compute cached data from state (extracted to top level)
 const computeCachedData = (state: {
   playerPosition: PlayerPosition;
@@ -213,7 +198,6 @@ const computeCachedData = (state: {
 }): {
   currentLocationData: Location | null;
   childLocations: Location[];
-  nearbyLocations: Location[];
   discoveredLocationData: Location[];
   locationMap: Map<string, Location>;
 } => {
@@ -222,7 +206,6 @@ const computeCachedData = (state: {
   const childLocations = currentLocationData
     ? getLocationChildren(currentLocationData.id)
     : [];
-  const nearbyLocations = getNearbyLocations(state.playerPosition.locationId);
   const discoveredLocationData = Array.from(state.discoveredLocations)
     .map((id) => getLocationById(id))
     .filter((loc): loc is Location => loc !== undefined);
@@ -231,7 +214,6 @@ const computeCachedData = (state: {
   return {
     currentLocationData,
     childLocations,
-    nearbyLocations,
     discoveredLocationData,
     locationMap,
   };
