@@ -17,12 +17,13 @@ const FACING_ROTATION = {
 export function PlayerMarker({ x, y, facing, gridSize = 40 }: PlayerMarkerProps) {
   return (
     <div
-      className="absolute pointer-events-none z-50"
+      className="absolute pointer-events-none"
       style={{
         left: `${x * gridSize}px`,
         top: `${y * gridSize}px`,
         width: `${gridSize}px`,
         height: `${gridSize}px`,
+        zIndex: 200, // Higher than ConnectionMarker (100) and all POIs
       }}
     >
       {/* Glow Effect */}

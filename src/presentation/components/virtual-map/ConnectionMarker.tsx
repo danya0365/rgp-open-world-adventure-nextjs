@@ -22,11 +22,14 @@ export function ConnectionMarker({
 }: ConnectionMarkerProps) {
   // Get connection marker size in pixels
   const { width, height } = getPOIPixelSize(connection.from.gridSize, gridSize);
-  
+
   // Determine if connection is 1x1 (use circle) or larger (use rounded rectangle)
-  const is1x1 = (!connection.from.gridSize || (connection.from.gridSize.width === 1 && connection.from.gridSize.height === 1));
+  const is1x1 =
+    !connection.from.gridSize ||
+    (connection.from.gridSize.width === 1 &&
+      connection.from.gridSize.height === 1);
   const shapeClass = is1x1 ? "rounded-full" : "rounded-xl";
-  
+
   // Connection type icons and colors (must be before any early returns)
   const getConnectionStyle = () => {
     switch (connection.connectionType) {
@@ -89,7 +92,9 @@ export function ConnectionMarker({
           height: `${height}px`,
         }}
       >
-        <div className={`w-full h-full ${shapeClass} bg-gray-700 border-4 border-gray-600 flex items-center justify-center`}>
+        <div
+          className={`w-full h-full ${shapeClass} bg-gray-700 border-4 border-gray-600 flex items-center justify-center`}
+        >
           <span className="text-2xl">❓</span>
         </div>
       </div>
@@ -108,22 +113,21 @@ export function ConnectionMarker({
         zIndex: 100,
       }}
       onClick={() => {
-        console.log('🎯 ConnectionMarker clicked!', {
+        console.log("🎯 ConnectionMarker clicked!", {
           connectionId: connection.id,
           from: connection.from.locationId,
           to: connection.to.locationId,
-          type: connection.connectionType
+          type: connection.connectionType,
         });
         onClick();
       }}
       title={`${connection.connectionType} - Click to enter`}
     >
-      {/* Debug border */}
-      <div className="absolute inset-0 border-4 border-red-500 bg-red-500/20" />
-      
       {/* Pulsing ring */}
-      <div className={`absolute inset-0 ${shapeClass} ${style.bg} opacity-20 animate-ping`} />
-      
+      <div
+        className={`absolute inset-0 ${shapeClass} ${style.bg} opacity-20 animate-ping`}
+      />
+
       {/* Main marker */}
       <div
         className={`
@@ -141,7 +145,9 @@ export function ConnectionMarker({
       {/* Hover tooltip */}
       <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
         <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-700 rounded px-2 py-1 whitespace-nowrap text-xs text-white shadow-xl">
-          <div className="font-bold capitalize">{connection.connectionType}</div>
+          <div className="font-bold capitalize">
+            {connection.connectionType}
+          </div>
           <div className="text-gray-400 text-[10px]">Click to enter</div>
         </div>
       </div>

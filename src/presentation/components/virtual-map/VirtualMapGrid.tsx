@@ -308,7 +308,49 @@ export function VirtualMapGrid({
 
         {/* Child locations are displayed via ConnectionMarkers below */}
 
-        {/* Player Marker (only show if player is in this location) */}
+        {/* Connection Markers Layer - Render before PlayerMarker so player is on top */}
+        {connections.map((connection) => {
+          // Coordinates are already in tile units, no need to divide by gridSize
+          const tileX = connection.from.tileCoordinate.x;
+          const tileY = connection.from.tileCoordinate.y;
+          const x = tileX - viewportStartX;
+          const y = tileY - viewportStartY;
+
+          // Find target location from master data (supports both child and parent locations)
+          const target = getLocationById(connection.to.locationId);
+
+          // TODO: Implement proper discovery system
+          // For now, show all connections as discovered for testing
+          const isDiscovered = true;
+
+          // Check if target is discovered (COMMENTED OUT FOR TESTING)
+          // const isParentLocation = target && target.id === currentLocation.parentId;
+          // const isDiscovered = target && (isParentLocation || discoveredLocations.has(target.id));
+
+          return (
+            <ConnectionMarker
+              key={connection.id}
+              connection={connection}
+              x={x}
+              y={y}
+              gridSize={gridSize}
+              onClick={() => {
+                if (target) {
+                  console.log("🚀 Navigating to:", target.name, target.id);
+                  onLocationClick(target);
+                } else {
+                  console.error(
+                    "❌ Target location not found:",
+                    connection.to.locationId
+                  );
+                }
+              }}
+              isDiscovered={isDiscovered}
+            />
+          );
+        })}
+
+        {/* Player Marker (only show if player is in this location) - ALWAYS ON TOP */}
         {playerPosition.locationId === currentLocation.id && (
           <PlayerMarker
             x={playerPosition.pixelCoordinate.x / gridSize - viewportStartX}
@@ -456,60 +498,6 @@ export function VirtualMapGrid({
         <div className="absolute bottom-1 right-1 text-[8px] text-gray-600 font-mono bg-black/30 px-1 rounded">
           ({viewportEndX}, {viewportEndY})
         </div>
-      </div>
-
-      {/* Connection Markers Layer - Above tiles to ensure clickability */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          width: `${mapWidth}px`,
-          height: `${mapHeight}px`,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 200,
-        }}
-      >
-        {connections.map((connection) => {
-          // Coordinates are already in tile units, no need to divide by gridSize
-          const tileX = connection.from.tileCoordinate.x;
-          const tileY = connection.from.tileCoordinate.y;
-          const x = tileX - viewportStartX;
-          const y = tileY - viewportStartY;
-
-          // Find target location from master data (supports both child and parent locations)
-          const target = getLocationById(connection.to.locationId);
-
-          // TODO: Implement proper discovery system
-          // For now, show all connections as discovered for testing
-          const isDiscovered = true;
-
-          // Check if target is discovered (COMMENTED OUT FOR TESTING)
-          // const isParentLocation = target && target.id === currentLocation.parentId;
-          // const isDiscovered = target && (isParentLocation || discoveredLocations.has(target.id));
-
-          return (
-            <ConnectionMarker
-              key={connection.id}
-              connection={connection}
-              x={x}
-              y={y}
-              gridSize={gridSize}
-              onClick={() => {
-                if (target) {
-                  console.log("🚀 Navigating to:", target.name, target.id);
-                  onLocationClick(target);
-                } else {
-                  console.error(
-                    "❌ Target location not found:",
-                    connection.to.locationId
-                  );
-                }
-              }}
-              isDiscovered={isDiscovered}
-            />
-          );
-        })}
       </div>
 
       {/* POI Modals */}
