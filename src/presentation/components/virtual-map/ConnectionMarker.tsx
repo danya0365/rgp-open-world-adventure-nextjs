@@ -53,6 +53,8 @@ export function ConnectionMarker({
   const locationTypeIcon = targetLocation
     ? locationTypeIcons[targetLocation.type] || "📍"
     : "📍";
+  const isNotShowLocationIcon =
+    targetLocation?.type === "floor" || targetLocation?.type === "room";
 
   // Determine if connection is 1x1 (use circle) or larger (use rounded rectangle)
   const is1x1 =
@@ -94,6 +96,12 @@ export function ConnectionMarker({
           border: "border-orange-400",
           glow: "shadow-orange-500/50",
         };
+      case "door":
+        return {
+          bg: "bg-gray-600",
+          border: "border-gray-400",
+          glow: "shadow-gray-500/50",
+        };
       default:
         return {
           bg: "bg-gray-600",
@@ -110,11 +118,13 @@ export function ConnectionMarker({
       case "gate":
         return "🚪";
       case "entrance":
-        return "🏛️";
+        return "🚪";
       case "stairs":
         return "🪜";
       case "bridge":
         return "🌉";
+      case "door":
+        return "🚪";
       default:
         return "📍";
     }
@@ -187,13 +197,23 @@ export function ConnectionMarker({
       >
         {isFromParent ? (
           <>
-            <span className="text-3xl drop-shadow-lg">{locationTypeIcon}</span>
-
-            {/* Location type icon overlay */}
-            {targetLocation && (
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs">
+            {isNotShowLocationIcon ? (
+              <span className="text-3xl drop-shadow-lg">
                 {getConnectionIcon()}
-              </div>
+              </span>
+            ) : (
+              <>
+                <span className="text-3xl drop-shadow-lg">
+                  {locationTypeIcon}
+                </span>
+
+                {/* Location type icon overlay */}
+                {targetLocation && (
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-800 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs">
+                    {getConnectionIcon()}
+                  </div>
+                )}
+              </>
             )}
           </>
         ) : (
