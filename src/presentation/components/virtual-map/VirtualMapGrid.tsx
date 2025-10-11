@@ -1,6 +1,7 @@
 import { getLocationById } from "@/src/data/master/locations.master";
 import {
   Location,
+  LocationConnection,
   MapTile as MapTileType,
 } from "@/src/domain/types/location.types";
 import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
@@ -40,6 +41,7 @@ export interface MinimapViewProps {
   viewportEndX: number;
   viewportEndY: number;
   gridSize: number;
+  connections?: LocationConnection[];
 }
 
 export interface MapInfoViewProps {
@@ -158,6 +160,7 @@ export function VirtualMapGrid({
       viewportEndX: viewport.viewportEndX,
       viewportEndY: viewport.viewportEndY,
       gridSize,
+      connections,
     };
 
     onMinimapDataReady?.(minimapData);
@@ -168,6 +171,7 @@ export function VirtualMapGrid({
     gridColumns,
     gridRows,
     gridSize,
+    connections,
     onMinimapDataReady,
   ]);
 
@@ -581,6 +585,7 @@ export function MinimapView({
   viewportEndX,
   viewportEndY,
   gridSize,
+  connections,
 }: MinimapViewProps) {
   return (
     <Minimap
@@ -593,6 +598,7 @@ export function MinimapView({
       viewportEndX={viewportEndX}
       viewportEndY={viewportEndY}
       gridSize={gridSize}
+      connections={connections}
       onClose={undefined}
     />
   );

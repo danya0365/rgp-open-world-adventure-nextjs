@@ -1,6 +1,6 @@
 "use client";
 
-import { Location, MapTile } from "@/src/domain/types/location.types";
+import { Location, LocationConnection, MapTile } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 
 interface MinimapProps {
@@ -13,6 +13,7 @@ interface MinimapProps {
   viewportEndX: number;
   viewportEndY: number;
   gridSize?: number;
+  connections?: LocationConnection[];
   onClose?: () => void;
 }
 
@@ -26,6 +27,7 @@ export function Minimap({
   viewportEndX,
   viewportEndY,
   gridSize = 40,
+  connections = [],
   onClose,
 }: MinimapProps) {
   const { playerPosition } = useVirtualMapStore();
@@ -113,7 +115,125 @@ export function Minimap({
           }}
         />
 
-        {/* Connection markers are shown via ConnectionMarker component in main view */}
+        {/* Connection Markers - Important POIs */}
+        {connections.map((connection) => {
+          const x = Math.floor(connection.from.tileCoordinate.x * tileSize);
+          const y = Math.floor(connection.from.tileCoordinate.y * tileSize);
+          const size = Math.max(Math.ceil(tileSize * 1.5), 6); // Slightly larger than tile
+
+          return (
+            <div
+              key={`minimap-connection-${connection.id}`}
+              className="absolute bg-purple-500 border-2 border-white rounded-full shadow-lg"
+              style={{
+                left: `${x - size / 4}px`,
+                top: `${y - size / 4}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                zIndex: 90,
+              }}
+              title={connection.connectionType}
+            />
+          );
+        })}
+
+        {/* Treasure Markers */}
+        {currentLocation.metadata?.treasures?.map((treasure) => {
+          // Skip already discovered treasures
+          if (treasure.isDiscovered) return null;
+
+          const x = Math.floor(treasure.tileCoordinate.x * tileSize);
+          const y = Math.floor(treasure.tileCoordinate.y * tileSize);
+          const size = Math.max(Math.ceil(tileSize * 1.2), 5);
+
+          return (
+            <div
+              key={`minimap-treasure-${treasure.id}`}
+              className="absolute bg-yellow-400 border border-yellow-600 rounded shadow-md"
+              style={{
+                left: `${x - size / 4}px`,
+                top: `${y - size / 4}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                zIndex: 85,
+              }}
+              title="Treasure"
+            />
+          );
+        })}
+
+        {/* Battle Markers */}
+        {currentLocation.metadata?.battleMaps?.map((battle) => {
+          const x = Math.floor(battle.tileCoordinate.x * tileSize);
+          const y = Math.floor(battle.tileCoordinate.y * tileSize);
+          const size = Math.max(Math.ceil(tileSize * 1.2), 5);
+
+          let color = "bg-red-500";
+          if (battle.difficulty === "boss") color = "bg-red-700";
+          else if (battle.difficulty === "hard") color = "bg-red-600";
+
+          return (
+            <div
+              key={`minimap-battle-${battle.id}`}
+              className={`absolute ${color} border border-red-300 shadow-md`}
+              style={{
+                left: `${x - size / 4}px`,
+                top: `${y - size / 4}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                zIndex: 85,
+              }}
+              title={`Battle (${battle.difficulty || 'normal'})`}
+            />
+          );
+        })}
+
+        {/* Service/Shop Markers */}
+        {currentLocation.metadata?.services?.map((service) => {
+          const x = Math.floor(service.tileCoordinate.x * tileSize);
+          const y = Math.floor(service.tileCoordinate.y * tileSize);
+          const size = Math.max(Math.ceil(tileSize * 1.1), 4);
+
+          let color = "bg-cyan-400";
+          if (service.serviceType === "inn") color = "bg-green-400";
+          else if (service.serviceType === "guild") color = "bg-indigo-400";
+
+          return (
+            <div
+              key={`minimap-service-${service.id}`}
+              className={`absolute ${color} border border-white rounded-sm shadow-sm`}
+              style={{
+                left: `${x - size / 4}px`,
+                top: `${y - size / 4}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                zIndex: 80,
+              }}
+              title={service.serviceType}
+            />
+          );
+        })}
+
+        {currentLocation.metadata?.shops?.map((shop) => {
+          const x = Math.floor(shop.tileCoordinate.x * tileSize);
+          const y = Math.floor(shop.tileCoordinate.y * tileSize);
+          const size = Math.max(Math.ceil(tileSize * 1.1), 4);
+
+          return (
+            <div
+              key={`minimap-shop-${shop.id}`}
+              className="absolute bg-orange-400 border border-white rounded-sm shadow-sm"
+              style={{
+                left: `${x - size / 4}px`,
+                top: `${y - size / 4}px`,
+                width: `${size}px`,
+                height: `${size}px`,
+                zIndex: 80,
+              }}
+              title={shop.shopType || 'Shop'}
+            />
+          );
+        })}
 
         {/* Player Marker */}
         {playerPosition.locationId === currentLocation.id && (
@@ -129,18 +249,30 @@ export function Minimap({
       </div>
 
       {/* Legend */}
-      <div className={`mt-1.5 pt-1.5 border-t border-slate-700 flex items-center justify-center gap-3 text-[8px] text-gray-400 ${onClose ? 'bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 border-t-0 rounded-b-lg p-2' : ''}`}>
-        <div className="flex items-center gap-1">
+      <div className={`mt-1.5 pt-1.5 border-t border-slate-700 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[8px] text-gray-400 ${onClose ? 'bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 border-t-0 rounded-b-lg p-2' : ''}`}>
+        <div className="flex items-center gap-0.5">
           <div className="w-2 h-2 bg-blue-400 border border-white rounded-full shrink-0" />
           <span>You</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 border-2 border-yellow-400 shrink-0" />
-          <span>View</span>
+        <div className="flex items-center gap-0.5">
+          <div className="w-2 h-2 bg-purple-500 border-2 border-white rounded-full shrink-0" />
+          <span>Exit</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-purple-500 border border-white rounded-full shrink-0" />
-          <span>Loc</span>
+        <div className="flex items-center gap-0.5">
+          <div className="w-2 h-2 bg-yellow-400 border border-yellow-600 shrink-0" />
+          <span>Treasure</span>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <div className="w-2 h-2 bg-red-500 border border-red-300 shrink-0" />
+          <span>Battle</span>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <div className="w-2 h-2 bg-cyan-400 border border-white rounded-sm shrink-0" />
+          <span>Service</span>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <div className="w-2 h-2 bg-orange-400 border border-white rounded-sm shrink-0" />
+          <span>Shop</span>
         </div>
       </div>
     </div>
