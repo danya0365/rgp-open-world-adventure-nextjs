@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { BattleMapConfig } from "../domain/types/battle.types";
 import { Character, Enemy } from "../domain/types/character.types";
 import { Location } from "../domain/types/location.types";
@@ -16,7 +17,7 @@ export interface BattleSession {
   enemies: Enemy[]; // Enemies from encounter
   battleMap: BattleMapConfig; // Battle map configuration
   location: Location; // Where the battle takes place
-  
+
   // Session Metadata
   createdAt: string;
   encounterData?: {
@@ -29,10 +30,10 @@ export interface BattleSession {
 interface BattleSessionState {
   // Current active session
   currentSession: BattleSession | null;
-  
+
   // Session history (optional, for tracking)
   sessionHistory: BattleSession[];
-  
+
   // Actions
   createSession: (
     allies: Character[],
@@ -41,51 +42,63 @@ interface BattleSessionState {
     location: Location,
     encounterData?: BattleSession["encounterData"]
   ) => BattleSession;
-  
+
   clearSession: () => void;
-  
+
   getCurrentSession: () => BattleSession | null;
-  
+
   // Session validation
   hasActiveSession: () => boolean;
 }
 
 // Helper to generate unique session ID
-const generateSessionId = () => 
+const generateSessionId = () =>
   `battle_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-export const useBattleSessionStore = create<BattleSessionState>((set, get) => ({
-  currentSession: null,
-  sessionHistory: [],
-  
-  createSession: (allies, enemies, battleMap, location, encounterData) => {
-    const session: BattleSession = {
-      id: generateSessionId(),
-      allies,
-      enemies,
-      battleMap,
-      location,
-      createdAt: new Date().toISOString(),
-      encounterData,
-    };
-    
-    set((state) => ({
-      currentSession: session,
-      sessionHistory: [...state.sessionHistory, session].slice(-10), // Keep last 10 sessions
-    }));
-    
-    return session;
-  },
-  
-  clearSession: () => {
-    set({ currentSession: null });
-  },
-  
-  getCurrentSession: () => {
-    return get().currentSession;
-  },
-  
-  hasActiveSession: () => {
-    return get().currentSession !== null;
-  },
-}));
+export const useBattleSessionStore = create<BattleSessionState>()(
+  persist(
+    (set, get) => ({
+      currentSession: null,
+      sessionHistory: [],
+
+      createSession: (allies, enemies, battleMap, location, encounterData) => {
+        const session: BattleSession = {
+          id: generateSessionId(),
+          allies,
+          enemies,
+          battleMap,
+          location,
+          createdAt: new Date().toISOString(),
+          encounterData,
+        };
+
+        set((state) => ({
+          currentSession: session,
+          sessionHistory: [...state.sessionHistory, session].slice(-10), // Keep last 10 sessions
+        }));
+
+        return session;
+      },
+
+      clearSession: () => {
+        set({ currentSession: null });
+      },
+
+      getCurrentSession: () => {
+        return get().currentSession;
+      },
+
+      hasActiveSession: () => {
+        return get().currentSession !== null;
+      },
+    }),
+    {
+      name: "battle-session-storage", // unique name for localStorage key
+      storage: createJSONStorage(() => localStorage),
+      // Only persist currentSession, not sessionHistory
+      partialize: (state) => ({
+        currentSession: state.currentSession,
+      }),
+    }
+  )
+);

@@ -99,11 +99,19 @@ export function VirtualMapGrid({
   const { getActiveParty, progress } = useGameStore();
 
   // Battle session store
-  const { createSession } = useBattleSessionStore();
+  const { createSession, hasActiveSession } = useBattleSessionStore();
 
   // State for showing battle view
   const [showBattle, setShowBattle] = useState(false);
   const [showNoPartyModal, setShowNoPartyModal] = useState(false);
+
+  // Auto-show battle if there's an active session (e.g., after page reload or navigation)
+  useEffect(() => {
+    if (hasActiveSession() && !showBattle) {
+      console.log("Auto-showing battle view for active session");
+      setShowBattle(true);
+    }
+  }, [hasActiveSession, showBattle]);
 
   // POI Interaction Hook - handles SPACE key press for interactions
   const { modals, closeNPCDialogue, closeTreasure, closeService, closeShop } =
@@ -586,6 +594,14 @@ export function VirtualMapGrid({
           onFight={() => {
             console.log("Fight encounter:", currentEncounter);
             
+            // Check if there's already an active battle session
+            if (hasActiveSession()) {
+              console.log("Continuing existing battle session");
+              setShowBattle(true);
+              clearEncounter();
+              return;
+            }
+            
             // Check if player has active party
             const activeParty = getActiveParty();
             if (!activeParty || activeParty.members.length === 0) {
@@ -630,7 +646,8 @@ export function VirtualMapGrid({
               return;
             }
 
-            // Create battle session
+            // Create NEW battle session
+            console.log("Creating new battle session");
             createSession(
               allyCharacters,
               enemies,

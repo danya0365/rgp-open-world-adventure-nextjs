@@ -70,9 +70,9 @@ export function EncounterBattleView({
     initialViewModel
   );
 
-  // Reset battle state when component mounts (clear any previous battle)
+  // Reset battle state only if it's a NEW session (not continuing existing battle)
   useEffect(() => {
-    if (currentSession && !hasResetRef.current) {
+    if (currentSession && !hasResetRef.current && !battleStateId) {
       hasResetRef.current = true;
       handleResetBattle();
     }
