@@ -96,7 +96,7 @@ export function EncounterBattleView({
   // If no session, show error (after all hooks)
   if (!currentSession) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-199">
         <div className="text-center">
           <p className="text-red-400 mb-4">❌ No active battle session</p>
           <button
@@ -113,7 +113,7 @@ export function EncounterBattleView({
   // Show loading state
   if (loading && !battleMap) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-199">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-400">กำลังโหลดสนามรบ...</p>
@@ -124,7 +124,7 @@ export function EncounterBattleView({
 
   if (!battleMap) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-199">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-400">กำลังเตรียมสนามรบ</p>
@@ -136,7 +136,7 @@ export function EncounterBattleView({
   // Victory Screen
   if (phase === "victory") {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99 p-4">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-199 p-4">
         <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
           <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-white mb-2">Victory!</h1>
@@ -180,7 +180,7 @@ export function EncounterBattleView({
   // Defeat Screen
   if (phase === "defeat") {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99 p-4">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-199 p-4">
         <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
           <Skull className="w-20 h-20 text-red-400 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-white mb-2">Defeat...</h1>
@@ -209,7 +209,7 @@ export function EncounterBattleView({
     battleMap.width > VIEWPORT_WIDTH || battleMap.height > VIEWPORT_HEIGHT;
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col overflow-hidden z-[100]">
+    <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col overflow-hidden z-199">
       {/* Main Battle Area - Full Screen */}
       <div className="flex-1 relative overflow-hidden">
         {/* Battle Map Container - Centered with Scrollable Viewport */}
@@ -292,6 +292,7 @@ export function EncounterBattleView({
               onClose={() => setShowBattleInfo(false)}
               maxWidth="min(600px, 90vw)"
               maxHeight="auto"
+              portalZIndex="high"
             >
               <div className="flex items-center justify-between gap-4 -mt-2">
                 <button
@@ -324,6 +325,7 @@ export function EncounterBattleView({
               icon={<Info className="w-4 h-4" />}
               onClick={() => setShowBattleInfo(true)}
               position="top-center"
+              portalZIndex="low"
             />
           )}
 
@@ -337,6 +339,7 @@ export function EncounterBattleView({
               onClose={() => setShowBattleLog(false)}
               maxWidth="min(320px, 85vw)"
               maxHeight="min(500px, 60vh)"
+              portalZIndex="medium"
             >
               <BattleLog logs={battleLogs} onClear={handleClearLogs} />
             </HUDPanel>
@@ -346,6 +349,7 @@ export function EncounterBattleView({
               icon={<span className="text-sm">📜</span>}
               onClick={() => setShowBattleLog(true)}
               position="top-right"
+              portalZIndex="low"
             />
           )}
 
@@ -361,6 +365,7 @@ export function EncounterBattleView({
                   onClose={() => setShowCurrentUnit(false)}
                   maxWidth="min(400px, 85vw)"
                   maxHeight="auto"
+                  portalZIndex="medium"
                 >
                   <div className="space-y-3">
                     {/* Current Unit Info */}
@@ -381,8 +386,10 @@ export function EncounterBattleView({
                         </div>
                         <div className="flex-1">
                           <p className="text-white font-bold text-sm">
-                            {currentUnit.isAlly ? "🎮 Your Turn" : "⏳ Enemy Turn"} -{" "}
-                            {currentUnit.character.name}
+                            {currentUnit.isAlly
+                              ? "🎮 Your Turn"
+                              : "⏳ Enemy Turn"}{" "}
+                            - {currentUnit.character.name}
                           </p>
                           {currentUnit.isAlly && !currentUnit.hasActed ? (
                             <p className="text-gray-300 text-xs">
@@ -391,15 +398,20 @@ export function EncounterBattleView({
                                 สีน้ำเงิน
                               </span>
                               เพื่อเคลื่อนที่ หรือศัตรูในช่อง
-                              <span className="text-red-400 font-semibold">สีแดง</span>
+                              <span className="text-red-400 font-semibold">
+                                สีแดง
+                              </span>
                               เพื่อโจมตี
                             </p>
                           ) : currentUnit.isAlly && currentUnit.hasActed ? (
                             <p className="text-gray-400 text-xs">
-                              ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot;
+                              ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End
+                              Turn&quot;
                             </p>
                           ) : (
-                            <p className="text-orange-300 text-xs">🤖 AI กำลังคิด...</p>
+                            <p className="text-orange-300 text-xs">
+                              🤖 AI กำลังคิด...
+                            </p>
                           )}
                         </div>
                       </div>
@@ -407,13 +419,17 @@ export function EncounterBattleView({
 
                     {/* Legend */}
                     <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <p className="text-white font-semibold text-xs mb-2">📖 Legend</p>
+                      <p className="text-white font-semibold text-xs mb-2">
+                        📖 Legend
+                      </p>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         {currentUnit?.isAlly ? (
                           <>
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded bg-blue-900/50 border border-blue-500"></div>
-                              <span className="text-gray-300">เคลื่อนที่ได้</span>
+                              <span className="text-gray-300">
+                                เคลื่อนที่ได้
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded bg-red-900/50 border border-red-500"></div>
@@ -424,7 +440,9 @@ export function EncounterBattleView({
                           <>
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded bg-orange-900/40 border border-orange-500"></div>
-                              <span className="text-gray-300">ศัตรูเคลื่อนที่</span>
+                              <span className="text-gray-300">
+                                ศัตรูเคลื่อนที่
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded bg-red-900/40 border border-red-500"></div>
@@ -548,6 +566,7 @@ export function EncounterBattleView({
                   icon={<Users className="w-4 h-4" />}
                   onClick={() => setShowCurrentUnit(true)}
                   position="top-left"
+                  portalZIndex="low"
                 />
               )}
             </>
@@ -563,6 +582,7 @@ export function EncounterBattleView({
               onClose={() => setShowTeamPanels(false)}
               maxWidth="min(900px, 90vw)"
               maxHeight="auto"
+              portalZIndex="medium"
             >
               <div className="grid grid-cols-3 gap-4">
                 {/* Turn Order */}
@@ -665,6 +685,7 @@ export function EncounterBattleView({
               icon={<Users className="w-4 h-4" />}
               onClick={() => setShowTeamPanels(true)}
               position="bottom-left"
+              portalZIndex="low"
             />
           )}
         </GameLayoutOverlay>

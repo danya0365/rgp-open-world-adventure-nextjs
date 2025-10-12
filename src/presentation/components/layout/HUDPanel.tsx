@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { ReactNode } from "react";
+import { HUDPortal } from "./HUDPortal";
 
 export interface HUDPanelProps {
   title?: string;
@@ -14,6 +15,17 @@ export interface HUDPanelProps {
   maxHeight?: string;
   maxWidth?: string;
   defaultOpen?: boolean;
+  /**
+   * Use portal to render at document body level
+   * Prevents z-index conflicts with other UI elements
+   * @default true
+   */
+  usePortal?: boolean;
+  /**
+   * z-index level when using portal
+   * @default "medium"
+   */
+  portalZIndex?: "low" | "medium" | "high" | "modal";
 }
 
 export function HUDPanel({
@@ -26,6 +38,8 @@ export function HUDPanel({
   className = "",
   maxHeight = "500px",
   maxWidth = "400px",
+  usePortal = true,
+  portalZIndex = "medium",
 }: HUDPanelProps) {
   const positionClasses = {
     "top-left": "top-4 left-4",
@@ -35,7 +49,7 @@ export function HUDPanel({
     "bottom-right": "bottom-4 right-4",
   };
 
-  return (
+  const panelContent = (
     <div
       className={`absolute ${positionClasses[position]} z-50 ${className}`}
       style={{ maxWidth }}
@@ -71,6 +85,14 @@ export function HUDPanel({
       </div>
     </div>
   );
+
+  // Use portal to render at document body level
+  if (usePortal) {
+    return <HUDPortal zIndex={portalZIndex}>{panelContent}</HUDPortal>;
+  }
+
+  // Render normally without portal
+  return panelContent;
 }
 
 /**
@@ -82,6 +104,16 @@ interface HUDPanelToggleProps {
   icon?: ReactNode;
   onClick: () => void;
   position?: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-right";
+  /**
+   * Use portal to render at document body level
+   * @default true
+   */
+  usePortal?: boolean;
+  /**
+   * z-index level when using portal
+   * @default "low"
+   */
+  portalZIndex?: "low" | "medium" | "high" | "modal";
 }
 
 export function HUDPanelToggle({
@@ -89,6 +121,8 @@ export function HUDPanelToggle({
   icon,
   onClick,
   position = "top-left",
+  usePortal = true,
+  portalZIndex = "low",
 }: HUDPanelToggleProps) {
   const positionClasses = {
     "top-left": "top-4 left-4",
@@ -98,7 +132,7 @@ export function HUDPanelToggle({
     "bottom-right": "bottom-4 right-4",
   };
 
-  return (
+  const toggleButton = (
     <button
       onClick={onClick}
       className={`absolute ${positionClasses[position]} px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-50 flex items-center gap-2 pointer-events-auto`}
@@ -107,4 +141,12 @@ export function HUDPanelToggle({
       {label}
     </button>
   );
+
+  // Use portal to render at document body level
+  if (usePortal) {
+    return <HUDPortal zIndex={portalZIndex}>{toggleButton}</HUDPortal>;
+  }
+
+  // Render normally without portal
+  return toggleButton;
 }

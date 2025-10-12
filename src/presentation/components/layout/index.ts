@@ -21,3 +21,7 @@ export {
   HUDPanelToggle,
   type HUDPanelProps,
 } from "./HUDPanel";
+
+export {
+  HUDPortal,
+} from "./HUDPortal";

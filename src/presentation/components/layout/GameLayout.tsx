@@ -83,6 +83,9 @@ export function GameLayoutContent({
 /**
  * GameLayoutOverlay - Container for HUD overlays
  * Use this for fixed overlays (HUD panels, notifications, etc.)
+ * 
+ * This component serves as the portal container for HUD components.
+ * HUD panels will automatically render within this container when using portals.
  */
 interface GameLayoutOverlayProps {
   children: ReactNode;
@@ -94,7 +97,10 @@ export function GameLayoutOverlay({
   className = "",
 }: GameLayoutOverlayProps) {
   return (
-    <div className={`absolute inset-0 pointer-events-none ${className}`}>
+    <div 
+      className={`absolute inset-0 pointer-events-none ${className}`}
+      data-portal-container
+    >
       <div className="absolute inset-0 pointer-events-none">
         {/* Children can have pointer-events-auto on individual elements */}
         {children}

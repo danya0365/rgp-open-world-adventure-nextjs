@@ -6,6 +6,7 @@ import {
   LogOut,
   Map,
   Menu,
+  Scroll,
   Settings,
   Star,
   Users,
@@ -41,8 +42,10 @@ export function GameHeader({
 
   const navItems = [
     { href: "/world", label: "World", icon: Map },
+    { href: "/virtual-world", label: "Virtual World", icon: Map },
     { href: "/characters", label: "Characters", icon: Users },
     { href: "/party", label: "Party", icon: Users },
+    { href: "/quests", label: "Quests", icon: Scroll },
   ];
 
   return (
