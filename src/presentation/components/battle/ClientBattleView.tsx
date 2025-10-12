@@ -2,7 +2,7 @@
 
 import { BattleViewModel } from "@/src/presentation/presenters/battle/BattlePresenter";
 import { useEffect, useState } from "react";
-import { BattleView } from "./BattleView";
+import { BattleFullView } from "./BattleFullView";
 
 interface ClientBattleViewProps {
   mapId: string;
@@ -20,5 +20,5 @@ export default function ClientBattleView({
   }, []);
 
   if (!isMounted) return null;
-  return <BattleView mapId={mapId} initialViewModel={initialViewModel} />;
+  return <BattleFullView mapId={mapId} initialViewModel={initialViewModel} />;
 }

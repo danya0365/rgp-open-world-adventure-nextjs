@@ -22,7 +22,8 @@ export interface BattleMapConfig {
   shape: "rectangular" | "irregular" | "multi-level";
   tiles: BattleMapTile[];
   obstacles?: GridPosition[]; // Optional obstacles on the map
-  enemies: string[]; // Enemy IDs that appear in this battle map
+  // NOTE: Enemy composition is defined in EncounterTable, not here
+  // BattleMap only defines the terrain/grid, not which enemies appear
   startPositions: {
     ally: GridPosition[];
     enemy: GridPosition[];

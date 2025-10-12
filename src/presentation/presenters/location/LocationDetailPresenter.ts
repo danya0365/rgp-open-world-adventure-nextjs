@@ -1,6 +1,7 @@
 import { BATTLE_MAPS_MASTER } from "@/src/data/master/battleMaps.master";
 import { CHARACTERS_MASTER } from "@/src/data/master/characters.master";
 import { ENEMIES_MASTER } from "@/src/data/master/enemies.master";
+import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
 import { LOCATIONS_MASTER } from "@/src/data/master/locations.master";
 import { QUESTS_MASTER } from "@/src/data/master/quests.master";
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
@@ -99,11 +100,12 @@ export class LocationDetailPresenter {
       battleMapIds.includes(map.id)
     );
 
-    // Get enemies from battle maps (each map has its own enemies)
+    // Get enemies from encounter table (not from battle maps)
+    const encounterTable = getEncounterTableByLocation(location.id);
     const enemyIds = new Set<string>();
-    battleMaps.forEach((map) => {
-      map.enemies.forEach((enemyId) => enemyIds.add(enemyId));
-    });
+    if (encounterTable && encounterTable.isActive) {
+      encounterTable.entries.forEach((entry) => enemyIds.add(entry.enemyId));
+    }
     const enemies = ENEMIES_MASTER.filter((enemy) => enemyIds.has(enemy.id));
 
     // Determine services (mock: based on location type)

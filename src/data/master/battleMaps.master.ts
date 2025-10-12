@@ -31,7 +31,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         height: 0,
       };
     }),
-    enemies: ["enemy-001", "enemy-003"],
     startPositions: {
       ally: [
         { x: 3, y: 15 },
@@ -78,7 +77,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         height,
       };
     }),
-    enemies: ["enemy-001", "enemy-002"],
     startPositions: {
       ally: [
         { x: 3, y: 15 },
@@ -125,7 +123,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         height: isHill ? 1 : 0,
       };
     }),
-    enemies: ["enemy-002", "enemy-003", "enemy-011"],
     startPositions: {
       ally: [
         { x: 5, y: 23 },
@@ -179,7 +176,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         }),
       };
     }),
-    enemies: ["enemy-003", "enemy-011"],
     startPositions: {
       ally: [
         { x: 5, y: 23 },
@@ -227,7 +223,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         height,
       };
     }),
-    enemies: ["enemy-011", "enemy-012"],
     startPositions: {
       ally: [
         { x: 6, y: 19 },
@@ -289,7 +284,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         }),
       };
     }),
-    enemies: ["enemy-012"],
     startPositions: {
       ally: [
         { x: 6, y: 19 },
@@ -344,7 +338,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         height: isFrozenPattern ? 1 : 0,
       };
     }),
-    enemies: ["enemy-101", "enemy-011"],
     startPositions: {
       ally: [
         { x: 4, y: 19 },
@@ -399,7 +392,6 @@ export const BATTLE_MAPS_MASTER: BattleMapConfig[] = [
         }),
       };
     }),
-    enemies: ["enemy-201"],
     startPositions: {
       ally: [
         { x: 4, y: 19 },

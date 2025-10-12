@@ -20,6 +20,7 @@ export interface BattleViewModel {
 export class BattlePresenter {
   /**
    * Get view model for battle page
+   * @param mapId - Battle map ID
    */
   async getViewModel(mapId: string): Promise<BattleViewModel> {
     try {
