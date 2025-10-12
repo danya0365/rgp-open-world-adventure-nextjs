@@ -278,6 +278,9 @@ export const useBattleStore = create<BattleStore>()(
        * Initialize Battle
        */
       initBattle: (battleMap, characters, enemies, activePartyMembers) => {
+        // Generate unique battle instance ID for this battle session
+        const battleInstanceId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
         const allyUnits: BattleUnitState[] = battleMap.startPositions.ally
           .map((pos, index) => {
             const character = characters.find(
@@ -285,8 +288,11 @@ export const useBattleStore = create<BattleStore>()(
             );
             if (!character) return null;
 
+            // Generate unique ID for each ally instance (support duplicate character IDs)
+            const uniqueId = `ally-${character.id}-idx${index}-${battleInstanceId}`;
+
             return {
-              id: `ally-${character.id}`,
+              id: uniqueId,
               character,
               position: pos,
               currentHp: character.stats.maxHp,
@@ -306,8 +312,11 @@ export const useBattleStore = create<BattleStore>()(
             const enemy = enemies[index];
             if (!enemy) return null;
 
+            // Generate unique ID for each enemy instance (support duplicate enemy IDs)
+            const uniqueId = `enemy-${enemy.id}-idx${index}-${battleInstanceId}`;
+
             return {
-              id: `enemy-${enemy.id}`,
+              id: uniqueId,
               character: enemy,
               position: pos,
               currentHp: enemy.stats.maxHp,

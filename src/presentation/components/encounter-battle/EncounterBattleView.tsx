@@ -33,6 +33,7 @@ export function EncounterBattleView({
   const [showCurrentUnit, setShowCurrentUnit] = useState(true);
   const [showTeamPanels, setShowTeamPanels] = useState(true);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const hasResetRef = useRef(false);
 
   // Prepare initial view model from battle session
   const initialViewModel = currentSession ? {
@@ -68,6 +69,15 @@ export function EncounterBattleView({
     currentSession?.battleMap.id || "",
     initialViewModel
   );
+
+  // Reset battle state when component mounts (clear any previous battle)
+  useEffect(() => {
+    if (currentSession && !hasResetRef.current) {
+      hasResetRef.current = true;
+      handleResetBattle();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount - intentionally empty deps
 
   // Prevent body scroll
   useEffect(() => {
