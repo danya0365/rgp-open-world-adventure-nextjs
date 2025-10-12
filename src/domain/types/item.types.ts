@@ -22,6 +22,12 @@ export interface ItemEffect {
   value: number;
   target: "self" | "ally" | "enemy" | "all-allies" | "all-enemies";
   duration?: number; // turns
+  // TODO: Add encounter-related effects for exploration items
+  // encounterEffect?: {
+  //   type: "reduce-rate" | "disable" | "increase-rate";
+  //   multiplier?: number; // For reduce/increase rate (0.5 = half, 2.0 = double)
+  //   duration?: number; // Duration in steps (for exploration)
+  // };
 }
 
 /**

@@ -91,6 +91,9 @@ export function useKeyboardMovement(enabled: boolean = true) {
 
     // Start movement to target tile
     startMovementToTile(target.x, target.y);
+    
+    // Increment steps for encounter system
+    useVirtualMapStore.getState().incrementSteps();
   }, [
     calculateTargetTile,
     movementState.isMoving,

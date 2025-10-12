@@ -11,10 +11,20 @@ import {
   MapTile,
 } from "@/src/domain/types/location.types";
 import {
+  ActiveEncounter,
+  EncounterModifier,
+} from "@/src/domain/types/encounter.types";
+import {
   generateDefaultTiles,
   generateProceduralMap,
 } from "@/src/utils/mapGenerator";
 import { findPath } from "@/src/utils/pathfinding";
+import {
+  calculateStepsUntilEncounter,
+  generateEncounter,
+  updateModifierDurations,
+} from "@/src/utils/encounterUtils";
+import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useGameStore } from "./gameStore";
@@ -62,6 +72,16 @@ interface VirtualMapState {
 
   // Visited Tiles (for detailed exploration tracking)
   visitedTiles: Map<string, Coordinates[]>; // locationId → array of visited coordinates
+
+  // ========================================
+  // Random Encounters State (Persisted)
+  // ========================================
+  stepCount: number; // Total steps taken in current location
+  stepsUntilEncounter: number; // Steps remaining until next encounter
+  activeModifiers: EncounterModifier[]; // Active encounter modifiers
+  lastEncounterAt: number; // Timestamp of last encounter
+  encounterHistory: string[]; // History of encountered enemy IDs
+  currentEncounter: ActiveEncounter | null; // Active encounter (if any)
 
   // Camera/Viewport State
   cameraPosition: Coordinates; // Camera center position
@@ -135,6 +155,17 @@ interface VirtualMapState {
 
   // Discovery
   discoverLocation: (locationId: string) => void;
+
+  // ========================================
+  // Encounter Actions
+  // ========================================
+  incrementSteps: () => void;
+  checkForEncounter: () => ActiveEncounter | null;
+  triggerEncounter: (encounter: ActiveEncounter) => void;
+  clearEncounter: () => void;
+  addEncounterModifier: (modifier: EncounterModifier) => void;
+  removeEncounterModifier: (id: string) => void;
+  resetEncounterSteps: () => void;
 
   // Reset
   resetMapState: () => void;
@@ -231,6 +262,17 @@ export const useVirtualMapStore = create<VirtualMapState>()(
         playerPosition: DEFAULT_PLAYER_POSITION,
         discoveredLocations: new Set([DEFAULT_PLAYER_POSITION.locationId]),
         visitedTiles: new Map(),
+
+        // ========================================
+        // Random Encounters State
+        // ========================================
+        stepCount: 0,
+        stepsUntilEncounter: 15, // Default 15 steps
+        activeModifiers: [],
+        lastEncounterAt: 0,
+        encounterHistory: [],
+        currentEncounter: null,
+
         cameraPosition: DEFAULT_PLAYER_POSITION.pixelCoordinate,
         zoom: 1,
         showMinimap: true,
@@ -662,6 +704,151 @@ export const useVirtualMapStore = create<VirtualMapState>()(
           }
         },
 
+        // ========================================
+        // Encounter Actions
+        // ========================================
+        incrementSteps: () => {
+          const state = get();
+          const newStepCount = state.stepCount + 1;
+          
+          // Update modifier durations
+          const updatedModifiers = updateModifierDurations(state.activeModifiers, 1);
+          
+          set({
+            stepCount: newStepCount,
+            activeModifiers: updatedModifiers,
+          });
+
+          // Check if encounter should trigger
+          if (newStepCount >= state.stepsUntilEncounter) {
+            const encounter = get().checkForEncounter();
+            if (encounter) {
+              get().triggerEncounter(encounter);
+            }
+          }
+        },
+
+        checkForEncounter: () => {
+          const state = get();
+          const currentLocation = state.currentLocationData;
+          
+          if (!currentLocation) {
+            return null;
+          }
+
+          // Get encounter table by location ID
+          const encounterTable = getEncounterTableByLocation(currentLocation.id);
+          
+          // No encounter table for this location (e.g., safe zones)
+          if (!encounterTable) {
+            return null;
+          }
+          
+          if (!encounterTable.isActive) {
+            return null;
+          }
+
+          // TODO: Check for items/skills that disable encounters completely
+          // Example: Holy Water, Repel, Stealth Mode
+          // const hasEncounterBlocker = state.activeModifiers.some(m => m.disableEncounters);
+          // if (hasEncounterBlocker) {
+          //   return null;
+          // }
+
+          // Get player level from game store
+          const gameState = useGameStore.getState();
+          const activeParty = gameState.getActiveParty();
+          let playerLevel = 1;
+          
+          if (activeParty && activeParty.members.length > 0) {
+            const firstMember = activeParty.members[0];
+            if (firstMember) {
+              const character = gameState.getRecruitedCharacter(firstMember.characterId);
+              playerLevel = character?.level || 1;
+            }
+          }
+
+          // Generate encounter
+          const encounter = generateEncounter(encounterTable, playerLevel);
+          
+          return encounter;
+        },
+
+        triggerEncounter: (encounter) => {
+          const state = get();
+          
+          set({
+            currentEncounter: encounter,
+            lastEncounterAt: Date.now(),
+            encounterHistory: [...state.encounterHistory, ...encounter.enemies],
+          });
+
+          // Reset step counter and calculate next encounter
+          get().resetEncounterSteps();
+        },
+
+        clearEncounter: () => {
+          set({ currentEncounter: null });
+        },
+
+        addEncounterModifier: (modifier) => {
+          const state = get();
+          set({
+            activeModifiers: [...state.activeModifiers, modifier],
+          });
+        },
+
+        removeEncounterModifier: (id) => {
+          const state = get();
+          set({
+            activeModifiers: state.activeModifiers.filter((m) => m.id !== id),
+          });
+        },
+
+        resetEncounterSteps: () => {
+          const state = get();
+          const currentLocation = state.currentLocationData;
+          
+          if (!currentLocation) {
+            set({ stepCount: 0, stepsUntilEncounter: 999 });
+            return;
+          }
+
+          // Get encounter table by location ID
+          const encounterTable = getEncounterTableByLocation(currentLocation.id);
+          
+          // No encounter table for this location (e.g., safe zones)
+          if (!encounterTable) {
+            set({ stepCount: 0, stepsUntilEncounter: 999 });
+            return;
+          }
+
+          // Check if encounters are active for this location
+          if (!encounterTable.isActive) {
+            set({ stepCount: 0, stepsUntilEncounter: 999 });
+            return;
+          }
+
+          // TODO: Check for items/skills that disable encounters
+          // If player has encounter-blocking items, set stepsUntilEncounter to 999
+          // const hasEncounterBlocker = state.activeModifiers.some(m => m.disableEncounters);
+          // if (hasEncounterBlocker) {
+          //   set({ stepCount: 0, stepsUntilEncounter: 999 });
+          //   return;
+          // }
+
+          const stepsUntilNext = calculateStepsUntilEncounter(
+            encounterTable.baseRate,
+            encounterTable.rateVariance,
+            state.activeModifiers
+          );
+
+          set({
+            stepCount: 0,
+            stepsUntilEncounter: stepsUntilNext,
+          });
+        },
+
         resetMapState: () => {
           set({
             playerPosition: DEFAULT_PLAYER_POSITION,
@@ -671,6 +858,13 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             zoom: 1,
             showMinimap: true,
             showLocationInfo: true,
+            // Reset encounter state
+            stepCount: 0,
+            stepsUntilEncounter: 15,
+            activeModifiers: [],
+            lastEncounterAt: 0,
+            encounterHistory: [],
+            currentEncounter: null,
           });
           get().refreshCachedData();
         },

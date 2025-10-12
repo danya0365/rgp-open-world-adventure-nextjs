@@ -165,7 +165,6 @@ export interface Location {
   weatherEnabled: boolean;
   currentWeather?: WeatherType;
   timeEnabled: boolean;
-  encounterTableId?: string;
   backgroundMusic?: string;
   ambientSound?: string;
   metadata?: LocationMetadata;

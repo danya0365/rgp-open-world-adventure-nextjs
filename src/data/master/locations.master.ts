@@ -168,7 +168,6 @@ export const LOCATIONS_MASTER: Location[] = [
     weatherEnabled: true,
     currentWeather: "clear",
     timeEnabled: true,
-    encounterTableId: "encounter-ice-monsters",
     mapData: {
       dimensions: { columns: 20, rows: 20 },
       tileSize: 40, // Standard grid size
@@ -741,7 +740,6 @@ export const LOCATIONS_MASTER: Location[] = [
     timeEnabled: false,
     backgroundMusic: "/audio/bgm/dungeon.mp3",
     ambientSound: "/audio/ambient/dungeon.mp3",
-    encounterTableId: "encounter-frozen-depths",
     mapData: {
       dimensions: { columns: 25, rows: 25 },
       tileSize: 40, // Standard grid size
@@ -778,7 +776,6 @@ export const LOCATIONS_MASTER: Location[] = [
     currentWeather: "sunny",
     timeEnabled: true,
     backgroundMusic: "/audio/bgm/plains.mp3",
-    encounterTableId: "encounter-plains",
     mapData: {
       dimensions: { columns: 30, rows: 25 },
       tileSize: 40, // Standard grid size
@@ -1226,14 +1223,14 @@ export function buildLocationTree(locations: Location[]): Location[] {
  * Get location by ID
  */
 export function getLocationById(id: string): Location | undefined {
-  return LOCATIONS_MASTER.find((loc) => loc.id === id);
+  return LOCATIONS_MASTER.find((loc: Location) => loc.id === id);
 }
 
 /**
  * Get children of a location
  */
 export function getLocationChildren(parentId: string): Location[] {
-  return LOCATIONS_MASTER.filter((loc) => loc.parentId === parentId);
+  return LOCATIONS_MASTER.filter((loc: Location) => loc.parentId === parentId);
 }
 
 /**

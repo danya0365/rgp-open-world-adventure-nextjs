@@ -192,7 +192,15 @@
   - [x] Fog of war system
   - [ ] Dynamic weather overlay (data exists, not rendered)
   - [ ] Day/night cycle visual
-  - [ ] Random encounters
+  - [x] **Random Encounters System** ✅ COMPLETED (2025-10-12)
+    - [x] Encounter table master data
+    - [x] Encounter rate calculation
+    - [x] Enemy spawn logic
+    - [x] Encounter zones (per location)
+    - [x] Step counter system
+    - [x] Encounter trigger UI
+    - [x] Battle transition
+    - [x] Encounter avoidance (items/skills)
   - [ ] Dynamic events
 - [x] **Location Detail** (`/location/[id]`) ✅ COMPLETED (2025-10-07)
   - [x] Location info & description
@@ -660,9 +668,20 @@
 **Phase 6:** Testing - 0%
 **Phase 7:** Launch - 0%
 
-**Overall Progress: 92%** 🎮
+**Overall Progress: 93%** 🎮
 
-**Recent Achievements (2025-10-10)**:
+**Recent Achievements (2025-10-12)**:
+- ✅ **Random Encounters System - COMPLETE!** - 17:15 🎯⭐⭐⭐
+  - ✅ Encounter Table Master Data (location-specific enemy pools)
+  - ✅ Encounter Rate System (steps-based with modifiers)
+  - ✅ Enemy Spawn Logic (level-scaled, weighted random)
+  - ✅ Step Counter (tracks movement, triggers encounters)
+  - ✅ Encounter Modal (enemy preview, flee option)
+  - ✅ Battle Transition (seamless integration)
+  - ✅ Encounter Zones (different rates per location type)
+  - ✅ Encounter Avoidance (items/skills support)
+
+**Previous Achievements (2025-10-10)**:
 - ✅ **POI Modals System - COMPLETE!** - 06:30 🎯⭐⭐⭐
   - ✅ NPC Dialogue Modal (Talk to NPCs, accept quests)
   - ✅ Treasure Modal (Open chests, collect loot with animation)

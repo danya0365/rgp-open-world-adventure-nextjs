@@ -2,6 +2,7 @@ import {
   getLocationById,
   getLocationConnections,
 } from "@/src/data/master/locations.master";
+import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
 import {
   Location,
   LocationConnection,
@@ -25,6 +26,8 @@ import { ShopMarker } from "./ShopMarker";
 import { ShopModal } from "./ShopModal";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
 import { TreasureModal } from "./TreasureModal";
+import { EncounterModal } from "./EncounterModal";
+import { EncounterStatusIndicator } from "./EncounterStatusIndicator";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -80,6 +83,11 @@ export function VirtualMapGrid({
     cacheTiles,
     isTileVisited,
     getVisibleConnections,
+    // Encounter system
+    currentEncounter,
+    clearEncounter,
+    stepsUntilEncounter,
+    activeModifiers,
   } = useVirtualMapStore();
 
   // POI Interaction Hook - handles SPACE key press for interactions
@@ -581,6 +589,29 @@ export function VirtualMapGrid({
           }}
         />
       )}
+
+      {/* Encounter Modal */}
+      {currentEncounter && (
+        <EncounterModal
+          encounter={currentEncounter}
+          onFight={() => {
+            console.log("Fight encounter:", currentEncounter);
+            clearEncounter();
+          }}
+          onFlee={() => {
+            console.log("Fled from encounter");
+            clearEncounter();
+          }}
+          onClose={clearEncounter}
+        />
+      )}
+
+      {/* Encounter Status Indicator */}
+      <EncounterStatusIndicator
+        stepsUntilEncounter={stepsUntilEncounter}
+        activeModifiers={activeModifiers}
+        showSteps={false} // Set to true for debugging
+      />
     </div>
   );
 }
@@ -629,8 +660,37 @@ export function MapInfoView({
   viewportStartX,
   viewportStartY,
 }: MapInfoViewProps) {
+  // Get encounter table for this location
+  const encounterTable = getEncounterTableByLocation(currentLocation.id);
+  
+  // Determine encounter status
+  const getEncounterStatus = () => {
+    if (!encounterTable) {
+      return { label: "Safe Zone", color: "text-green-400", bgColor: "bg-green-500/10", borderColor: "border-green-500/30", icon: "🛡️" };
+    }
+    
+    if (!encounterTable.isActive) {
+      return { label: "Safe Zone", color: "text-green-400", bgColor: "bg-green-500/10", borderColor: "border-green-500/30", icon: "🛡️" };
+    }
+    
+    // Determine danger level based on encounter rate
+    const avgSteps = encounterTable.baseRate;
+    if (avgSteps <= 8) {
+      return { label: "Very Dangerous", color: "text-red-400", bgColor: "bg-red-500/10", borderColor: "border-red-500/30", icon: "⚠️" };
+    } else if (avgSteps <= 12) {
+      return { label: "Dangerous", color: "text-orange-400", bgColor: "bg-orange-500/10", borderColor: "border-orange-500/30", icon: "⚔️" };
+    } else if (avgSteps <= 15) {
+      return { label: "Moderate", color: "text-yellow-400", bgColor: "bg-yellow-500/10", borderColor: "border-yellow-500/30", icon: "⚡" };
+    } else {
+      return { label: "Low Risk", color: "text-blue-400", bgColor: "bg-blue-500/10", borderColor: "border-blue-500/30", icon: "🌟" };
+    }
+  };
+  
+  const encounterStatus = getEncounterStatus();
+  
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {/* Location Name & Description */}
       <div>
         <h3 className="text-base font-semibold text-white mb-1">
           {currentLocation.name}
@@ -640,6 +700,31 @@ export function MapInfoView({
         </p>
       </div>
 
+      {/* Encounter Status Badge */}
+      {encounterTable && (
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${encounterStatus.bgColor} ${encounterStatus.borderColor}`}>
+          <span className="text-lg">{encounterStatus.icon}</span>
+          <div className="flex-1">
+            <div className={`text-xs font-semibold ${encounterStatus.color}`}>
+              {encounterStatus.label}
+            </div>
+            <div className="text-[10px] text-gray-500">
+              {encounterTable.isActive ? (
+                <>
+                  Encounter every ~{encounterTable.baseRate} steps
+                  {encounterTable.entries.length > 0 && (
+                    <span className="ml-1">• {encounterTable.entries.length} enemy types</span>
+                  )}
+                </>
+              ) : (
+                "No encounters in this area"
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Location Info */}
       <div className="flex items-center gap-2 text-xs text-gray-500">
         <span className="capitalize">{currentLocation.type}</span>
         <span>•</span>
@@ -652,6 +737,7 @@ export function MapInfoView({
         </span>
       </div>
 
+      {/* Debug Info */}
       <div className="text-[10px] text-gray-600">
         Position: ({playerTileX}, {playerTileY}) | Viewport: ({viewportStartX},{" "}
         {viewportStartY})

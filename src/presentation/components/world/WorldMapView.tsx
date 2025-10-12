@@ -1,6 +1,7 @@
 "use client";
 
 import { Location } from "@/src/domain/types/location.types";
+import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
 import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import {
   HUDPanel,
@@ -592,7 +593,7 @@ export function WorldMapView({
               !isService &&
               !!(
                 location.metadata?.battleMaps?.length ||
-                location.encounterTableId
+                getEncounterTableByLocation(location.id)
               );
             const hasShop = !isService && !!location.metadata?.shops?.length;
             const hasInn =
