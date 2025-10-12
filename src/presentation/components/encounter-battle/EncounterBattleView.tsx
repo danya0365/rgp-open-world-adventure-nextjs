@@ -37,6 +37,7 @@ export function EncounterBattleView({
   const [showBattleLog, setShowBattleLog] = useState(true);
   const [showCurrentUnit, setShowCurrentUnit] = useState(true);
   const [showTeamPanels, setShowTeamPanels] = useState(true);
+  const [showTurnOrder, setShowTurnOrder] = useState(true);
   const [showBattleInfo, setShowBattleInfo] = useState(true);
   const [showSurrenderModal, setShowSurrenderModal] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -575,7 +576,7 @@ export function EncounterBattleView({
           {/* Team Panels - Bottom Left */}
           {showTeamPanels ? (
             <HUDPanel
-              title="Battle Overview"
+              title="Teams"
               icon={<Users className="w-5 h-5" />}
               position="bottom-left"
               closable
@@ -584,40 +585,7 @@ export function EncounterBattleView({
               maxHeight="auto"
               portalZIndex="medium"
             >
-              <div className="grid grid-cols-3 gap-4">
-                {/* Turn Order */}
-                <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
-                  <h2 className="text-sm font-bold text-white mb-2">
-                    Turn Order
-                  </h2>
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {aliveTurnOrder.map((unit, index) => (
-                      <div
-                        key={unit.id}
-                        className={`flex items-center gap-2 p-1.5 rounded-lg text-xs ${
-                          unit.id === currentUnit?.id
-                            ? "bg-green-900/30 border border-green-500/30"
-                            : "bg-slate-800/50"
-                        }`}
-                      >
-                        <div className="text-gray-400 text-xs w-4">
-                          {index + 1}
-                        </div>
-                        <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                            unit.isAlly ? "bg-blue-600" : "bg-red-600"
-                          }`}
-                        >
-                          {unit.isAlly ? "🦸" : "👹"}
-                        </div>
-                        <p className="text-white text-xs truncate flex-1">
-                          {unit.character.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-2 gap-4">
                 {/* Allies */}
                 <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
                   <h2 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
@@ -685,6 +653,60 @@ export function EncounterBattleView({
               icon={<Users className="w-4 h-4" />}
               onClick={() => setShowTeamPanels(true)}
               position="bottom-left"
+              portalZIndex="low"
+            />
+          )}
+
+          {/* Turn Order - Bottom Right */}
+          {showTurnOrder ? (
+            <HUDPanel
+              title="Turn Order"
+              icon={<Users className="w-5 h-5" />}
+              position="bottom-right"
+              closable
+              onClose={() => setShowTurnOrder(false)}
+              maxWidth="min(900px, 90vw)"
+              maxHeight="auto"
+              portalZIndex="medium"
+            >
+              <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
+                <h2 className="text-sm font-bold text-white mb-2">
+                  Turn Order
+                </h2>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {aliveTurnOrder.map((unit, index) => (
+                    <div
+                      key={unit.id}
+                      className={`flex items-center gap-2 p-1.5 rounded-lg text-xs ${
+                        unit.id === currentUnit?.id
+                          ? "bg-green-900/30 border border-green-500/30"
+                          : "bg-slate-800/50"
+                      }`}
+                    >
+                      <div className="text-gray-400 text-xs w-4">
+                        {index + 1}
+                      </div>
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                          unit.isAlly ? "bg-blue-600" : "bg-red-600"
+                        }`}
+                      >
+                        {unit.isAlly ? "🦸" : "👹"}
+                      </div>
+                      <p className="text-white text-xs truncate flex-1">
+                        {unit.character.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </HUDPanel>
+          ) : (
+            <HUDPanelToggle
+              label="Turn Order"
+              icon={<Users className="w-4 h-4" />}
+              onClick={() => setShowTurnOrder(true)}
+              position="bottom-right"
               portalZIndex="low"
             />
           )}

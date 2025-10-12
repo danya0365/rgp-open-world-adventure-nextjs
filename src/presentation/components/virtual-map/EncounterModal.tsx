@@ -65,7 +65,7 @@ export function EncounterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-199 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl mx-4 bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-red-500/50 rounded-xl shadow-2xl animate-in zoom-in-95 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-red-900/20">
