@@ -1,6 +1,7 @@
 "use client";
 
 import { useBattlePresenter } from "@/src/presentation/presenters/battle/useBattlePresenter";
+import { useBattleSessionStore } from "@/src/stores/battleSessionStore";
 import {
   Heart,
   Shield,
@@ -8,22 +9,25 @@ import {
   Swords,
   Trophy,
   Users,
-  Zap,
   X,
+  Zap,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BattleLog } from "../battle/BattleLog";
 import BattleTileView from "../battle/BattleTileView";
-import { useBattleSessionStore } from "@/src/stores/battleSessionStore";
 
 interface EncounterBattleViewProps {
-  onExit: () => void;
-  onVictory?: (rewards: { exp: number; gold: number; items: { itemId: string; quantity: number }[] }) => void;
-  onDefeat?: () => void;
+  onForfeit: () => void;
+  onVictory: (rewards: {
+    exp: number;
+    gold: number;
+    items: { itemId: string; quantity: number }[];
+  }) => void;
+  onDefeat: () => void;
 }
 
 export function EncounterBattleView({
-  onExit,
+  onForfeit,
   onVictory,
   onDefeat,
 }: EncounterBattleViewProps) {
@@ -36,11 +40,13 @@ export function EncounterBattleView({
   const hasResetRef = useRef(false);
 
   // Prepare initial view model from battle session
-  const initialViewModel = currentSession ? {
-    battleMap: currentSession.battleMap,
-    characters: currentSession.allies,
-    enemies: currentSession.enemies,
-  } : null;
+  const initialViewModel = currentSession
+    ? {
+        battleMap: currentSession.battleMap,
+        characters: currentSession.allies,
+        enemies: currentSession.enemies,
+      }
+    : null;
 
   // Presenter - handles ALL state and business logic
   // Must be called before any conditional returns (React Hooks rules)
@@ -65,10 +71,7 @@ export function EncounterBattleView({
     getUnitAtPosition,
     isTileInMovementRange,
     isTileInAttackRange,
-  } = useBattlePresenter(
-    currentSession?.battleMap.id || "",
-    initialViewModel
-  );
+  } = useBattlePresenter(currentSession?.battleMap.id || "", initialViewModel);
 
   // Reset battle state only if it's a NEW session (not continuing existing battle)
   useEffect(() => {
@@ -87,28 +90,14 @@ export function EncounterBattleView({
     };
   }, []);
 
-  // Handle victory
-  useEffect(() => {
-    if (phase === "victory" && rewards) {
-      onVictory?.(rewards);
-    }
-  }, [phase, rewards, onVictory]);
-
-  // Handle defeat
-  useEffect(() => {
-    if (phase === "defeat") {
-      onDefeat?.();
-    }
-  }, [phase, onDefeat]);
-
   // If no session, show error (after all hooks)
   if (!currentSession) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99">
         <div className="text-center">
           <p className="text-red-400 mb-4">❌ No active battle session</p>
           <button
-            onClick={onExit}
+            onClick={onForfeit}
             className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
           >
             กลับ
@@ -121,7 +110,7 @@ export function EncounterBattleView({
   // Show loading state
   if (loading && !battleMap) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-400">กำลังโหลดสนามรบ...</p>
@@ -132,7 +121,7 @@ export function EncounterBattleView({
 
   if (!battleMap) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-400">กำลังเตรียมสนามรบ</p>
@@ -144,7 +133,7 @@ export function EncounterBattleView({
   // Victory Screen
   if (phase === "victory") {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99 p-4">
         <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
           <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-white mb-2">Victory!</h1>
@@ -174,7 +163,7 @@ export function EncounterBattleView({
             onClick={() => {
               handleResetBattle();
               clearSession();
-              onExit();
+              onVictory(rewards || { exp: 0, gold: 0, items: [] });
             }}
             className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-semibold"
           >
@@ -188,7 +177,7 @@ export function EncounterBattleView({
   // Defeat Screen
   if (phase === "defeat") {
     return (
-      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center z-99 p-4">
         <div className="max-w-md w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 text-center">
           <Skull className="w-20 h-20 text-red-400 mx-auto mb-4" />
           <h1 className="text-4xl font-bold text-white mb-2">Defeat...</h1>
@@ -198,7 +187,7 @@ export function EncounterBattleView({
             onClick={() => {
               handleResetBattle();
               clearSession();
-              onExit();
+              onDefeat();
             }}
             className="w-full px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-semibold"
           >
@@ -243,7 +232,9 @@ export function EncounterBattleView({
           <div className="flex items-center gap-4">
             <div className="px-4 py-2 bg-slate-800/50 rounded-lg">
               <p className="text-gray-400 text-sm">Turn</p>
-              <p className="text-2xl font-bold text-white text-center">{turn}</p>
+              <p className="text-2xl font-bold text-white text-center">
+                {turn}
+              </p>
             </div>
           </div>
         </div>
@@ -257,16 +248,24 @@ export function EncounterBattleView({
             ref={mapContainerRef}
             className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4"
             style={{
-              maxWidth: needsScroll ? `${VIEWPORT_WIDTH * TILE_SIZE + 32}px` : "auto",
-              maxHeight: needsScroll ? `${VIEWPORT_HEIGHT * TILE_SIZE + 32}px` : "auto",
+              maxWidth: needsScroll
+                ? `${VIEWPORT_WIDTH * TILE_SIZE + 32}px`
+                : "auto",
+              maxHeight: needsScroll
+                ? `${VIEWPORT_HEIGHT * TILE_SIZE + 32}px`
+                : "auto",
             }}
           >
             {/* Scrollable Map Content */}
             <div
               className="overflow-auto"
               style={{
-                maxWidth: needsScroll ? `${VIEWPORT_WIDTH * TILE_SIZE}px` : "auto",
-                maxHeight: needsScroll ? `${VIEWPORT_HEIGHT * TILE_SIZE}px` : "auto",
+                maxWidth: needsScroll
+                  ? `${VIEWPORT_WIDTH * TILE_SIZE}px`
+                  : "auto",
+                maxHeight: needsScroll
+                  ? `${VIEWPORT_HEIGHT * TILE_SIZE}px`
+                  : "auto",
               }}
             >
               <div
@@ -351,9 +350,7 @@ export function EncounterBattleView({
                       ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot;
                     </p>
                   ) : (
-                    <p className="text-orange-300 text-xs">
-                      🤖 AI กำลังคิด...
-                    </p>
+                    <p className="text-orange-300 text-xs">🤖 AI กำลังคิด...</p>
                   )}
                 </div>
               </div>
@@ -361,9 +358,7 @@ export function EncounterBattleView({
 
             {/* Legend */}
             <div className="mt-2 p-3 bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg">
-              <p className="text-white font-semibold text-xs mb-2">
-                📖 Legend
-              </p>
+              <p className="text-white font-semibold text-xs mb-2">📖 Legend</p>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {currentUnit?.isAlly ? (
                   <>
@@ -428,7 +423,7 @@ export function EncounterBattleView({
               >
                 <X className="w-4 h-4 text-gray-400" />
               </button>
-              
+
               <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <Users className="w-5 h-5 text-green-400" />
                 Current Turn
@@ -462,7 +457,8 @@ export function EncounterBattleView({
                         <Heart className="w-3 h-3" /> HP
                       </span>
                       <span className="text-white">
-                        {currentUnit.currentHp}/{currentUnit.character.stats.maxHp}
+                        {currentUnit.currentHp}/
+                        {currentUnit.character.stats.maxHp}
                       </span>
                     </div>
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -485,7 +481,8 @@ export function EncounterBattleView({
                         <Zap className="w-3 h-3" /> MP
                       </span>
                       <span className="text-white">
-                        {currentUnit.currentMp}/{currentUnit.character.stats.maxMp}
+                        {currentUnit.currentMp}/
+                        {currentUnit.character.stats.maxMp}
                       </span>
                     </div>
                     <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -559,11 +556,13 @@ export function EncounterBattleView({
               >
                 <X className="w-4 h-4 text-gray-400" />
               </button>
-              
+
               <div className="grid grid-cols-3 gap-4">
                 {/* Turn Order */}
                 <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
-                  <h2 className="text-sm font-bold text-white mb-2">Turn Order</h2>
+                  <h2 className="text-sm font-bold text-white mb-2">
+                    Turn Order
+                  </h2>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
                     {aliveTurnOrder.map((unit, index) => (
                       <div
@@ -574,7 +573,9 @@ export function EncounterBattleView({
                             : "bg-slate-800/50"
                         }`}
                       >
-                        <div className="text-gray-400 text-xs w-4">{index + 1}</div>
+                        <div className="text-gray-400 text-xs w-4">
+                          {index + 1}
+                        </div>
                         <div
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
                             unit.isAlly ? "bg-blue-600" : "bg-red-600"
@@ -694,7 +695,7 @@ export function EncounterBattleView({
                     clearSession();
                     handleResetBattle();
                     onDefeat?.();
-                    onExit();
+                    onForfeit();
                   }}
                   className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold"
                 >

@@ -1,22 +1,23 @@
+import { getBattleMapById } from "@/src/data/master/battleMaps.master";
+import { getCharacterById } from "@/src/data/master/characters.master";
 import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
+import { getEnemyById } from "@/src/data/master/enemies.master";
 import {
   getLocationById,
   getLocationConnections,
 } from "@/src/data/master/locations.master";
-import { getBattleMapById } from "@/src/data/master/battleMaps.master";
-import { getEnemyById } from "@/src/data/master/enemies.master";
-import { getCharacterById } from "@/src/data/master/characters.master";
 import {
   Location,
   LocationConnection,
   MapTile as MapTileType,
 } from "@/src/domain/types/location.types";
 import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
-import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
-import { useGameStore } from "@/src/stores/gameStore";
 import { useBattleSessionStore } from "@/src/stores/battleSessionStore";
+import { useGameStore } from "@/src/stores/gameStore";
+import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
 import { useEffect, useMemo, useState } from "react";
+import { EncounterBattleView } from "../encounter-battle";
 import { ConnectionMarker } from "./ConnectionMarker";
 import { EncounterModal } from "./EncounterModal";
 import { EncounterStatusIndicator } from "./EncounterStatusIndicator";
@@ -32,7 +33,6 @@ import { ShopMarker } from "./ShopMarker";
 import { ShopModal } from "./ShopModal";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
 import { TreasureModal } from "./TreasureModal";
-import { EncounterBattleView } from "../encounter-battle";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -593,7 +593,7 @@ export function VirtualMapGrid({
           encounter={currentEncounter}
           onFight={() => {
             console.log("Fight encounter:", currentEncounter);
-            
+
             // Check if there's already an active battle session
             if (hasActiveSession()) {
               console.log("Continuing existing battle session");
@@ -601,7 +601,7 @@ export function VirtualMapGrid({
               clearEncounter();
               return;
             }
-            
+
             // Check if player has active party
             const activeParty = getActiveParty();
             if (!activeParty || activeParty.members.length === 0) {
@@ -616,7 +616,7 @@ export function VirtualMapGrid({
                   (rc) => rc.characterId === member.characterId
                 );
                 if (!recruitedChar) return null;
-                
+
                 const masterChar = getCharacterById(recruitedChar.characterId);
                 if (!masterChar) return null;
 
@@ -631,34 +631,35 @@ export function VirtualMapGrid({
                   skills: recruitedChar.unlockedSkills,
                 };
               })
-              .filter((char): char is NonNullable<typeof char> => char !== null);
+              .filter(
+                (char): char is NonNullable<typeof char> => char !== null
+              );
 
             // Get enemies from encounter
             const enemies = currentEncounter.enemies
               .map((enemyId) => getEnemyById(enemyId))
-              .filter((enemy): enemy is NonNullable<typeof enemy> => enemy !== null);
+              .filter(
+                (enemy): enemy is NonNullable<typeof enemy> => enemy !== null
+              );
 
             // Get battle map
             const battleMap = getBattleMapById(currentEncounter.battleMapId);
             if (!battleMap) {
-              console.error("Battle map not found:", currentEncounter.battleMapId);
+              console.error(
+                "Battle map not found:",
+                currentEncounter.battleMapId
+              );
               clearEncounter();
               return;
             }
 
             // Create NEW battle session
             console.log("Creating new battle session");
-            createSession(
-              allyCharacters,
-              enemies,
-              battleMap,
-              currentLocation,
-              {
-                canFlee: currentEncounter.canFlee,
-                fleeChance: currentEncounter.fleeChance,
-                triggeredAt: currentEncounter.triggeredAt,
-              }
-            );
+            createSession(allyCharacters, enemies, battleMap, currentLocation, {
+              canFlee: currentEncounter.canFlee,
+              fleeChance: currentEncounter.fleeChance,
+              triggeredAt: currentEncounter.triggeredAt,
+            });
 
             // Show battle view
             setShowBattle(true);
@@ -710,7 +711,7 @@ export function VirtualMapGrid({
       {/* Encounter Battle View - Full Screen Overlay */}
       {showBattle && (
         <EncounterBattleView
-          onExit={() => {
+          onForfeit={() => {
             setShowBattle(false);
           }}
           onVictory={(rewards) => {
