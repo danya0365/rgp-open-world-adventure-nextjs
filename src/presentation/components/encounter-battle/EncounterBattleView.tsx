@@ -2,7 +2,6 @@
 
 import { useBattlePresenter } from "@/src/presentation/presenters/battle/useBattlePresenter";
 import {
-  ArrowLeft,
   Heart,
   Shield,
   Skull,
@@ -32,6 +31,7 @@ export function EncounterBattleView({
   const [showBattleLog, setShowBattleLog] = useState(true);
   const [showCurrentUnit, setShowCurrentUnit] = useState(true);
   const [showTeamPanels, setShowTeamPanels] = useState(true);
+  const [showSurrenderModal, setShowSurrenderModal] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const hasResetRef = useRef(false);
 
@@ -223,14 +223,12 @@ export function EncounterBattleView({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => {
-                clearSession();
-                onExit();
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 rounded-lg transition-colors"
+              onClick={() => setShowSurrenderModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-red-900/30 hover:bg-red-800/50 text-red-300 border border-red-700/50 rounded-lg transition-colors"
+              title="ยอมแพ้และออกจากการต่อสู้"
             >
-              <ArrowLeft className="w-4 h-4" />
-              กลับ
+              <Skull className="w-4 h-4" />
+              ยอมแพ้
             </button>
             <div>
               <h1 className="text-2xl font-bold text-white">
@@ -666,6 +664,47 @@ export function EncounterBattleView({
           </button>
         )}
       </div>
+
+      {/* Surrender Confirmation Modal */}
+      {showSurrenderModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-red-500/50 rounded-xl shadow-2xl p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-red-500/20 border border-red-500 rounded-full flex items-center justify-center">
+                <Skull className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">ยอมแพ้?</h2>
+              <p className="text-gray-300 mb-6">
+                คุณแน่ใจหรือไม่ว่าต้องการยอมแพ้?
+                <br />
+                <span className="text-red-400 font-semibold">
+                  การยอมแพ้จะนับเป็นการแพ้การต่อสู้
+                </span>
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowSurrenderModal(false)}
+                  className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-semibold"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSurrenderModal(false);
+                    clearSession();
+                    handleResetBattle();
+                    onDefeat?.();
+                    onExit();
+                  }}
+                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold"
+                >
+                  ยอมแพ้
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
