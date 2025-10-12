@@ -4,17 +4,19 @@ import { useBattlePresenter } from "@/src/presentation/presenters/battle/useBatt
 import { useBattleSessionStore } from "@/src/stores/battleSessionStore";
 import {
   Heart,
+  Info,
   Shield,
   Skull,
   Swords,
   Trophy,
   Users,
-  X,
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BattleLog } from "../battle/BattleLog";
 import BattleTileView from "../battle/BattleTileView";
+import { GameLayoutOverlay } from "../layout/GameLayout";
+import { HUDPanel, HUDPanelToggle } from "../layout/HUDPanel";
 
 interface EncounterBattleViewProps {
   onForfeit: () => void;
@@ -35,6 +37,7 @@ export function EncounterBattleView({
   const [showBattleLog, setShowBattleLog] = useState(true);
   const [showCurrentUnit, setShowCurrentUnit] = useState(true);
   const [showTeamPanels, setShowTeamPanels] = useState(true);
+  const [showBattleInfo, setShowBattleInfo] = useState(true);
   const [showSurrenderModal, setShowSurrenderModal] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const hasResetRef = useRef(false);
@@ -207,40 +210,7 @@ export function EncounterBattleView({
 
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-slate-950 via-purple-950 to-slate-950 flex flex-col overflow-hidden z-[100]">
-      {/* Header - Fixed Top */}
-      <div className="flex-none bg-slate-900/50 backdrop-blur-sm border-b border-slate-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowSurrenderModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-900/30 hover:bg-red-800/50 text-red-300 border border-red-700/50 rounded-lg transition-colors"
-              title="ยอมแพ้และออกจากการต่อสู้"
-            >
-              <Skull className="w-4 h-4" />
-              ยอมแพ้
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                {battleMap.name}
-              </h1>
-              <p className="text-gray-400 text-sm">
-                {currentSession.location.name} - Encounter Battle
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="px-4 py-2 bg-slate-800/50 rounded-lg">
-              <p className="text-gray-400 text-sm">Turn</p>
-              <p className="text-2xl font-bold text-white text-center">
-                {turn}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Battle Area - Flex Grow */}
+      {/* Main Battle Area - Full Screen */}
       <div className="flex-1 relative overflow-hidden">
         {/* Battle Map Container - Centered with Scrollable Viewport */}
         <div className="absolute inset-0 flex items-center justify-center p-4">
@@ -312,251 +282,288 @@ export function EncounterBattleView({
         </div>
 
         {/* HUD Overlays */}
-        {/* Current Unit Status - Top Left Overlay */}
-        {currentUnit && (
-          <div className="absolute top-4 left-4 max-w-md z-10">
-            <div
-              className={`p-4 rounded-lg border backdrop-blur-sm ${
-                currentUnit.isAlly
-                  ? "bg-blue-900/30 border-blue-500/30"
-                  : "bg-orange-900/30 border-orange-500/30"
-              }`}
+        <GameLayoutOverlay>
+          {/* Battle Info Panel - Top Center */}
+          {showBattleInfo ? (
+            <HUDPanel
+              title=""
+              position="top-center"
+              closable
+              onClose={() => setShowBattleInfo(false)}
+              maxWidth="min(600px, 90vw)"
+              maxHeight="auto"
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
-                    currentUnit.isAlly ? "bg-blue-600" : "bg-orange-600"
-                  }`}
+              <div className="flex items-center justify-between gap-4 -mt-2">
+                <button
+                  onClick={() => setShowSurrenderModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-900/30 hover:bg-red-800/50 text-red-300 border border-red-700/50 rounded-lg transition-colors"
+                  title="ยอมแพ้และออกจากการต่อสู้"
                 >
-                  {currentUnit.isAlly ? "🛡️" : "👹"}
-                </div>
-                <div className="flex-1">
-                  <p className="text-white font-bold">
-                    {currentUnit.isAlly ? "🎮 Your Turn" : "⏳ Enemy Turn"} -{" "}
-                    {currentUnit.character.name}
+                  <Skull className="w-4 h-4" />
+                  ยอมแพ้
+                </button>
+                <div className="flex-1 text-center">
+                  <h1 className="text-xl font-bold text-white">
+                    {battleMap.name}
+                  </h1>
+                  <p className="text-gray-400 text-xs">
+                    {currentSession.location.name} - Encounter Battle
                   </p>
-                  {currentUnit.isAlly && !currentUnit.hasActed ? (
-                    <p className="text-gray-300 text-xs">
-                      💡 คลิกช่อง
-                      <span className="text-blue-400 font-semibold">
-                        สีน้ำเงิน
-                      </span>
-                      เพื่อเคลื่อนที่ หรือศัตรูในช่อง
-                      <span className="text-red-400 font-semibold">สีแดง</span>
-                      เพื่อโจมตี
-                    </p>
-                  ) : currentUnit.isAlly && currentUnit.hasActed ? (
-                    <p className="text-gray-400 text-xs">
-                      ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot;
-                    </p>
-                  ) : (
-                    <p className="text-orange-300 text-xs">🤖 AI กำลังคิด...</p>
-                  )}
+                </div>
+                <div className="px-4 py-2 bg-slate-800/50 rounded-lg">
+                  <p className="text-gray-400 text-xs">Turn</p>
+                  <p className="text-xl font-bold text-white text-center">
+                    {turn}
+                  </p>
                 </div>
               </div>
-            </div>
+            </HUDPanel>
+          ) : (
+            <HUDPanelToggle
+              label={`${battleMap.name} - Turn ${turn}`}
+              icon={<Info className="w-4 h-4" />}
+              onClick={() => setShowBattleInfo(true)}
+              position="top-center"
+            />
+          )}
 
-            {/* Legend */}
-            <div className="mt-2 p-3 bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg">
-              <p className="text-white font-semibold text-xs mb-2">📖 Legend</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {currentUnit?.isAlly ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-blue-900/50 border border-blue-500"></div>
-                      <span className="text-gray-300">เคลื่อนที่ได้</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-red-900/50 border border-red-500"></div>
-                      <span className="text-gray-300">โจมตีได้</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-orange-900/40 border border-orange-500"></div>
-                      <span className="text-gray-300">ศัตรูเคลื่อนที่</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-red-900/40 border border-red-500"></div>
-                      <span className="text-gray-300">ศัตรูโจมตี</span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Battle Log - Top Right Overlay */}
-        {showBattleLog && (
-          <div className="absolute top-4 right-4 w-80 max-h-[500px] z-10">
-            <div className="relative">
-              <button
-                onClick={() => setShowBattleLog(false)}
-                className="absolute -top-2 -right-2 z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
+          {/* Battle Log - Top Right */}
+          {showBattleLog ? (
+            <HUDPanel
+              title="Battle Log"
+              icon={<span className="text-lg">📜</span>}
+              position="top-right"
+              closable
+              onClose={() => setShowBattleLog(false)}
+              maxWidth="min(320px, 85vw)"
+              maxHeight="min(500px, 60vh)"
+            >
               <BattleLog logs={battleLogs} onClear={handleClearLogs} />
-            </div>
-          </div>
-        )}
+            </HUDPanel>
+          ) : (
+            <HUDPanelToggle
+              label="Battle Log"
+              icon={<span className="text-sm">📜</span>}
+              onClick={() => setShowBattleLog(true)}
+              position="top-right"
+            />
+          )}
 
-        {/* Show Battle Log Button */}
-        {!showBattleLog && (
-          <button
-            onClick={() => setShowBattleLog(true)}
-            className="absolute top-4 right-4 px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-10"
-          >
-            📜 Battle Log
-          </button>
-        )}
-
-        {/* Current Unit Panel - Right Side */}
-        {showCurrentUnit && currentUnit && (
-          <div className="absolute bottom-4 right-4 w-80 z-10">
-            <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
-              <button
-                onClick={() => setShowCurrentUnit(false)}
-                className="absolute -top-2 -right-2 z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
-
-              <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                <Users className="w-5 h-5 text-green-400" />
-                Current Turn
-              </h2>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                      currentUnit.isAlly ? "bg-blue-600" : "bg-red-600"
-                    }`}
-                  >
-                    {currentUnit.isAlly ? "🦸" : "👹"}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-white font-semibold">
-                      {currentUnit.character.name}
-                    </p>
-                    <p className="text-gray-400 text-xs capitalize">
-                      {"class" in currentUnit.character
-                        ? currentUnit.character.class
-                        : currentUnit.character.type}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="space-y-2">
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-gray-400 flex items-center gap-1">
-                        <Heart className="w-3 h-3" /> HP
-                      </span>
-                      <span className="text-white">
-                        {currentUnit.currentHp}/
-                        {currentUnit.character.stats.maxHp}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green-500 transition-all"
-                        style={{
-                          width: `${
-                            (currentUnit.currentHp /
-                              currentUnit.character.stats.maxHp) *
-                            100
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-gray-400 flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> MP
-                      </span>
-                      <span className="text-white">
-                        {currentUnit.currentMp}/
-                        {currentUnit.character.stats.maxMp}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-500 transition-all"
-                        style={{
-                          width: `${
-                            (currentUnit.currentMp /
-                              currentUnit.character.stats.maxMp) *
-                            100
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                {!currentUnit.isAlly && (
-                  <div className="space-y-2 pt-2 border-t border-slate-700">
-                    <button
-                      onClick={handlePlayEnemyTurn}
-                      className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
+          {/* Current Unit Status - Top Left */}
+          {currentUnit && (
+            <>
+              {showCurrentUnit ? (
+                <HUDPanel
+                  title="Current Turn"
+                  icon={<Users className="w-5 h-5" />}
+                  position="top-left"
+                  closable
+                  onClose={() => setShowCurrentUnit(false)}
+                  maxWidth="min(400px, 85vw)"
+                  maxHeight="auto"
+                >
+                  <div className="space-y-3">
+                    {/* Current Unit Info */}
+                    <div
+                      className={`p-3 rounded-lg border ${
+                        currentUnit.isAlly
+                          ? "bg-blue-900/30 border-blue-500/30"
+                          : "bg-orange-900/30 border-orange-500/30"
+                      }`}
                     >
-                      Play Enemy Turn
-                    </button>
-                  </div>
-                )}
-                {currentUnit.isAlly && (
-                  <div className="space-y-2 pt-2 border-t border-slate-700">
-                    <button
-                      onClick={handleEndTurn}
-                      className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
-                    >
-                      End Turn
-                    </button>
-                  </div>
-                )}
-                {battleStateId && (
-                  <div className="space-y-2 pt-2 border-t border-slate-700">
-                    <button
-                      onClick={handleRestartBattle}
-                      className="w-full px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-semibold"
-                    >
-                      Restart
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+                            currentUnit.isAlly ? "bg-blue-600" : "bg-orange-600"
+                          }`}
+                        >
+                          {currentUnit.isAlly ? "🛡️" : "👹"}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-white font-bold text-sm">
+                            {currentUnit.isAlly ? "🎮 Your Turn" : "⏳ Enemy Turn"} -{" "}
+                            {currentUnit.character.name}
+                          </p>
+                          {currentUnit.isAlly && !currentUnit.hasActed ? (
+                            <p className="text-gray-300 text-xs">
+                              💡 คลิกช่อง
+                              <span className="text-blue-400 font-semibold">
+                                สีน้ำเงิน
+                              </span>
+                              เพื่อเคลื่อนที่ หรือศัตรูในช่อง
+                              <span className="text-red-400 font-semibold">สีแดง</span>
+                              เพื่อโจมตี
+                            </p>
+                          ) : currentUnit.isAlly && currentUnit.hasActed ? (
+                            <p className="text-gray-400 text-xs">
+                              ✅ ทำการเคลื่อนที่/โจมตีแล้ว - คลิก &quot;End Turn&quot;
+                            </p>
+                          ) : (
+                            <p className="text-orange-300 text-xs">🤖 AI กำลังคิด...</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-        {/* Show Current Unit Button */}
-        {!showCurrentUnit && currentUnit && (
-          <button
-            onClick={() => setShowCurrentUnit(true)}
-            className="absolute bottom-4 right-4 px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-10"
-          >
-            👤 Current Unit
-          </button>
-        )}
+                    {/* Legend */}
+                    <div className="p-3 bg-slate-800/50 rounded-lg">
+                      <p className="text-white font-semibold text-xs mb-2">📖 Legend</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {currentUnit?.isAlly ? (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded bg-blue-900/50 border border-blue-500"></div>
+                              <span className="text-gray-300">เคลื่อนที่ได้</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded bg-red-900/50 border border-red-500"></div>
+                              <span className="text-gray-300">โจมตีได้</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded bg-orange-900/40 border border-orange-500"></div>
+                              <span className="text-gray-300">ศัตรูเคลื่อนที่</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded bg-red-900/40 border border-red-500"></div>
+                              <span className="text-gray-300">ศัตรูโจมตี</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
 
-        {/* Team Panels - Bottom Overlay */}
-        {showTeamPanels && (
-          <div className="absolute bottom-4 left-4 right-4 z-10">
-            <div className="relative max-w-5xl mx-auto">
-              <button
-                onClick={() => setShowTeamPanels(false)}
-                className="absolute -top-2 -right-2 z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
+                    {/* Unit Stats */}
+                    <div className="space-y-3 pt-3 border-t border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                            currentUnit.isAlly ? "bg-blue-600" : "bg-red-600"
+                          }`}
+                        >
+                          {currentUnit.isAlly ? "🦸" : "👹"}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-white font-semibold">
+                            {currentUnit.character.name}
+                          </p>
+                          <p className="text-gray-400 text-xs capitalize">
+                            {"class" in currentUnit.character
+                              ? currentUnit.character.class
+                              : currentUnit.character.type}
+                          </p>
+                        </div>
+                      </div>
 
+                      {/* Stats */}
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-gray-400 flex items-center gap-1">
+                              <Heart className="w-3 h-3" /> HP
+                            </span>
+                            <span className="text-white">
+                              {currentUnit.currentHp}/
+                              {currentUnit.character.stats.maxHp}
+                            </span>
+                          </div>
+                          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-green-500 transition-all"
+                              style={{
+                                width: `${
+                                  (currentUnit.currentHp /
+                                    currentUnit.character.stats.maxHp) *
+                                  100
+                                }%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-gray-400 flex items-center gap-1">
+                              <Zap className="w-3 h-3" /> MP
+                            </span>
+                            <span className="text-white">
+                              {currentUnit.currentMp}/
+                              {currentUnit.character.stats.maxMp}
+                            </span>
+                          </div>
+                          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-blue-500 transition-all"
+                              style={{
+                                width: `${
+                                  (currentUnit.currentMp /
+                                    currentUnit.character.stats.maxMp) *
+                                  100
+                                }%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      {!currentUnit.isAlly && (
+                        <div className="space-y-2 pt-2 border-t border-slate-700">
+                          <button
+                            onClick={handlePlayEnemyTurn}
+                            className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
+                          >
+                            Play Enemy Turn
+                          </button>
+                        </div>
+                      )}
+                      {currentUnit.isAlly && (
+                        <div className="space-y-2 pt-2 border-t border-slate-700">
+                          <button
+                            onClick={handleEndTurn}
+                            className="w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-semibold"
+                          >
+                            End Turn
+                          </button>
+                        </div>
+                      )}
+                      {battleStateId && (
+                        <div className="space-y-2 pt-2 border-t border-slate-700">
+                          <button
+                            onClick={handleRestartBattle}
+                            className="w-full px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-semibold"
+                          >
+                            Restart
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </HUDPanel>
+              ) : (
+                <HUDPanelToggle
+                  label="Current Unit"
+                  icon={<Users className="w-4 h-4" />}
+                  onClick={() => setShowCurrentUnit(true)}
+                  position="top-left"
+                />
+              )}
+            </>
+          )}
+
+          {/* Team Panels - Bottom Left */}
+          {showTeamPanels ? (
+            <HUDPanel
+              title="Battle Overview"
+              icon={<Users className="w-5 h-5" />}
+              position="bottom-left"
+              closable
+              onClose={() => setShowTeamPanels(false)}
+              maxWidth="min(900px, 90vw)"
+              maxHeight="auto"
+            >
               <div className="grid grid-cols-3 gap-4">
                 {/* Turn Order */}
                 <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
@@ -651,19 +658,16 @@ export function EncounterBattleView({
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Show Team Panels Button */}
-        {!showTeamPanels && (
-          <button
-            onClick={() => setShowTeamPanels(true)}
-            className="absolute bottom-4 left-4 px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-10"
-          >
-            👥 Teams
-          </button>
-        )}
+            </HUDPanel>
+          ) : (
+            <HUDPanelToggle
+              label="Teams"
+              icon={<Users className="w-4 h-4" />}
+              onClick={() => setShowTeamPanels(true)}
+              position="bottom-left"
+            />
+          )}
+        </GameLayoutOverlay>
       </div>
 
       {/* Surrender Confirmation Modal */}
