@@ -3,6 +3,9 @@ import {
   getLocationById,
   getLocationConnections,
 } from "@/src/data/master/locations.master";
+import { getBattleMapById } from "@/src/data/master/battleMaps.master";
+import { getEnemyById } from "@/src/data/master/enemies.master";
+import { getCharacterById } from "@/src/data/master/characters.master";
 import {
   Location,
   LocationConnection,
@@ -10,8 +13,10 @@ import {
 } from "@/src/domain/types/location.types";
 import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
+import { useGameStore } from "@/src/stores/gameStore";
+import { useBattleSessionStore } from "@/src/stores/battleSessionStore";
 import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ConnectionMarker } from "./ConnectionMarker";
 import { EncounterModal } from "./EncounterModal";
 import { EncounterStatusIndicator } from "./EncounterStatusIndicator";
@@ -27,6 +32,7 @@ import { ShopMarker } from "./ShopMarker";
 import { ShopModal } from "./ShopModal";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
 import { TreasureModal } from "./TreasureModal";
+import { EncounterBattleView } from "../encounter-battle";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -88,6 +94,16 @@ export function VirtualMapGrid({
     stepsUntilEncounter,
     activeModifiers,
   } = useVirtualMapStore();
+
+  // Game store for party management
+  const { getActiveParty, progress } = useGameStore();
+
+  // Battle session store
+  const { createSession } = useBattleSessionStore();
+
+  // State for showing battle view
+  const [showBattle, setShowBattle] = useState(false);
+  const [showNoPartyModal, setShowNoPartyModal] = useState(false);
 
   // POI Interaction Hook - handles SPACE key press for interactions
   const { modals, closeNPCDialogue, closeTreasure, closeService, closeShop } =
@@ -564,11 +580,71 @@ export function VirtualMapGrid({
       )}
 
       {/* Encounter Modal */}
-      {currentEncounter && (
+      {currentEncounter && !showBattle && (
         <EncounterModal
           encounter={currentEncounter}
           onFight={() => {
             console.log("Fight encounter:", currentEncounter);
+            
+            // Check if player has active party
+            const activeParty = getActiveParty();
+            if (!activeParty || activeParty.members.length === 0) {
+              setShowNoPartyModal(true);
+              return;
+            }
+
+            // Get characters from active party
+            const allyCharacters = activeParty.members
+              .map((member) => {
+                const recruitedChar = progress.recruitedCharacters.find(
+                  (rc) => rc.characterId === member.characterId
+                );
+                if (!recruitedChar) return null;
+                
+                const masterChar = getCharacterById(recruitedChar.characterId);
+                if (!masterChar) return null;
+
+                // Merge recruited character data with master data
+                return {
+                  ...masterChar,
+                  level: recruitedChar.level,
+                  exp: recruitedChar.exp,
+                  maxExp: recruitedChar.maxExp,
+                  stats: recruitedChar.stats,
+                  equipment: recruitedChar.equipment,
+                  skills: recruitedChar.unlockedSkills,
+                };
+              })
+              .filter((char): char is NonNullable<typeof char> => char !== null);
+
+            // Get enemies from encounter
+            const enemies = currentEncounter.enemies
+              .map((enemyId) => getEnemyById(enemyId))
+              .filter((enemy): enemy is NonNullable<typeof enemy> => enemy !== null);
+
+            // Get battle map
+            const battleMap = getBattleMapById(currentEncounter.battleMapId);
+            if (!battleMap) {
+              console.error("Battle map not found:", currentEncounter.battleMapId);
+              clearEncounter();
+              return;
+            }
+
+            // Create battle session
+            createSession(
+              allyCharacters,
+              enemies,
+              battleMap,
+              currentLocation,
+              {
+                canFlee: currentEncounter.canFlee,
+                fleeChance: currentEncounter.fleeChance,
+                triggeredAt: currentEncounter.triggeredAt,
+              }
+            );
+
+            // Show battle view
+            setShowBattle(true);
             clearEncounter();
           }}
           onFlee={() => {
@@ -585,6 +661,53 @@ export function VirtualMapGrid({
         activeModifiers={activeModifiers}
         showSteps={false} // Set to true for debugging
       />
+
+      {/* No Party Modal */}
+      {showNoPartyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-yellow-500/50 rounded-xl shadow-2xl p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500/20 border border-yellow-500 rounded-full flex items-center justify-center">
+                <span className="text-4xl">⚠️</span>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">ไม่มีทีม!</h2>
+              <p className="text-gray-300 mb-6">
+                คุณต้องจัดทีมก่อนเข้าสู่การต่อสู้
+                <br />
+                กรุณาไปที่หน้า Party เพื่อจัดทีม
+              </p>
+              <button
+                onClick={() => {
+                  setShowNoPartyModal(false);
+                  clearEncounter();
+                }}
+                className="w-full px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-semibold"
+              >
+                ตกลง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Encounter Battle View - Full Screen Overlay */}
+      {showBattle && (
+        <EncounterBattleView
+          onExit={() => {
+            setShowBattle(false);
+          }}
+          onVictory={(rewards) => {
+            console.log("Victory! Rewards:", rewards);
+            // TODO: Add rewards to player inventory
+            setShowBattle(false);
+          }}
+          onDefeat={() => {
+            console.log("Defeat...");
+            // TODO: Handle defeat (respawn, lose gold, etc.)
+            setShowBattle(false);
+          }}
+        />
+      )}
     </div>
   );
 }
