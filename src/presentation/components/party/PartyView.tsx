@@ -234,7 +234,36 @@ export function PartyView({ initialViewModel }: PartyViewProps) {
 
   // Get active party data
   const activeParty = parties.find((p) => p.id === activePartyId);
-  const activePartyMembers = activeParty?.members || [];
+
+  // Show create party UI if no active party
+  if (!activeParty) {
+    return (
+      <>
+        <div className="flex flex-col items-center justify-center h-full p-4 bg-gray-900/80 rounded-lg">
+          <Users className="w-16 h-16 text-gray-400 mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">ยังไม่มีปาร์ตี้</h2>
+          <p className="text-gray-300 text-center mb-6">
+            เริ่มต้นการผจญภัยด้วยการสร้างปาร์ตี้ของคุณ
+          </p>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+          >
+            <span>+</span>
+            สร้างปาร์ตี้ใหม่
+          </button>
+        </div>
+        {/* Create Party Modal */}
+        <CreatePartyModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateParty}
+        />
+      </>
+    );
+  }
+
+  const activePartyMembers = activeParty.members || [];
 
   // Get character objects
   const activePartyCharacters = activePartyMembers
