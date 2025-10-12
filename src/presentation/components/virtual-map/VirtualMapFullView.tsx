@@ -461,7 +461,7 @@ export function VirtualMapFullView({
             onClose={() => setShowBreadcrumbPanel(false)}
             maxWidth="min(600px, 90vw)"
           >
-            <div className="flex items-center gap-2 text-sm -mt-2">
+            <div className="flex items-center gap-2 text-sm">
               <Home className="w-4 h-4 text-purple-400 shrink-0" />
               {breadcrumb.map((location, index) => (
                 <div key={location.id} className="flex items-center gap-2">

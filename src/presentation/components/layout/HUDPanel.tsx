@@ -8,7 +8,12 @@ export interface HUDPanelProps {
   title?: string;
   icon?: ReactNode;
   children: ReactNode;
-  position?: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-right";
+  position?:
+    | "top-left"
+    | "top-right"
+    | "top-center"
+    | "bottom-left"
+    | "bottom-right";
   closable?: boolean;
   onClose?: () => void;
   className?: string;
@@ -69,9 +74,7 @@ export function HUDPanel({
         {(title || icon) && (
           <div className="flex items-center gap-2 mb-3">
             {icon && <div className="text-purple-400">{icon}</div>}
-            {title && (
-              <h3 className="text-lg font-bold text-white">{title}</h3>
-            )}
+            {title && <h3 className="text-lg font-bold text-white">{title}</h3>}
           </div>
         )}
 
@@ -103,7 +106,12 @@ interface HUDPanelToggleProps {
   label: string;
   icon?: ReactNode;
   onClick: () => void;
-  position?: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-right";
+  position?:
+    | "top-left"
+    | "top-right"
+    | "top-center"
+    | "bottom-left"
+    | "bottom-right";
   /**
    * Use portal to render at document body level
    * @default true
