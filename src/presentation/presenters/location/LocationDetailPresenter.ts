@@ -1,7 +1,7 @@
 import { BATTLE_MAPS_MASTER } from "@/src/data/master/battleMaps.master";
 import { CHARACTERS_MASTER } from "@/src/data/master/characters.master";
-import { ENEMIES_MASTER } from "@/src/data/master/enemies.master";
 import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
+import { ENEMIES_MASTER } from "@/src/data/master/enemies.master";
 import { LOCATIONS_MASTER } from "@/src/data/master/locations.master";
 import { QUESTS_MASTER } from "@/src/data/master/quests.master";
 import { BattleMapConfig } from "@/src/domain/types/battle.types";
@@ -93,20 +93,20 @@ export class LocationDetailPresenter {
       (quest) => quest.status === "available" || quest.status === "active"
     );
 
-    // Get battle maps from location metadata (now BattleMarker[])
-    const battleMarkers = location.metadata?.battleMaps || [];
-    const battleMapIds = battleMarkers.map((battle) => battle.battleMapId);
-    const battleMaps = this.battleMaps.filter((map) =>
-      battleMapIds.includes(map.id)
-    );
-
     // Get enemies from encounter table (not from battle maps)
     const encounterTable = getEncounterTableByLocation(location.id);
     const enemyIds = new Set<string>();
+    const battleMapIds = new Set<string>();
     if (encounterTable && encounterTable.isActive) {
       encounterTable.entries.forEach((entry) => enemyIds.add(entry.enemyId));
+      encounterTable.battleMaps.forEach((battleMap) =>
+        battleMapIds.add(battleMap.battleMapId)
+      );
     }
     const enemies = ENEMIES_MASTER.filter((enemy) => enemyIds.has(enemy.id));
+    const battleMaps = this.battleMaps.filter((map) =>
+      battleMapIds.has(map.id)
+    );
 
     // Determine services (mock: based on location type)
     const services = {

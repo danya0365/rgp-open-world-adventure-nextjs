@@ -1,7 +1,7 @@
 "use client";
 
-import { Location } from "@/src/domain/types/location.types";
 import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
+import { Location } from "@/src/domain/types/location.types";
 import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import {
   HUDPanel,
@@ -317,7 +317,7 @@ export function WorldMapView({
           type: "npc",
           isService: true,
           serviceType: "npc",
-          metadata: { 
+          metadata: {
             npcId: npc.id,
             hasQuest: npc.hasQuest,
             questId: npc.questId,
@@ -338,7 +338,7 @@ export function WorldMapView({
           type: "shop",
           isService: true,
           serviceType: "shop",
-          metadata: { 
+          metadata: {
             shopId: shop.id,
             shopType: shop.shopType,
           },
@@ -360,26 +360,6 @@ export function WorldMapView({
           serviceType: service.serviceType,
           metadata: {
             serviceId: service.id,
-          },
-        });
-      });
-    }
-
-    // Add battle maps as virtual locations (now using BattleMarker[])
-    if (
-      currentLocation.metadata.battleMaps &&
-      currentLocation.metadata.battleMaps.length > 0
-    ) {
-      currentLocation.metadata.battleMaps.forEach((battle) => {
-        virtualServiceLocations.push({
-          id: `service-battle-${battle.battleMapId}`,
-          name: battle.name || `Battle Area`,
-          type: "battle",
-          isService: true,
-          serviceType: "battle",
-          metadata: { 
-            battleMapId: battle.battleMapId,
-            difficulty: battle.difficulty,
           },
         });
       });
@@ -414,7 +394,7 @@ export function WorldMapView({
           type: "treasure",
           isService: true,
           serviceType: "treasure",
-          metadata: { 
+          metadata: {
             treasureId: treasure.treasureId,
             isDiscovered: treasure.isDiscovered,
           },

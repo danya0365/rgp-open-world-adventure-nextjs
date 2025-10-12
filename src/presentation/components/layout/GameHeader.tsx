@@ -3,14 +3,13 @@
 import { useGameStore } from "@/src/stores/gameStore";
 import {
   Coins,
+  LogOut,
+  Map,
+  Menu,
+  Settings,
   Star,
   Users,
-  Menu,
   X,
-  Map,
-  Swords,
-  Settings,
-  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -44,7 +43,6 @@ export function GameHeader({
     { href: "/world", label: "World", icon: Map },
     { href: "/characters", label: "Characters", icon: Users },
     { href: "/party", label: "Party", icon: Users },
-    { href: "/battle/map-forest-clearing", label: "Battle", icon: Swords },
   ];
 
   return (

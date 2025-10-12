@@ -1,19 +1,18 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Location,
   NPCMarker,
-  ShopMarker,
   ServiceMarker,
-  BattleMarker,
+  ShopMarker,
   TreasureMarker,
 } from "@/src/domain/types/location.types";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface POIAtPlayerPosition {
-  type: "npc" | "shop" | "service" | "battle" | "treasure" | null;
-  data: NPCMarker | ShopMarker | ServiceMarker | BattleMarker | TreasureMarker | null;
+  type: "npc" | "shop" | "service" | "treasure" | null;
+  data: NPCMarker | ShopMarker | ServiceMarker | TreasureMarker | null;
 }
 
 interface POIModalsState {
@@ -56,7 +55,11 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
 
     // Check NPCs (supports multi-tile NPCs)
     const npcAtPosition = currentLocation.metadata?.npcs?.find((npc) => {
-      const isInside = isWithinPOIBounds(npc.tileCoordinate, npc.gridSize, playerTileCoords);
+      const isInside = isWithinPOIBounds(
+        npc.tileCoordinate,
+        npc.gridSize,
+        playerTileCoords
+      );
       // console.log(`👤 ${npc.name}:`, { coords: npc.tileCoordinate, gridSize: npc.gridSize, isInside });
       return isInside;
     });
@@ -67,7 +70,11 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
 
     // Check Shops (supports multi-tile shops)
     const shopAtPosition = currentLocation.metadata?.shops?.find((shop) => {
-      const isInside = isWithinPOIBounds(shop.tileCoordinate, shop.gridSize, playerTileCoords);
+      const isInside = isWithinPOIBounds(
+        shop.tileCoordinate,
+        shop.gridSize,
+        playerTileCoords
+      );
       // console.log(`🏪 ${shop.name}:`, { coords: shop.tileCoordinate, gridSize: shop.gridSize, isInside });
       return isInside;
     });
@@ -77,33 +84,34 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
     }
 
     // Check Services (supports multi-tile services)
-    const serviceAtPosition = currentLocation.metadata?.services?.find((service) => {
-      const isInside = isWithinPOIBounds(service.tileCoordinate, service.gridSize, playerTileCoords);
-      // console.log(`🏛️ ${service.name}:`, { coords: service.tileCoordinate, gridSize: service.gridSize, isInside });
-      return isInside;
-    });
+    const serviceAtPosition = currentLocation.metadata?.services?.find(
+      (service) => {
+        const isInside = isWithinPOIBounds(
+          service.tileCoordinate,
+          service.gridSize,
+          playerTileCoords
+        );
+        // console.log(`🏛️ ${service.name}:`, { coords: service.tileCoordinate, gridSize: service.gridSize, isInside });
+        return isInside;
+      }
+    );
     if (serviceAtPosition) {
       setCurrentPOI({ type: "service", data: serviceAtPosition });
       return;
     }
 
-    // Check Battle Triggers (supports multi-tile battle areas)
-    const battleAtPosition = currentLocation.metadata?.battleMaps?.find((battle) => {
-      const isInside = isWithinPOIBounds(battle.tileCoordinate, battle.gridSize, playerTileCoords);
-      // console.log(`⚔️ ${battle.name}:`, { coords: battle.tileCoordinate, gridSize: battle.gridSize, isInside });
-      return isInside;
-    });
-    if (battleAtPosition) {
-      setCurrentPOI({ type: "battle", data: battleAtPosition });
-      return;
-    }
-
     // Check Treasures (supports multi-tile treasures)
-    const treasureAtPosition = currentLocation.metadata?.treasures?.find((treasure) => {
-      const isInside = isWithinPOIBounds(treasure.tileCoordinate, treasure.gridSize, playerTileCoords);
-      // console.log(`💎 ${treasure.name}:`, { coords: treasure.tileCoordinate, gridSize: treasure.gridSize, isInside });
-      return isInside;
-    });
+    const treasureAtPosition = currentLocation.metadata?.treasures?.find(
+      (treasure) => {
+        const isInside = isWithinPOIBounds(
+          treasure.tileCoordinate,
+          treasure.gridSize,
+          playerTileCoords
+        );
+        // console.log(`💎 ${treasure.name}:`, { coords: treasure.tileCoordinate, gridSize: treasure.gridSize, isInside });
+        return isInside;
+      }
+    );
     if (treasureAtPosition) {
       setCurrentPOI({ type: "treasure", data: treasureAtPosition });
       return;
@@ -143,12 +151,6 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
       }));
     };
 
-    const handleBattleInteraction = (battle: BattleMarker) => {
-      console.log("⚔️ Starting battle:", battle);
-      // Navigate to battle page
-      router.push(`/battle/${battle.battleMapId}`);
-    };
-
     const handleTreasureInteraction = (treasure: TreasureMarker) => {
       console.log("💎 Opening treasure:", treasure);
       // Open treasure modal
@@ -177,9 +179,6 @@ export function usePOIInteraction(currentLocation: Location, gridSize: number) {
           break;
         case "service":
           handleServiceInteraction(currentPOI.data as ServiceMarker);
-          break;
-        case "battle":
-          handleBattleInteraction(currentPOI.data as BattleMarker);
           break;
         case "treasure":
           handleTreasureInteraction(currentPOI.data as TreasureMarker);

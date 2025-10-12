@@ -1,9 +1,8 @@
 "use client";
 
-import { ActiveEncounter } from "@/src/domain/types/encounter.types";
 import { getEnemyById } from "@/src/data/master/enemies.master";
-import { X, Swords, Flag } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ActiveEncounter } from "@/src/domain/types/encounter.types";
+import { Flag, Swords, X } from "lucide-react";
 import { useState } from "react";
 
 interface EncounterModalProps {
@@ -19,7 +18,6 @@ export function EncounterModal({
   onFlee,
   onClose,
 }: EncounterModalProps) {
-  const router = useRouter();
   const [isFleeingAttempt, setIsFleeingAttempt] = useState(false);
 
   // Get enemy data
@@ -28,7 +26,10 @@ export function EncounterModal({
     .filter((e): e is NonNullable<typeof e> => e !== null);
 
   // Group enemies by ID for display
-  const enemyGroups = new Map<string, { enemy: NonNullable<ReturnType<typeof getEnemyById>>; count: number }>();
+  const enemyGroups = new Map<
+    string,
+    { enemy: NonNullable<ReturnType<typeof getEnemyById>>; count: number }
+  >();
   enemies.forEach((enemy) => {
     const existing = enemyGroups.get(enemy.id);
     if (existing) {
@@ -42,16 +43,14 @@ export function EncounterModal({
 
   const handleFight = () => {
     onFight();
-    // Navigate to battle
-    router.push(`/battle/${encounter.battleMapId}?encounter=true`);
   };
 
   const handleFlee = () => {
     setIsFleeingAttempt(true);
-    
+
     // Calculate flee chance
     const success = Math.random() * 100 < encounter.fleeChance;
-    
+
     setTimeout(() => {
       if (success) {
         onFlee();
@@ -168,7 +167,9 @@ export function EncounterModal({
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg"
               >
                 <Flag className="w-5 h-5" />
-                {isFleeingAttempt ? "Fleeing..." : `Flee (${encounter.fleeChance}%)`}
+                {isFleeingAttempt
+                  ? "Fleeing..."
+                  : `Flee (${encounter.fleeChance}%)`}
               </button>
             )}
           </div>

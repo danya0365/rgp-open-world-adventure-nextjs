@@ -30,7 +30,7 @@ export interface EncounterTable {
   rateVariance: number; // Variance in steps (±variance)
   entries: EncounterEntry[]; // List of possible encounters
   isActive: boolean; // Can encounters happen here?
-  battleMaps?: BattleMapEntry[]; // Optional: Specific battle maps with weights and conditions
+  battleMaps: BattleMapEntry[]; // Optional: Specific battle maps with weights and conditions
 }
 
 export interface EncounterModifier {

@@ -1,8 +1,8 @@
+import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
 import {
   getLocationById,
   getLocationConnections,
 } from "@/src/data/master/locations.master";
-import { getEncounterTableByLocation } from "@/src/data/master/encounterTables.master";
 import {
   Location,
   LocationConnection,
@@ -12,8 +12,9 @@ import { usePOIInteraction } from "@/src/hooks/usePOIInteraction";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { isWithinPOIBounds } from "@/src/utils/poiGridUtils";
 import { useEffect, useMemo } from "react";
-import { BattleMarkerComponent } from "./BattleMarkerComponent";
 import { ConnectionMarker } from "./ConnectionMarker";
+import { EncounterModal } from "./EncounterModal";
+import { EncounterStatusIndicator } from "./EncounterStatusIndicator";
 import { InnModal } from "./InnModal";
 import { MapTile } from "./MapTile";
 import { Minimap } from "./Minimap";
@@ -26,8 +27,6 @@ import { ShopMarker } from "./ShopMarker";
 import { ShopModal } from "./ShopModal";
 import { TreasureMarkerComponent } from "./TreasureMarkerComponent";
 import { TreasureModal } from "./TreasureModal";
-import { EncounterModal } from "./EncounterModal";
-import { EncounterStatusIndicator } from "./EncounterStatusIndicator";
 
 interface VirtualMapGridProps {
   currentLocation: Location;
@@ -464,32 +463,6 @@ export function VirtualMapGrid({
           );
         })}
 
-        {/* POI Markers - Battle Triggers */}
-        {currentLocation.metadata?.battleMaps?.map((battle) => {
-          const playerTileX = Math.floor(
-            playerPosition.pixelCoordinate.x / gridSize
-          );
-          const playerTileY = Math.floor(
-            playerPosition.pixelCoordinate.y / gridSize
-          );
-          const isPlayerAtBattle = isWithinPOIBounds(
-            battle.tileCoordinate,
-            battle.gridSize,
-            { x: playerTileX, y: playerTileY }
-          );
-
-          return (
-            <BattleMarkerComponent
-              key={battle.id}
-              battle={battle}
-              gridSize={gridSize}
-              viewportOffsetX={viewportStartX}
-              viewportOffsetY={viewportStartY}
-              isPlayerNearby={isPlayerAtBattle}
-            />
-          );
-        })}
-
         {/* POI Markers - Treasures */}
         {currentLocation.metadata?.treasures?.map((treasure) => {
           const playerTileX = Math.floor(
@@ -662,32 +635,68 @@ export function MapInfoView({
 }: MapInfoViewProps) {
   // Get encounter table for this location
   const encounterTable = getEncounterTableByLocation(currentLocation.id);
-  
+
   // Determine encounter status
   const getEncounterStatus = () => {
     if (!encounterTable) {
-      return { label: "Safe Zone", color: "text-green-400", bgColor: "bg-green-500/10", borderColor: "border-green-500/30", icon: "🛡️" };
+      return {
+        label: "Safe Zone",
+        color: "text-green-400",
+        bgColor: "bg-green-500/10",
+        borderColor: "border-green-500/30",
+        icon: "🛡️",
+      };
     }
-    
+
     if (!encounterTable.isActive) {
-      return { label: "Safe Zone", color: "text-green-400", bgColor: "bg-green-500/10", borderColor: "border-green-500/30", icon: "🛡️" };
+      return {
+        label: "Safe Zone",
+        color: "text-green-400",
+        bgColor: "bg-green-500/10",
+        borderColor: "border-green-500/30",
+        icon: "🛡️",
+      };
     }
-    
+
     // Determine danger level based on encounter rate
     const avgSteps = encounterTable.baseRate;
     if (avgSteps <= 8) {
-      return { label: "Very Dangerous", color: "text-red-400", bgColor: "bg-red-500/10", borderColor: "border-red-500/30", icon: "⚠️" };
+      return {
+        label: "Very Dangerous",
+        color: "text-red-400",
+        bgColor: "bg-red-500/10",
+        borderColor: "border-red-500/30",
+        icon: "⚠️",
+      };
     } else if (avgSteps <= 12) {
-      return { label: "Dangerous", color: "text-orange-400", bgColor: "bg-orange-500/10", borderColor: "border-orange-500/30", icon: "⚔️" };
+      return {
+        label: "Dangerous",
+        color: "text-orange-400",
+        bgColor: "bg-orange-500/10",
+        borderColor: "border-orange-500/30",
+        icon: "⚔️",
+      };
     } else if (avgSteps <= 15) {
-      return { label: "Moderate", color: "text-yellow-400", bgColor: "bg-yellow-500/10", borderColor: "border-yellow-500/30", icon: "⚡" };
+      return {
+        label: "Moderate",
+        color: "text-yellow-400",
+        bgColor: "bg-yellow-500/10",
+        borderColor: "border-yellow-500/30",
+        icon: "⚡",
+      };
     } else {
-      return { label: "Low Risk", color: "text-blue-400", bgColor: "bg-blue-500/10", borderColor: "border-blue-500/30", icon: "🌟" };
+      return {
+        label: "Low Risk",
+        color: "text-blue-400",
+        bgColor: "bg-blue-500/10",
+        borderColor: "border-blue-500/30",
+        icon: "🌟",
+      };
     }
   };
-  
+
   const encounterStatus = getEncounterStatus();
-  
+
   return (
     <div className="space-y-3">
       {/* Location Name & Description */}
@@ -702,7 +711,9 @@ export function MapInfoView({
 
       {/* Encounter Status Badge */}
       {encounterTable && (
-        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${encounterStatus.bgColor} ${encounterStatus.borderColor}`}>
+        <div
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${encounterStatus.bgColor} ${encounterStatus.borderColor}`}
+        >
           <span className="text-lg">{encounterStatus.icon}</span>
           <div className="flex-1">
             <div className={`text-xs font-semibold ${encounterStatus.color}`}>
@@ -713,7 +724,9 @@ export function MapInfoView({
                 <>
                   Encounter every ~{encounterTable.baseRate} steps
                   {encounterTable.entries.length > 0 && (
-                    <span className="ml-1">• {encounterTable.entries.length} enemy types</span>
+                    <span className="ml-1">
+                      • {encounterTable.entries.length} enemy types
+                    </span>
                   )}
                 </>
               ) : (

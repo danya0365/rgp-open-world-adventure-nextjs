@@ -148,6 +148,7 @@ export const ENCOUNTER_TABLES_MASTER: EncounterTable[] = [
     rateVariance: 0,
     isActive: false, // Encounters disabled in cities
     entries: [],
+    battleMaps: [],
   },
 
   // ========================================
@@ -160,6 +161,24 @@ export const ENCOUNTER_TABLES_MASTER: EncounterTable[] = [
     baseRate: 8, // Very frequent encounters
     rateVariance: 3,
     isActive: true,
+    battleMaps: [
+      {
+        battleMapId: "map-dungeon-corridor",
+        weight: 70,
+        minEnemyCount: 1,
+        maxEnemyCount: 4,
+        weather: ["clear"],
+        rarity: "common",
+      },
+      {
+        battleMapId: "map-ancient-ruins",
+        weight: 30,
+        minEnemyCount: 2,
+        maxEnemyCount: 6,
+        timeOfDay: ["night", "dusk"],
+        rarity: "uncommon",
+      },
+    ],
     entries: [
       {
         enemyId: "enemy-010", // Shadow Bat
@@ -206,6 +225,24 @@ export const ENCOUNTER_TABLES_MASTER: EncounterTable[] = [
     baseRate: 10,
     rateVariance: 3,
     isActive: true,
+    battleMaps: [
+      {
+        battleMapId: "map-dungeon-corridor",
+        weight: 50,
+        minEnemyCount: 1,
+        maxEnemyCount: 3,
+        weather: ["clear"],
+        rarity: "common",
+      },
+      {
+        battleMapId: "map-ancient-ruins",
+        weight: 50,
+        minEnemyCount: 2,
+        maxEnemyCount: 5,
+        timeOfDay: ["night", "dusk"],
+        rarity: "uncommon",
+      },
+    ],
     entries: [
       {
         enemyId: "enemy-014", // Magic Golem
@@ -252,6 +289,25 @@ export const ENCOUNTER_TABLES_MASTER: EncounterTable[] = [
     baseRate: 20, // Less frequent
     rateVariance: 6,
     isActive: true,
+    battleMaps: [
+      {
+        battleMapId: "map-plains-battlefield",
+        weight: 70,
+        minEnemyCount: 1,
+        maxEnemyCount: 4,
+        weather: ["sunny", "clear"],
+        timeOfDay: ["day", "dusk"],
+        rarity: "common",
+      },
+      {
+        battleMapId: "map-ancient-ruins",
+        weight: 30,
+        minEnemyCount: 2,
+        maxEnemyCount: 5,
+        timeOfDay: ["day", "night"],
+        rarity: "uncommon",
+      },
+    ],
     entries: [
       {
         enemyId: "enemy-018", // Sand Scorpion
@@ -298,6 +354,24 @@ export const ENCOUNTER_TABLES_MASTER: EncounterTable[] = [
     baseRate: 9,
     rateVariance: 3,
     isActive: true,
+    battleMaps: [
+      {
+        battleMapId: "map-dungeon-corridor",
+        weight: 60,
+        minEnemyCount: 1,
+        maxEnemyCount: 3,
+        weather: ["clear"],
+        rarity: "common",
+      },
+      {
+        battleMapId: "map-cave-entrance",
+        weight: 40,
+        minEnemyCount: 2,
+        maxEnemyCount: 4,
+        weather: ["clear"],
+        rarity: "uncommon",
+      },
+    ],
     entries: [
       {
         enemyId: "enemy-022", // Sea Serpent
@@ -344,6 +418,25 @@ export const ENCOUNTER_TABLES_MASTER: EncounterTable[] = [
     baseRate: 11,
     rateVariance: 4,
     isActive: true,
+    battleMaps: [
+      {
+        battleMapId: "map-plains-battlefield",
+        weight: 60,
+        minEnemyCount: 2,
+        maxEnemyCount: 6,
+        weather: ["sunny", "clear"],
+        timeOfDay: ["day", "dusk"],
+        rarity: "common",
+      },
+      {
+        battleMapId: "map-ancient-ruins",
+        weight: 40,
+        minEnemyCount: 2,
+        maxEnemyCount: 5,
+        timeOfDay: ["night", "dusk"],
+        rarity: "uncommon",
+      },
+    ],
     entries: [
       {
         enemyId: "enemy-026", // Fire Imp

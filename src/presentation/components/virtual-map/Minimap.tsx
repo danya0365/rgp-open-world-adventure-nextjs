@@ -174,33 +174,6 @@ export function Minimap({
             );
           })}
 
-          {/* Battle Markers */}
-          {currentLocation.metadata?.battleMaps?.map((battle) => {
-            const x = Math.floor(battle.tileCoordinate.x * tileSize);
-            const y = Math.floor(battle.tileCoordinate.y * tileSize);
-            const size = Math.max(Math.ceil(tileSize * 1.2), 5);
-
-            let color = "bg-red-500";
-            if (battle.difficulty === "boss") color = "bg-red-700";
-            else if (battle.difficulty === "hard") color = "bg-red-600";
-
-            return (
-              <div
-                key={`minimap-battle-${battle.id}`}
-                className={`absolute ${color} border border-red-300 shadow-md`}
-                style={{
-                  left: `${x}px`,
-                  top: `${y}px`,
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  transform: "translate(-50%, -50%)", // Center on tile
-                  zIndex: 85,
-                }}
-                title={`Battle (${battle.difficulty || "normal"})`}
-              />
-            );
-          })}
-
           {/* Service/Shop Markers */}
           {currentLocation.metadata?.services?.map((service) => {
             const x = Math.floor(service.tileCoordinate.x * tileSize);
@@ -271,10 +244,10 @@ export function Minimap({
         }`}
         style={{
           height: `${finalHeight}px`,
-          minWidth: '100px',
-          overflowY: 'auto',
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'rgba(139, 92, 246, 0.5) transparent',
+          minWidth: "100px",
+          overflowY: "auto",
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgba(139, 92, 246, 0.5) transparent",
         }}
       >
         <div className="text-xs font-semibold text-purple-300 mb-1">Legend</div>

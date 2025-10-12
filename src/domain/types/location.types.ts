@@ -107,11 +107,6 @@ export interface ServiceMarker extends POIBase {
     | "bounties";
 }
 
-export interface BattleMarker extends POIBase {
-  battleMapId: string; // Reference to battle map
-  difficulty?: "easy" | "normal" | "hard" | "boss";
-}
-
 export interface TreasureMarker extends POIBase {
   treasureId: string;
   isDiscovered?: boolean;
@@ -121,7 +116,6 @@ export interface LocationMetadata {
   npcs?: NPCMarker[]; // NPCs with positions
   shops?: ShopMarker[]; // Shops with positions
   services?: ServiceMarker[]; // Services with positions
-  battleMaps?: BattleMarker[]; // Battle triggers with positions
   treasures?: TreasureMarker[]; // Treasure chests with positions
   encounters?: string[]; // Random encounter table IDs
   secrets?: string[]; // Secret area IDs

@@ -177,7 +177,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
       encounters: ["ice-wolf", "frost-giant", "ice-elemental"],
       secrets: ["hidden-cave-1"],
@@ -298,26 +297,6 @@ export const LOCATIONS_MASTER: Location[] = [
           name: "Silverhold Bank",
           serviceType: "bank" as const,
           gridSize: { width: 2, height: 3 }, // Medium-large building
-        },
-      ],
-
-      // Battle triggers with positions
-      battleMaps: [
-        {
-          id: "map-forest-clearing",
-          battleMapId: "map-forest-clearing",
-          tileCoordinate: { x: 2, y: 12 }, // Forest entrance (south)
-          name: "Forest Clearing",
-          difficulty: "normal" as const,
-          gridSize: { width: 2, height: 2 }, // Battle area
-        },
-        {
-          id: "map-cave-entrance",
-          battleMapId: "map-cave-entrance",
-          tileCoordinate: { x: 18, y: 3 }, // Cave entrance (north-east)
-          name: "Cave Entrance",
-          difficulty: "hard" as const,
-          gridSize: { width: 2, height: 2 }, // Battle area
         },
       ],
 
@@ -483,7 +462,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -519,7 +497,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -558,7 +535,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -595,7 +571,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -630,7 +605,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -671,7 +645,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -709,7 +682,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
@@ -749,7 +721,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
       encounters: ["ice-golem", "frost-dragon", "frozen-undead"],
       secrets: ["secret-boss-room"],
@@ -792,7 +763,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
       encounters: ["slime", "goblin", "wild-boar"],
     },
@@ -831,7 +801,6 @@ export const LOCATIONS_MASTER: Location[] = [
       npcs: [],
       shops: [],
       services: [],
-      battleMaps: [],
       treasures: [],
     },
   },
