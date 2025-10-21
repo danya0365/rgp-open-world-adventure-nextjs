@@ -668,18 +668,26 @@
 **Phase 6:** Testing - 0%
 **Phase 7:** Launch - 0%
 
-**Overall Progress: 94%** 🎮
+**Overall Progress: 95%** 🎮
 
 **Recent Achievements (2025-10-13)**:
-- ✅ **HUD Portal System - COMPLETE!** - 01:04 🎯⭐⭐
+- ✅ **HUD Portal System - COMPLETE!** - 01:58 🎯⭐⭐⭐
   - ✅ React Portal implementation for HUD components
-  - ✅ Z-index layering system (low/medium/high/modal)
-  - ✅ Fixed UI blocking issues (close buttons now clickable)
+  - ✅ Portal renders in GameLayoutOverlay (not document.body)
+  - ✅ Auto-detect parent with data-portal-container attribute
+  - ✅ Fixed UI blocking issues (all close buttons clickable)
+  - ✅ Simplified z-index management (removed wrapper div)
   - ✅ Reusable across entire project
-  - ✅ Backward compatible (existing code works without changes)
-  - ✅ Complete documentation (3 markdown files)
-  - ✅ Applied to EncounterBattleView
-  - ✅ Ready for use in all other views
+  - ✅ Backward compatible
+  - ✅ Applied to EncounterBattleView (5 HUD panels)
+  - ✅ Turn Order panel separated (bottom-right)
+  - ✅ Battle Info panel (high priority, always on top)
+  
+**🎯 MAP FEATURES - PAUSED FOR NOW**
+- ✅ Virtual World Map (95% complete - functional)
+- ✅ Random Encounters (100% complete)
+- ✅ POI System (95% complete - missing Shop modal)
+- 📝 **TODO LATER**: Shop Modal, Secret Areas, Weather/Day-Night visuals
 
 **Previous Achievements (2025-10-12)**:
 - ✅ **Random Encounters System - COMPLETE!** - 17:15 🎯⭐⭐⭐

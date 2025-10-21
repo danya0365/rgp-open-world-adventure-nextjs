@@ -39,7 +39,7 @@ export async function generateMetadata({
   params,
 }: [PageName]PageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const presenter = await [PageName]PresenterFactory.create();
+  const presenter = await [PageName]PresenterFactory.createServer();
 
   try {
     return presenter.generateMetadata(resolvedParams.[paramName]);
@@ -60,7 +60,7 @@ export async function generateMetadata({
  */
 export default async function [PageName]Page({ params }: [PageName]PageProps) {
   const resolvedParams = await params;
-  const presenter = await [PageName]PresenterFactory.create();
+  const presenter = await [PageName]PresenterFactory.createServer();
 
   try {
     // Get view model from presenter
@@ -107,11 +107,13 @@ export default async function [PageName]Page({ params }: [PageName]PageProps) {
 ## 2. Pattern: `src/presentation/presenters/[page-name]/[PageName]Presenter.ts`
 
 ```typescript
-import { createServerSupabaseClient } from "@/src/infrastructure/config/supabase-server-client.ts";
-import { createClientSupabaseClient } from "@/src/infrastructure/config/supabase-client-client.ts";
-import type { User } from "@supabase/supabase-js";
-
 // Define your interfaces and types here
+export interface PresenterUser {
+  id: string;
+  email: string;
+  displayName?: string;
+}
+
 export interface [PageItem] {
   id: string;
   name: string;
@@ -139,7 +141,7 @@ export interface Update[PageItem]Data {
 }
 
 export interface [PageName]ViewModel {
-  user: User | null;
+  user: PresenterUser | null;
   items: [PageItem][];
   stats: [PageStats];
   totalCount: number;
@@ -148,243 +150,251 @@ export interface [PageName]ViewModel {
   // Add your view model fields here
 }
 
+export interface [PageName]Repository {
+  getUser(): Promise<PresenterUser | null>;
+  getPaginated[PageItems](page: number, perPage: number): Promise<{ data: [PageItem][]; total: number }>;
+  getStats(): Promise<[PageStats]>;
+  create[PageItem](data: Create[PageItem]Data): Promise<[PageItem]>;
+  update[PageItem](id: string, data: Update[PageItem]Data): Promise<[PageItem]>;
+  delete[PageItem](id: string): Promise<boolean>;
+  get[PageItem]ById(id: string): Promise<[PageItem]>;
+}
+
+/**
+ * ✅ Default mock implementation. Replace with real repository when ready.
+ */
+class Mock[PageName]Repository implements [PageName]Repository {
+  private items: [PageItem][] = [];
+  private stats: [PageStats] = {
+    totalItems: 0,
+    activeItems: 0,
+    inactiveItems: 0,
+  };
+
+  async getUser(): Promise<PresenterUser | null> {
+    return {
+      id: "mock-user-id",
+      email: "mock-user@example.com",
+    };
+  }
+
+  async getPaginated[PageItems](page: number, perPage: number) {
+    const start = (page - 1) * perPage;
+    const data = this.items.slice(start, start + perPage);
+    return { data, total: this.items.length };
+  }
+
+  async getStats(): Promise<[PageStats]> {
+    return this.stats;
+  }
+
+  async create[PageItem](data: Create[PageItem]Data): Promise<[PageItem]> {
+    const newItem: [PageItem] = {
+      id: crypto.randomUUID(),
+      name: data.name,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    this.items = [newItem, ...this.items];
+    this.stats = {
+      ...this.stats,
+      totalItems: this.items.length,
+      activeItems: this.items.length,
+    };
+    return newItem;
+  }
+
+  async update[PageItem](id: string, data: Update[PageItem]Data): Promise<[PageItem]> {
+    const index = this.items.findIndex((item) => item.id === id);
+    if (index === -1) {
+      throw new Error("[PageItem] not found");
+    }
+    const updated: [PageItem] = {
+      ...this.items[index],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    this.items[index] = updated;
+    return updated;
+  }
+
+  async delete[PageItem](id: string): Promise<boolean> {
+    const before = this.items.length;
+    this.items = this.items.filter((item) => item.id !== id);
+    this.stats = {
+      ...this.stats,
+      totalItems: this.items.length,
+      activeItems: this.items.length,
+    };
+    return this.items.length < before;
+  }
+
+  async get[PageItem]ById(id: string): Promise<[PageItem]> {
+    const item = this.items.find((current) => current.id === id);
+    if (!item) {
+      throw new Error("[PageItem] not found");
+    }
+    return item;
+  }
+}
+
 /**
  * Presenter for [PageName] management
  * Follows Clean Architecture with proper separation of concerns
  */
 export class [PageName]Presenter {
   constructor(
-    private readonly supabase: SupabaseClient
-  ) {
-  }
+    private readonly repository: [PageName]Repository
+  ) {}
 
-  /**
-   * Get view model for the page
-   */
   async getViewModel([paramName]: string, page: number, perPage: number): Promise<[PageName]ViewModel> {
-    try {
-      // Get user for authentication
-      const user = await this.getUser();
+    const user = await this.getUser();
+    const [items, stats] = await Promise.all([
+      this.getPaginated[PageItems](page, perPage),
+      this.getStats(),
+    ]);
 
-      // Get data in parallel for better performance
-      const [items, stats] = await Promise.all([
-        this.getPaginatedItems(page, perPage),
-        this.getStats()
-      ]);
-
-      return {
-        user,
-        items: items.data,
-        stats,
-        totalCount: items.total,
-        page,
-        perPage
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      user,
+      items: items.data,
+      stats,
+      totalCount: items.total,
+      page,
+      perPage,
+    };
   }
 
-  /**
-   * Generate metadata for the page
-   */
   async generateMetadata([paramName]: string) {
-    try {
-      return {
-        title: "จัดการ[PageThaiName] | Shop Queue",
-        description: "ระบบจัดการ[PageThaiDescription]",
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      title: "จัดการ[PageThaiName] | Shop Queue",
+      description: "ระบบจัดการ[PageThaiDescription]",
+    };
   }
 
-  /**
-   * Create a new item
-   */
   async create[PageItem](data: Create[PageItem]Data): Promise<[PageItem]> {
-    try {
-      const user = await this.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const item = await this.supabase.from("[page-name]").insert(data);
-      return item;
-    } catch (error) {
-      throw error;
+    const user = await this.getUser();
+    if (!user) {
+      throw new Error("User not authenticated");
     }
+    return this.repository.create[PageItem](data);
   }
 
-  /**
-   * Update an existing item
-   */
   async update[PageItem](id: string, data: Update[PageItem]Data): Promise<[PageItem]> {
-    try {
-      const user = await this.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const item = await this.supabase.from("[page-name]").update(data).eq("id", id);
-      return item;
-    } catch (error) {
-      throw error;
+    const user = await this.getUser();
+    if (!user) {
+      throw new Error("User not authenticated");
     }
+    return this.repository.update[PageItem](id, data);
   }
 
-  /**
-   * Delete an item
-   */
   async delete[PageItem](id: string): Promise<boolean> {
-    try {
-      const user = await this.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      await this.supabase.from("[page-name]").delete().eq("id", id);
-      return true;
-    } catch (error) {
-      throw error;
+    const user = await this.getUser();
+    if (!user) {
+      throw new Error("User not authenticated");
     }
+    return this.repository.delete[PageItem](id);
   }
 
-  /**
-   * Get item by ID
-   */
   async get[PageItem]ById(id: string): Promise<[PageItem]> {
-    try {
-      const user = await this.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const item = await this.supabase.from("[page-name]").select("*").eq("id", id);
-      return item;
-    } catch (error) {
-      throw error;
+    const user = await this.getUser();
+    if (!user) {
+      throw new Error("User not authenticated");
     }
+    return this.repository.get[PageItem]ById(id);
   }
 
-  /**
-   * Get paginated items
-   */
   async getPaginated[PageItems](page: number, perPage: number) {
-    try {
-      const user = await this.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const result = await this.supabase.from("[page-name]").select("*").order("createdAt", { ascending: false }).limit(perPage).offset((page - 1) * perPage);
-      return result;
-    } catch (error) {
-      throw error;
+    const user = await this.getUser();
+    if (!user) {
+      throw new Error("User not authenticated");
     }
+    return this.repository.getPaginated[PageItems](page, perPage);
   }
 
-  /**
-   * Get stats
-   */
   async getStats() {
-    try {
-      const user = await this.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-
-      const result = await this.supabase.from("[page-name]").select("*").order("createdAt", { ascending: false }).limit(perPage).offset((page - 1) * perPage);
-      return result;
-    } catch (error) {
-      throw error;
+    const user = await this.getUser();
+    if (!user) {
+      throw new Error("User not authenticated");
     }
+    return this.repository.getStats();
   }
 
-  /**
-   * Get user
-   */
-  async getUser() {
-    try {
-      const user = await this.supabase.auth.getUser();
-      return user;
-    } catch (error) {
-      throw error;
-    }
+  private getUser() {
+    return this.repository.getUser();
   }
 }
 
 /**
  * Factory for creating [PageName]Presenter instances
+ * ✅ Inject repository here (mock, Supabase, REST, etc.)
  */
 export class [PageName]PresenterFactory {
   static async createServer(): Promise<[PageName]Presenter> {
-    const supabase = createServerSupabaseClient();
-    return new [PageName]Presenter(
-      supabase,
-    );
+    // TODO: Replace Mock repository with real repository resolved from server container
+    const repository = new Mock[PageName]Repository();
+    return new [PageName]Presenter(repository);
   }
 
-  static async createClient(): Promise<[PageName]Presenter> {
-    const supabase = createClientSupabaseClient();
-    return new [PageName]Presenter(
-      supabase,
-    );
+  static createClient(): [PageName]Presenter {
+    // TODO: Replace Mock repository with client-side repository implementation when ready
+    const repository = new Mock[PageName]Repository();
+    return new [PageName]Presenter(repository);
   }
 }
 ```
 
 ### Key Features:
 
-- **Clean Architecture** with proper separation of concerns
-- **Authentication and authorization** checks
-- **CRUD operations** with proper error handling
+- **Repository abstraction** for infrastructure independence
+- **Mock repository** ready for quick prototyping and testing
+- **Swap-in real repositories** via dependency injection (Supabase, REST, etc.)
+- **Authentication and authorization** checks inside presenter
 - **Parallel data fetching** for performance
-- **Factory pattern** for dependency injection
-- **Server and client factories** for different environments
+- **Factory pattern** controlling dependency wiring
 
 ---
 
 ## 3. Pattern: `src/presentation/presenters/[page-name]/use[PageName]Presenter.ts`
 
+### 3A. Pattern with Parameters (e.g., courseId, shopId)
+
 ```typescript
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { [PageName]ViewModel } from "./[PageName]Presenter";
-import { [PageName]Presenter } from "./[PageName]Presenter";
 import { [PageName]PresenterFactory } from "./[PageName]Presenter";
 import type { [PageItem] } from "./[PageName]Presenter";
 import type { Create[PageItem]Data } from "./[PageName]Presenter";
 import type { Update[PageItem]Data } from "./[PageName]Presenter";
 
-const presenter = await [PageName]PresenterFactory.createClient();
+// Initialize presenter instance once (singleton pattern)
+// ไม่ต้อง await เพราะ createClient() return instance โดยตรง
+const presenter = [PageName]PresenterFactory.createClient();
 
-export interface [PageName]PresenterHook {
-  // State
+export interface [PageName]PresenterState {
   viewModel: [PageName]ViewModel | null;
   loading: boolean;
   error: string | null;
-
-  // Modal states
   isCreateModalOpen: boolean;
   isEditModalOpen: boolean;
   isDeleteModalOpen: boolean;
   selectedItemId: string | null;
+}
 
-  // Actions
+export interface [PageName]PresenterActions {
   loadData: () => Promise<void>;
   create[PageItem]: (data: Create[PageItem]Data) => Promise<void>;
   update[PageItem]: (data: Update[PageItem]Data) => Promise<void>;
   delete[PageItem]: (id: string) => Promise<void>;
   get[PageItem]ById: (id: string) => Promise<[PageItem]>;
-  getPaginated[PageItems]: (page: number, perPage: number) => Promise<void>;
-
-  // Modal actions
   openCreateModal: () => void;
   closeCreateModal: () => void;
-  openEditModal: (item: [PageItem]) => void;
+  openEditModal: (itemId: string) => void;
   closeEditModal: () => void;
-  openDeleteModal: (item: [PageItem]) => void;
+  openDeleteModal: (itemId: string) => void;
   closeDeleteModal: () => void;
+  setError: (error: string | null) => void;
 }
 
 /**
@@ -393,8 +403,8 @@ export interface [PageName]PresenterHook {
  */
 export function use[PageName]Presenter(
   [paramName]: string,
-  initialViewModel: [PageName]ViewModel | null = null
-): [PageName]PresenterHook {
+  initialViewModel?: [PageName]ViewModel
+): [[PageName]PresenterState, [PageName]PresenterActions] {
   const [viewModel, setViewModel] = useState<[PageName]ViewModel | null>(
     initialViewModel || null
   );
@@ -492,61 +502,62 @@ export function use[PageName]Presenter(
       setLoading(false);
     }
   }, [loadData]);
-  };
 
-  const openCreateModal = () => {
+  /**
+   * Get item by ID
+   */
+  const get[PageItem]ById = useCallback(async (id: string) => {
+    try {
+      return await presenter.get[PageItem]ById(id);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      console.error("Error getting [page-item]:", err);
+      throw err;
+    }
+  }, []);
+
+  // Modal actions
+  const openCreateModal = useCallback(() => {
     setIsCreateModalOpen(true);
     setError(null);
-  };
+  }, []);
 
-  const closeCreateModal = () => {
+  const closeCreateModal = useCallback(() => {
     setIsCreateModalOpen(false);
     setError(null);
-  };
+  }, []);
 
-  const openEditModal = (itemId: string) => {
+  const openEditModal = useCallback((itemId: string) => {
     setSelectedItemId(itemId);
     setIsEditModalOpen(true);
     setError(null);
-  };
+  }, []);
 
-  const closeEditModal = () => {
+  const closeEditModal = useCallback(() => {
     setIsEditModalOpen(false);
     setSelectedItemId(null);
     setError(null);
-  };
+  }, []);
 
-  const openDeleteModal = (itemId: string) => {
+  const openDeleteModal = useCallback((itemId: string) => {
     setSelectedItemId(itemId);
     setIsDeleteModalOpen(true);
     setError(null);
-  };
+  }, []);
 
-  const closeDeleteModal = () => {
+  const closeDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedItemId(null);
     setError(null);
-  };
+  }, []);
 
-  const handleSetFilters = (newFilters: [PageFilters]) => {
-    setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
-
-  const handleSetCurrentPage = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const reset = () => {
-    setLoading(false);
-    setError(null);
-    setIsCreateModalOpen(false);
-    setIsEditModalOpen(false);
-    setIsDeleteModalOpen(false);
-    setSelectedItemId(null);
-    setFilters({});
-    setCurrentPage(1);
-  };
+  // Load data on mount or when paramName changes
+  useEffect(() => {
+    if (!initialViewModel) {
+      loadData();
+    }
+  }, [[paramName]]);
 
   return [
     {
@@ -557,23 +568,256 @@ export function use[PageName]Presenter(
       isEditModalOpen,
       isDeleteModalOpen,
       selectedItemId,
-      filters,
-      currentPage,
     },
     {
-      refreshData,
+      loadData,
       create[PageItem],
       update[PageItem],
       delete[PageItem],
+      get[PageItem]ById,
       openCreateModal,
       closeCreateModal,
       openEditModal,
       closeEditModal,
       openDeleteModal,
       closeDeleteModal,
-      setFilters: handleSetFilters,
-      setCurrentPage: handleSetCurrentPage,
-      reset,
+      setError,
+    },
+  ];
+}
+```
+
+### 3B. Pattern with userId (Authentication Required)
+
+**⚠️ IMPORTANT: ใช้ Zustand Store ดึง userId ใน Custom Hook, ไม่ส่งเป็น parameter**
+
+```typescript
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useAuthStore } from "@/src/presentation/stores/authStore";
+import { [PageName]ViewModel } from "./[PageName]Presenter";
+import { [PageName]PresenterFactory } from "./[PageName]Presenter";
+import type { [PageItem] } from "./[PageName]Presenter";
+import type { Create[PageItem]Data } from "./[PageName]Presenter";
+import type { Update[PageItem]Data } from "./[PageName]Presenter";
+
+// Initialize presenter instance once (singleton pattern)
+const presenter = [PageName]PresenterFactory.createClient();
+
+export interface [PageName]PresenterState {
+  viewModel: [PageName]ViewModel | null;
+  loading: boolean;
+  error: string | null;
+  isCreateModalOpen: boolean;
+  isEditModalOpen: boolean;
+  isDeleteModalOpen: boolean;
+  selectedItemId: string | null;
+}
+
+export interface [PageName]PresenterActions {
+  loadData: () => Promise<void>;
+  create[PageItem]: (data: Create[PageItem]Data) => Promise<void>;
+  update[PageItem]: (data: Update[PageItem]Data) => Promise<void>;
+  delete[PageItem]: (id: string) => Promise<void>;
+  get[PageItem]ById: (id: string) => Promise<[PageItem]>;
+  openCreateModal: () => void;
+  closeCreateModal: () => void;
+  openEditModal: (itemId: string) => void;
+  closeEditModal: () => void;
+  openDeleteModal: (itemId: string) => void;
+  closeDeleteModal: () => void;
+  setError: (error: string | null) => void;
+}
+
+/**
+ * Custom hook for [PageName] presenter with authentication
+ * ✅ ใช้ useAuthStore() ดึง userId แทนการรับเป็น parameter
+ */
+export function use[PageName]Presenter(
+  initialViewModel?: [PageName]ViewModel
+): [[PageName]PresenterState, [PageName]PresenterActions] {
+  const { user } = useAuthStore(); // ดึง user จาก Zustand store
+  const [viewModel, setViewModel] = useState<[PageName]ViewModel | null>(
+    initialViewModel || null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modal states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+
+  /**
+   * Load data from presenter using userId from store
+   */
+  const loadData = useCallback(async () => {
+    if (!user?.id) {
+      setError("User not authenticated");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const newViewModel = await presenter.getViewModel(user.id);
+      setViewModel(newViewModel);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      console.error("Error loading [page-name] data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  /**
+   * Create a new item
+   */
+  const create[PageItem] = useCallback(async (data: Create[PageItem]Data) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await presenter.create[PageItem](data);
+      setIsCreateModalOpen(false);
+      await loadData();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      console.error("Error creating [page-item]:", err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadData]);
+
+  /**
+   * Update an existing item
+   */
+  const update[PageItem] = useCallback(async (data: Update[PageItem]Data) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await presenter.update[PageItem](data.id, data);
+      setIsEditModalOpen(false);
+      setSelectedItemId(null);
+      await loadData();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      console.error("Error updating [page-item]:", err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadData]);
+
+  /**
+   * Delete an item
+   */
+  const delete[PageItem] = useCallback(async (id: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await presenter.delete[PageItem](id);
+      setIsDeleteModalOpen(false);
+      setSelectedItemId(null);
+      await loadData();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      console.error("Error deleting [page-item]:", err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadData]);
+
+  /**
+   * Get item by ID
+   */
+  const get[PageItem]ById = useCallback(async (id: string) => {
+    try {
+      return await presenter.get[PageItem]ById(id);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(errorMessage);
+      console.error("Error getting [page-item]:", err);
+      throw err;
+    }
+  }, []);
+
+  // Modal actions
+  const openCreateModal = useCallback(() => {
+    setIsCreateModalOpen(true);
+    setError(null);
+  }, []);
+
+  const closeCreateModal = useCallback(() => {
+    setIsCreateModalOpen(false);
+    setError(null);
+  }, []);
+
+  const openEditModal = useCallback((itemId: string) => {
+    setSelectedItemId(itemId);
+    setIsEditModalOpen(true);
+    setError(null);
+  }, []);
+
+  const closeEditModal = useCallback(() => {
+    setIsEditModalOpen(false);
+    setSelectedItemId(null);
+    setError(null);
+  }, []);
+
+  const openDeleteModal = useCallback((itemId: string) => {
+    setSelectedItemId(itemId);
+    setIsDeleteModalOpen(true);
+    setError(null);
+  }, []);
+
+  const closeDeleteModal = useCallback(() => {
+    setIsDeleteModalOpen(false);
+    setSelectedItemId(null);
+    setError(null);
+  }, []);
+
+  // Load data on mount or when user changes
+  useEffect(() => {
+    if (!initialViewModel && user?.id) {
+      loadData();
+    }
+  }, [user?.id, initialViewModel, loadData]);
+
+  return [
+    {
+      viewModel,
+      loading,
+      error,
+      isCreateModalOpen,
+      isEditModalOpen,
+      isDeleteModalOpen,
+      selectedItemId,
+    },
+    {
+      loadData,
+      create[PageItem],
+      update[PageItem],
+      delete[PageItem],
+      get[PageItem]ById,
+      openCreateModal,
+      closeCreateModal,
+      openEditModal,
+      closeEditModal,
+      openDeleteModal,
+      closeDeleteModal,
       setError,
     },
   ];
@@ -582,12 +826,15 @@ export function use[PageName]Presenter(
 
 ### Key Features:
 
-- **State and actions separation** following the presenter pattern
+- **Pattern 3A**: รับ `[paramName]` parameter สำหรับ dynamic routes
+- **Pattern 3B**: ใช้ `useAuthStore()` ดึง `userId` แทนการรับเป็น parameter
+- **Singleton pattern**: สร้าง presenter instance ครั้งเดียวนอก hook
+- **State and actions separation**: แยก state และ actions เป็น tuple
 - **CRUD operations** with validation and error handling
 - **Modal state management** for create/edit/delete operations
-- **Filtering and pagination** support
 - **Initial data support** from server component
 - **Type safety** with TypeScript interfaces
+- **Auto-load data** on mount or when dependencies change
 
 ---
 
@@ -676,7 +923,7 @@ export function [PageName]View({ [paramName], initialViewModel }: [PageName]View
                 {state.error}
               </p>
               <button
-                onClick={actions.refreshData}
+                onClick={actions.loadData}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 ลองใหม่อีกครั้ง
@@ -926,6 +1173,9 @@ export function [PageName]View({ [paramName], initialViewModel }: [PageName]View
     </div>
   );
 }
+```
+
+### Key Features:
 
 - **Client component** with "use client" directive
 - **Presenter hook integration** for state and actions
@@ -1033,4 +1283,7 @@ Ensure comprehensive testing:
 ---
 
 This pattern ensures consistency across all backend pages while maintaining Clean Architecture principles and providing excellent user experience.
+
+```
+
 ```
