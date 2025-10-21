@@ -112,6 +112,7 @@ interface HUDPanelToggleProps {
     | "top-center"
     | "bottom-left"
     | "bottom-right";
+  className?: string;
   /**
    * Use portal to render at document body level
    * @default true
@@ -129,6 +130,7 @@ export function HUDPanelToggle({
   icon,
   onClick,
   position = "top-left",
+  className = "",
   usePortal = true,
   portalZIndex = "low",
 }: HUDPanelToggleProps) {
@@ -143,7 +145,7 @@ export function HUDPanelToggle({
   const toggleButton = (
     <button
       onClick={onClick}
-      className={`absolute ${positionClasses[position]} px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-50 flex items-center gap-2 pointer-events-auto`}
+      className={`absolute ${positionClasses[position]} px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-50 flex items-center gap-2 pointer-events-auto ${className}`}
     >
       {icon}
       {label}

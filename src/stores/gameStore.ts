@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Character } from "@/src/domain/types/character.types";
+import { ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
 
 /**
  * Game Store - Centralized state management
@@ -30,6 +31,17 @@ export interface InventoryItem {
   quantity: number;
   equippedBy?: string; // Character ID
 }
+
+export interface InventoryConfig {
+  capacity: number;
+  autoSort: boolean;
+  filteredCategory: InventoryCategory;
+  sortOrder: InventorySortOrder;
+  selectedItemId: string | null;
+}
+
+export type InventoryCategory = "all" | "weapons" | "armor" | "consumables" | "materials" | "keyItems";
+export type InventorySortOrder = "name-asc" | "rarity-desc" | "type";
 
 export interface RecruitedCharacter {
   characterId: string; // Reference to master data
@@ -102,6 +114,7 @@ interface GameState {
   
   // Inventory
   inventory: InventoryItem[];
+  inventoryConfig: InventoryConfig;
   gold: number;
   
   // Game Progress
@@ -131,6 +144,14 @@ interface GameState {
   addItem: (itemId: string, quantity: number) => void;
   removeItem: (itemId: string, quantity: number) => void;
   unequipItem: (itemId: string) => void;
+  setInventoryCapacity: (capacity: number) => void;
+  setInventoryCategory: (category: InventoryCategory) => void;
+  setInventorySortOrder: (order: InventorySortOrder) => void;
+  setSelectedInventoryItem: (itemId: string | null) => void;
+  toggleInventoryAutoSort: () => void;
+  sortInventory: (order?: InventorySortOrder) => void;
+  getInventorySlots: () => InventorySlot[];
+  getInventoryCapacity: () => InventoryCapacityStatus;
   addGold: (amount: number) => void;
   removeGold: (amount: number) => boolean;
   
@@ -192,6 +213,19 @@ const initialProgress: GameProgress = {
 // Helper function to generate UUID
 const generateId = () => `party_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+export interface InventorySlot {
+  slotIndex: number;
+  itemId: string | null;
+  quantity: number;
+}
+
+export interface InventoryCapacityStatus {
+  used: number;
+  capacity: number;
+  remaining: number;
+  isFull: boolean;
+}
+
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
@@ -199,6 +233,13 @@ export const useGameStore = create<GameState>()(
       parties: [], // Will be initialized on first load
       activePartyId: null,
       inventory: [],
+      inventoryConfig: {
+        capacity: 60,
+        autoSort: true,
+        filteredCategory: "all",
+        sortOrder: "rarity-desc",
+        selectedItemId: null,
+      },
       gold: 1000,
       progress: initialProgress,
       events: [],
@@ -208,7 +249,15 @@ export const useGameStore = create<GameState>()(
 
       addItem: (itemId: string, quantity: number) => {
         const state = get();
-        const existingItem = state.inventory.find((i) => i.itemId === itemId);
+        const { inventory, inventoryConfig } = state;
+        const existingItem = inventory.find((i) => i.itemId === itemId);
+
+        const currentSlots = inventory.reduce((acc, item) => acc + (item.quantity > 0 ? 1 : 0), 0);
+        const hasEmptySlot = currentSlots < inventoryConfig.capacity || existingItem;
+        if (!hasEmptySlot) {
+          console.warn("Inventory full. Cannot add item", itemId);
+          return;
+        }
 
         if (existingItem) {
           set({
@@ -233,6 +282,10 @@ export const useGameStore = create<GameState>()(
             quantity,
           },
         });
+
+        if (inventoryConfig.autoSort) {
+          get().sortInventory();
+        }
       },
 
       removeItem: (itemId: string, quantity: number) => {
@@ -256,6 +309,107 @@ export const useGameStore = create<GameState>()(
             ),
           });
         }
+      },
+
+      setInventoryCapacity: (capacity: number) => {
+        set((state) => ({
+          inventoryConfig: {
+            ...state.inventoryConfig,
+            capacity,
+          },
+        }));
+      },
+
+      setInventoryCategory: (category: InventoryCategory) => {
+        set((state) => ({
+          inventoryConfig: {
+            ...state.inventoryConfig,
+            filteredCategory: category,
+          },
+        }));
+      },
+
+      setInventorySortOrder: (order: InventorySortOrder) => {
+        set((state) => ({
+          inventoryConfig: {
+            ...state.inventoryConfig,
+            sortOrder: order,
+          },
+        }));
+        get().sortInventory(order);
+      },
+
+      setSelectedInventoryItem: (itemId: string | null) => {
+        set((state) => ({
+          inventoryConfig: {
+            ...state.inventoryConfig,
+            selectedItemId: itemId,
+          },
+        }));
+      },
+
+      toggleInventoryAutoSort: () => {
+        set((state) => ({
+          inventoryConfig: {
+            ...state.inventoryConfig,
+            autoSort: !state.inventoryConfig.autoSort,
+          },
+        }));
+      },
+
+      sortInventory: (order?: InventorySortOrder) => {
+        const state = get();
+        const sortBy = order ?? state.inventoryConfig.sortOrder;
+        set({
+          inventory: [...state.inventory].sort((a, b) => {
+            const itemA = ITEMS_MASTER_MAP[a.itemId];
+            const itemB = ITEMS_MASTER_MAP[b.itemId];
+
+            switch (sortBy) {
+              case "name-asc":
+                return (itemA?.name ?? "").localeCompare(itemB?.name ?? "");
+              case "type":
+                return (itemA?.type ?? "").localeCompare(itemB?.type ?? "");
+              case "rarity-desc":
+              default:
+                return (itemB?.rarity ?? 0) - (itemA?.rarity ?? 0);
+            }
+          }),
+        });
+      },
+
+      getInventorySlots: () => {
+        const state = get();
+        const { inventory, inventoryConfig } = state;
+        const slots: InventorySlot[] = [];
+        const sorted = [...inventory].sort((a, b) => a.itemId.localeCompare(b.itemId));
+
+        sorted.forEach((item, index) => {
+          if (index < inventoryConfig.capacity) {
+            slots.push({ slotIndex: index, itemId: item.itemId, quantity: item.quantity });
+          }
+        });
+
+        if (slots.length < inventoryConfig.capacity) {
+          for (let i = slots.length; i < inventoryConfig.capacity; i++) {
+            slots.push({ slotIndex: i, itemId: null, quantity: 0 });
+          }
+        }
+
+        return slots;
+      },
+
+      getInventoryCapacity: () => {
+        const state = get();
+        const usedSlots = state.inventory.length;
+        const { capacity } = state.inventoryConfig;
+        const remaining = Math.max(capacity - usedSlots, 0);
+        return {
+          used: usedSlots,
+          capacity,
+          remaining,
+          isFull: remaining === 0,
+        };
       },
 
       equipItem: (itemId: string, characterId: string) => {

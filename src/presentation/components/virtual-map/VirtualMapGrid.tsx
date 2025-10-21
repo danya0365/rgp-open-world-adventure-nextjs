@@ -287,7 +287,7 @@ export function VirtualMapGrid({
   const mapHeight = actualViewportHeight * gridSize;
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-950">
       {/* Grid Pattern Background */}
       <div
         className="absolute inset-0 opacity-10"

@@ -9,10 +9,8 @@ import { Location } from "@/src/domain/types/location.types";
 import { useKeyboardMovement } from "@/src/hooks/useKeyboardMovement";
 import { useMovementAnimation } from "@/src/hooks/useMovementAnimation";
 import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
-import {
-  HUDPanel,
-  HUDPanelToggle,
-} from "@/src/presentation/components/layout/HUDPanel";
+import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
+import { InventoryPanel } from "@/src/presentation/components/hud/inventory/organisms/InventoryPanel";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import {
   ChevronRight,
@@ -67,6 +65,7 @@ export function VirtualMapFullView({
   // Local state for minimap data and map info data
   const [minimapData, setMinimapData] = useState<MinimapViewProps | null>(null);
   const [mapInfoData, setMapInfoData] = useState<MapInfoViewProps | null>(null);
+  const [showInventoryPanel, setShowInventoryPanel] = useState(false);
 
   // Enable movement animation
   useMovementAnimation();
@@ -449,6 +448,30 @@ export function VirtualMapFullView({
             icon={<Map className="w-4 h-4" />}
             onClick={() => setShowMinimapPanel(true)}
             position="top-right"
+            className="translate-y-0"
+          />
+        )}
+
+        {/* Inventory Panel - Top Right (stacked below minimap toggle) */}
+        {showInventoryPanel ? (
+          <HUDPanel
+            title="คลังไอเทม"
+            icon={<span className="text-xl">🎒</span>}
+            position="top-right"
+            onClose={() => setShowInventoryPanel(false)}
+            maxHeight="520px"
+            maxWidth="460px"
+            className="translate-y-16"
+          >
+            <InventoryPanel />
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label="Inventory"
+            icon={<span className="text-lg">🎒</span>}
+            onClick={() => setShowInventoryPanel(true)}
+            position="top-right"
+            className="translate-y-16"
           />
         )}
 
