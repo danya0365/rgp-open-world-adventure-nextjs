@@ -1,8 +1,12 @@
 "use client";
 
 import { ShopMarker } from "@/src/domain/types/location.types";
+import { Item } from "@/src/domain/types/item.types";
+import { ITEMS_MASTER, ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
+import { useGameStore } from "@/src/stores/gameStore";
+import { useShallow } from "zustand/react/shallow";
 import { X, ShoppingBag, Sword, Shield, Sparkles, Droplet, Coins, Plus, Minus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface ShopModalProps {
   shop: ShopMarker;
@@ -11,40 +15,67 @@ interface ShopModalProps {
   onBuy?: (itemId: string, quantity: number, totalCost: number) => void;
 }
 
-// Mock shop inventory (TODO: Replace with actual shop data)
-const SHOP_INVENTORY = {
-  weapons: [
-    { id: "sword-iron", name: "Iron Sword", price: 150, icon: "⚔️", stats: "+15 ATK" },
-    { id: "sword-steel", name: "Steel Sword", price: 300, icon: "⚔️", stats: "+25 ATK" },
-    { id: "bow-wooden", name: "Wooden Bow", price: 120, icon: "🏹", stats: "+12 ATK" },
-  ],
-  armor: [
-    { id: "armor-leather", name: "Leather Armor", price: 200, icon: "🛡️", stats: "+20 DEF" },
-    { id: "armor-chainmail", name: "Chainmail", price: 400, icon: "🛡️", stats: "+35 DEF" },
-    { id: "helmet-iron", name: "Iron Helmet", price: 150, icon: "⛑️", stats: "+15 DEF" },
-  ],
-  general: [
-    { id: "potion-health", name: "Health Potion", price: 50, icon: "💊", stats: "Restore 50 HP" },
-    { id: "potion-mana", name: "Mana Potion", price: 50, icon: "🧪", stats: "Restore 30 MP" },
-    { id: "antidote", name: "Antidote", price: 30, icon: "🍶", stats: "Cure Poison" },
-  ],
-  magic: [
-    { id: "scroll-fireball", name: "Fireball Scroll", price: 200, icon: "📜", stats: "Fire DMG" },
-    { id: "scroll-heal", name: "Heal Scroll", price: 150, icon: "📜", stats: "Restore 100 HP" },
-    { id: "crystal-mana", name: "Mana Crystal", price: 300, icon: "💎", stats: "+50 Max MP" },
-  ],
-  potions: [
-    { id: "potion-health", name: "Health Potion", price: 50, icon: "💊", stats: "Restore 50 HP" },
-    { id: "potion-mana", name: "Mana Potion", price: 50, icon: "🧪", stats: "Restore 30 MP" },
-    { id: "potion-strength", name: "Strength Potion", price: 100, icon: "💪", stats: "+20% ATK (10min)" },
-    { id: "elixir-life", name: "Elixir of Life", price: 500, icon: "✨", stats: "Full HP/MP" },
-  ],
-  items: [
-    { id: "potion-health", name: "Health Potion", price: 50, icon: "💊", stats: "Restore 50 HP" },
-    { id: "potion-mana", name: "Mana Potion", price: 50, icon: "🧪", stats: "Restore 30 MP" },
-    { id: "antidote", name: "Antidote", price: 30, icon: "🍶", stats: "Cure Poison" },
-  ],
+const getShopInventory = (shopType: ShopMarker["shopType"]): Item[] => {
+  switch (shopType) {
+    case "weapons":
+      return ITEMS_MASTER.filter((item) => item.type === "weapon").slice(0, 12);
+    case "armor":
+      return ITEMS_MASTER.filter((item) => item.type === "armor").slice(0, 12);
+    case "magic":
+      return ITEMS_MASTER.filter((item) => item.type === "consumable" || item.type === "accessory").slice(0, 12);
+    case "potions":
+      return ITEMS_MASTER.filter((item) => item.type === "consumable").slice(0, 12);
+    case "items":
+      return ITEMS_MASTER.filter((item) => item.type === "material" || item.type === "consumable").slice(0, 12);
+    default:
+      return ITEMS_MASTER.slice(0, 12);
+  }
 };
+
+const getItemSummary = (item: Item) => {
+  if (item.type === "weapon") {
+    const weapon = item as Item & { atk?: number; critRate?: number; critDamage?: number; range?: number };
+    const summary: string[] = [];
+    if (weapon.atk) summary.push(`ATK +${weapon.atk}`);
+    if (weapon.critRate) summary.push(`CRIT ${weapon.critRate}%`);
+    if (weapon.critDamage) summary.push(`CRIT DMG +${weapon.critDamage}%`);
+    if (weapon.range) summary.push(`Range ${weapon.range}`);
+    return summary.length > 0 ? summary.join(" • ") : item.description;
+  }
+  if (item.type === "armor") {
+    const armor = item as Item & { def?: number; elementalResistance?: { element: string; value: number }[] };
+    const summary: string[] = [];
+    if (armor.def) summary.push(`DEF +${armor.def}`);
+    if (armor.elementalResistance && armor.elementalResistance.length > 0) {
+      summary.push(
+        armor.elementalResistance
+          .map((resistance) => `${resistance.element.toUpperCase()} +${resistance.value}%`)
+          .join(" / ")
+      );
+    }
+    return summary.length > 0 ? summary.join(" • ") : item.description;
+  }
+  if (item.type === "consumable") {
+    const consumable = item as Item & { effects?: { type: string; value: number; target: string; duration?: number }[] };
+    if (!consumable.effects || consumable.effects.length === 0) {
+      return item.description;
+    }
+    return consumable.effects
+      .map((effect) => {
+        const parts = [effect.type.toUpperCase(), `${effect.value}`];
+        if (effect.duration) parts.push(`${effect.duration}T`);
+        return parts.join(" ");
+      })
+      .join(" • ");
+  }
+  return item.description;
+};
+
+interface SellableEntry {
+  itemId: string;
+  quantity: number;
+  item: Item | null;
+}
 
 export function ShopModal({
   shop,
@@ -53,13 +84,51 @@ export function ShopModal({
   onBuy,
 }: ShopModalProps) {
   const [selectedTab, setSelectedTab] = useState<"buy" | "sell">("buy");
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedBuyItem, setSelectedBuyItem] = useState<Item | null>(null);
+  const [buyQuantity, setBuyQuantity] = useState(1);
+  const [selectedSellItemId, setSelectedSellItemId] = useState<string | null>(null);
+  const [sellQuantity, setSellQuantity] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  const {
+    gold,
+    inventoryItems,
+    addItem,
+    removeItem,
+    addGold,
+    removeGold,
+  } = useGameStore(
+    useShallow((state) => ({
+      gold: state.gold,
+      inventoryItems: state.inventory,
+      addItem: state.addItem,
+      removeItem: state.removeItem,
+      addGold: state.addGold,
+      removeGold: state.removeGold,
+    }))
+  );
 
   const shopType = shop.shopType || "general";
-  const inventory = SHOP_INVENTORY[shopType as keyof typeof SHOP_INVENTORY] || SHOP_INVENTORY.general;
+  const shopInventory = useMemo(() => getShopInventory(shopType), [shopType]);
+  const sellableItems = useMemo<SellableEntry[]>(() => {
+    return inventoryItems
+      .map((invItem) => ({
+        itemId: invItem.itemId,
+        quantity: invItem.quantity,
+        item: ITEMS_MASTER_MAP[invItem.itemId] ?? null,
+      }))
+      .filter((entry) => entry.quantity > 0);
+  }, [inventoryItems]);
+
+  useEffect(() => {
+    setError(null);
+    setSelectedBuyItem(null);
+    setBuyQuantity(1);
+    setSelectedSellItemId(null);
+    setSellQuantity(1);
+  }, [selectedTab]);
+
+  if (!isOpen) return null;
 
   const getShopIcon = () => {
     switch (shopType) {
@@ -114,12 +183,47 @@ export function ShopModal({
   const theme = getShopTheme();
   const Icon = getShopIcon();
 
-  const handleBuy = (item: typeof inventory[0]) => {
-    const totalCost = item.price * quantity;
-    onBuy?.(item.id, quantity, totalCost);
-    console.log(`Bought ${quantity}x ${item.name} for ${totalCost} gold`);
-    setSelectedItem(null);
-    setQuantity(1);
+  const handleBuy = (item: Item) => {
+    setError(null);
+    const totalCost = item.buyPrice * buyQuantity;
+    if (totalCost > gold) {
+      setError("ทองไม่พอสำหรับการซื้อครั้งนี้");
+      return;
+    }
+    const removed = removeGold(totalCost);
+    if (!removed) {
+      setError("ทองไม่พอสำหรับการซื้อครั้งนี้");
+      return;
+    }
+    addItem(item.id, buyQuantity);
+    onBuy?.(item.id, buyQuantity, totalCost);
+    console.log(`Bought ${buyQuantity}x ${item.name} for ${totalCost} gold`);
+    setSelectedBuyItem(null);
+    setBuyQuantity(1);
+  };
+
+  const handleSell = (entry: SellableEntry) => {
+    setError(null);
+    if (sellQuantity <= 0) {
+      setError("จำนวนขายต้องมากกว่า 0");
+      return;
+    }
+    if (sellQuantity > entry.quantity) {
+      setError("มีไอเทมไม่พอสำหรับการขาย");
+      return;
+    }
+    const itemData = entry.item || ITEMS_MASTER_MAP[entry.itemId];
+    const sellPrice = itemData?.sellPrice ?? 0;
+    const totalGain = sellPrice * sellQuantity;
+    if (totalGain <= 0) {
+      setError("ไอเทมนี้ไม่สามารถขายได้");
+      return;
+    }
+    removeItem(entry.itemId, sellQuantity);
+    addGold(totalGain);
+    console.log(`Sold ${sellQuantity}x ${entry.itemId} for ${totalGain} gold`);
+    setSelectedSellItemId(null);
+    setSellQuantity(1);
   };
 
   return (
@@ -183,49 +287,51 @@ export function ShopModal({
             {selectedTab === "buy" ? (
               /* Buy Tab */
               <div className="space-y-3">
-                {inventory.map((item) => (
+                {shopInventory.map((item) => (
                   <div
                     key={item.id}
                     className="bg-white/5 hover:bg-white/10 rounded-lg p-4 transition-all border-2 border-transparent hover:border-white/20"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">
-                        <span className="text-3xl">{item.icon}</span>
+                        <span className="text-3xl">{item.type === "weapon" ? "⚔️" : item.type === "armor" ? "🛡️" : "🧪"}</span>
                         <div className="flex-1">
                           <h4 className="text-white font-bold text-lg">{item.name}</h4>
-                          <p className="text-white/60 text-sm">{item.stats}</p>
+                          <p className="text-white/60 text-sm">{getItemSummary(item)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 text-yellow-400 font-bold">
                           <Coins className="w-5 h-5" />
-                          {item.price}
+                          {item.buyPrice}
                         </div>
-                        {selectedItem === item.id ? (
+                        {selectedBuyItem?.id === item.id ? (
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                              onClick={() => setBuyQuantity(Math.max(1, buyQuantity - 1))}
                               className="w-8 h-8 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center"
                             >
                               <Minus className="w-4 h-4 text-white" />
                             </button>
-                            <span className="text-white font-bold w-8 text-center">{quantity}</span>
+                            <span className="text-white font-bold w-8 text-center">{buyQuantity}</span>
                             <button
-                              onClick={() => setQuantity(quantity + 1)}
+                              onClick={() => setBuyQuantity(buyQuantity + 1)}
                               className="w-8 h-8 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center"
                             >
                               <Plus className="w-4 h-4 text-white" />
                             </button>
                             <button
                               onClick={() => handleBuy(item)}
-                              className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all`}
+                              className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-all disabled:opacity-60`}
+                              disabled={item.buyPrice * buyQuantity > gold}
                             >
-                              Buy ({item.price * quantity}g)
+                              Buy ({item.buyPrice * buyQuantity}g)
                             </button>
                             <button
                               onClick={() => {
-                                setSelectedItem(null);
-                                setQuantity(1);
+                                setSelectedBuyItem(null);
+                                setBuyQuantity(1);
+                                setError(null);
                               }}
                               className="text-white/60 hover:text-white"
                             >
@@ -234,7 +340,11 @@ export function ShopModal({
                           </div>
                         ) : (
                           <button
-                            onClick={() => setSelectedItem(item.id)}
+                            onClick={() => {
+                              setSelectedBuyItem(item);
+                              setBuyQuantity(1);
+                              setError(null);
+                            }}
                             className={`bg-gradient-to-r ${theme.gradient} hover:opacity-80 text-white font-bold py-2 px-6 rounded-lg transition-all`}
                           >
                             Select
@@ -247,22 +357,113 @@ export function ShopModal({
               </div>
             ) : (
               /* Sell Tab */
-              <div className="text-center py-12">
-                <ShoppingBag className="w-16 h-16 text-white/30 mx-auto mb-4" />
-                <p className="text-white/60 text-lg">Your inventory is empty</p>
-                <p className="text-white/40 text-sm mt-2">
-                  Collect items from battles and treasures to sell them here
-                </p>
+              <div className="space-y-3">
+                {sellableItems.length === 0 ? (
+                  <div className="text-center py-12">
+                    <ShoppingBag className="w-16 h-16 text-white/30 mx-auto mb-4" />
+                    <p className="text-white/60 text-lg">ยังไม่มีไอเทมในคลัง</p>
+                    <p className="text-white/40 text-sm mt-2">
+                      ลองออกผจญภัยหรือเปิดหีบสมบัติเพื่อหาไอเทมมาขาย</p>
+                  </div>
+                ) : (
+                  sellableItems.map((entry) => {
+                    const itemData = entry.item;
+                    const displayName = itemData?.name ?? entry.itemId;
+                    const description = itemData ? getItemSummary(itemData) : "Unknown item";
+                    const sellPrice = itemData?.sellPrice ?? 0;
+                    return (
+                      <div
+                        key={entry.itemId}
+                        className="bg-white/5 hover:bg-white/10 rounded-lg p-4 transition-all border-2 border-transparent hover:border-white/20"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <span className="text-3xl">
+                              {itemData?.type === "weapon"
+                                ? "⚔️"
+                                : itemData?.type === "armor"
+                                ? "🛡️"
+                                : itemData?.type === "consumable"
+                                ? "🧪"
+                                : "🎒"}
+                            </span>
+                            <div className="flex-1">
+                              <h4 className="text-white font-bold text-lg">{displayName}</h4>
+                              <p className="text-white/60 text-sm">{description}</p>
+                              <p className="text-white/40 text-xs">Owned: {entry.quantity}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-yellow-400 font-bold">
+                              <Coins className="w-5 h-5" />
+                              {sellPrice}
+                            </div>
+                            {selectedSellItemId === entry.itemId ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setSellQuantity(Math.max(1, sellQuantity - 1))}
+                                  className="w-8 h-8 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center"
+                                >
+                                  <Minus className="w-4 h-4 text-white" />
+                                </button>
+                                <span className="text-white font-bold w-8 text-center">{sellQuantity}</span>
+                                <button
+                                  onClick={() => setSellQuantity(Math.min(entry.quantity, sellQuantity + 1))}
+                                  className="w-8 h-8 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center"
+                                >
+                                  <Plus className="w-4 h-4 text-white" />
+                                </button>
+                                <button
+                                  onClick={() => handleSell(entry)}
+                                  className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-all"
+                                >
+                                  Sell ({sellPrice * sellQuantity}g)
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedSellItemId(null);
+                                    setSellQuantity(1);
+                                    setError(null);
+                                  }}
+                                  className="text-white/60 hover:text-white"
+                                >
+                                  <X className="w-5 h-5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setSelectedSellItemId(entry.itemId);
+                                  setSellQuantity(1);
+                                  setError(null);
+                                }}
+                                className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-80 text-white font-bold py-2 px-6 rounded-lg transition-all"
+                              >
+                                Select
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             )}
           </div>
+
+          {error && (
+            <div className="px-6 pb-2 text-center text-red-300 text-sm font-semibold">
+              {error}
+            </div>
+          )}
 
           {/* Footer */}
           <div className="border-t border-white/10 p-4 bg-black/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Coins className="w-6 h-6" />
-                <span className="font-bold text-xl">1,250</span>
+                <span className="font-bold text-xl">{gold.toLocaleString()}</span>
                 <span className="text-white/60">Gold</span>
               </div>
               <button

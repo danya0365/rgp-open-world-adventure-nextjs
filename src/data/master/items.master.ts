@@ -313,3 +313,11 @@ export const ITEMS_MASTER: Item[] = [
   ...MATERIALS_MASTER,
   ...KEY_ITEMS_MASTER,
 ];
+
+export const ITEMS_MASTER_MAP: Record<string, Item> = ITEMS_MASTER.reduce(
+  (acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  },
+  {} as Record<string, Item>
+);
