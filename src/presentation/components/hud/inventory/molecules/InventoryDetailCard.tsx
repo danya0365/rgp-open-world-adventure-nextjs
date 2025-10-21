@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Item } from "@/src/domain/types/item.types";
 import { ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ interface InventoryDetailCardProps {
   itemId: string | null;
   quantity: number;
   className?: string;
+  actions?: ReactNode;
 }
 
 const rarityColor: Record<Item["rarity"], string> = {
@@ -19,7 +21,7 @@ const rarityColor: Record<Item["rarity"], string> = {
   mythic: "text-pink-300",
 };
 
-export function InventoryDetailCard({ itemId, quantity, className }: InventoryDetailCardProps) {
+export function InventoryDetailCard({ itemId, quantity, className, actions }: InventoryDetailCardProps) {
   const item = itemId ? ITEMS_MASTER_MAP[itemId] : null;
 
   if (!item) {
@@ -75,6 +77,8 @@ export function InventoryDetailCard({ itemId, quantity, className }: InventoryDe
         <span>จำนวนที่มี: <span className="font-semibold text-white">{quantity}</span></span>
         <span>ราคาขาย: <span className="font-semibold text-amber-300">{item.sellPrice}g</span></span>
       </div>
+
+      {actions && <div className="pt-4 border-t border-white/10 space-y-3">{actions}</div>}
     </div>
   );
 }

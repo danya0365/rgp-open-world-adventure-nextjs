@@ -143,6 +143,7 @@ interface GameState {
   
   addItem: (itemId: string, quantity: number) => void;
   removeItem: (itemId: string, quantity: number) => void;
+  equipItem: (itemId: string, characterId: string) => void;
   unequipItem: (itemId: string) => void;
   setInventoryCapacity: (capacity: number) => void;
   setInventoryCategory: (category: InventoryCategory) => void;
