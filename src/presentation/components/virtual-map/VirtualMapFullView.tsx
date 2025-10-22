@@ -9,6 +9,7 @@ import { Location } from "@/src/domain/types/location.types";
 import { useKeyboardMovement } from "@/src/hooks/useKeyboardMovement";
 import { useMovementAnimation } from "@/src/hooks/useMovementAnimation";
 import { InventoryPanel } from "@/src/presentation/components/hud/inventory/organisms/InventoryPanel";
+import { LootBoxPanel } from "@/src/presentation/components/hud/lootbox/organisms/LootBoxPanel";
 import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
 import {
   HUDPanel,
@@ -69,6 +70,7 @@ export function VirtualMapFullView({
   const [minimapData, setMinimapData] = useState<MinimapViewProps | null>(null);
   const [mapInfoData, setMapInfoData] = useState<MapInfoViewProps | null>(null);
   const [showInventoryPanel, setShowInventoryPanel] = useState(false);
+  const [showLootBoxPanel, setShowLootBoxPanel] = useState(false);
 
   // Enable movement animation
   useMovementAnimation();
@@ -475,7 +477,30 @@ export function VirtualMapFullView({
             icon={<span className="text-lg">🎒</span>}
             onClick={() => setShowInventoryPanel(true)}
             position="top-right"
-            className="translate-y-16"
+            stackIndex={1}
+          />
+        )}
+
+        {/* Loot Box Panel - Bottom Right */}
+        {showLootBoxPanel ? (
+          <HUDPanel
+            title="กล่องสุ่ม"
+            icon={<span className="text-xl">🎁</span>}
+            position="bottom-right"
+            onClose={() => setShowLootBoxPanel(false)}
+            layout="fullscreen"
+            fullscreenMaxWidth="min(1100px, 95vw)"
+            fullscreenMaxHeight="min(720px, 90vh)"
+          >
+            <LootBoxPanel />
+          </HUDPanel>
+        ) : (
+          <HUDPanelToggle
+            label="กล่องสุ่ม"
+            icon={<span className="text-lg">🎁</span>}
+            onClick={() => setShowLootBoxPanel(true)}
+            position="bottom-right"
+            stackIndex={1}
           />
         )}
 

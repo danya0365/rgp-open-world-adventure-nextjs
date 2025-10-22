@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import type { CSSProperties } from "react";
 import { ReactNode } from "react";
 import { HUDPortal } from "./HUDPortal";
 
@@ -153,6 +154,11 @@ interface HUDPanelToggleProps {
    * @default "low"
    */
   portalZIndex?: "low" | "medium" | "high" | "modal";
+  /**
+   * Stacking index for positioning multiple toggles at same corner
+   * 0 = base position. For top positions positive index pushes downward, for bottom positions pushes upward.
+   */
+  stackIndex?: number;
 }
 
 export function HUDPanelToggle({
@@ -163,6 +169,7 @@ export function HUDPanelToggle({
   className = "",
   usePortal = true,
   portalZIndex = "low",
+  stackIndex = 0,
 }: HUDPanelToggleProps) {
   const positionClasses = {
     "top-left": "top-4 left-4",
@@ -172,10 +179,25 @@ export function HUDPanelToggle({
     "bottom-right": "bottom-4 right-4",
   };
 
+  const STACK_SPACING = 60; // px spacing between stacked toggles
+  const isBottom = position.startsWith("bottom");
+  const isTop = position.startsWith("top");
+  const offset = Math.max(stackIndex, 0) * STACK_SPACING;
+
+  const positionalStyle: CSSProperties = {};
+  if (offset > 0) {
+    if (isBottom) {
+      positionalStyle.bottom = `calc(1rem + ${offset}px)`;
+    } else if (isTop) {
+      positionalStyle.top = `calc(1rem + ${offset}px)`;
+    }
+  }
+
   const toggleButton = (
     <button
       onClick={onClick}
       className={`absolute ${positionClasses[position]} px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg transition-colors text-white text-sm z-50 flex items-center gap-2 pointer-events-auto ${className}`}
+      style={positionalStyle}
     >
       {icon}
       {label}

@@ -5,7 +5,6 @@ import type {
   LootBoxDefinition,
   LootBoxGuaranteedRule,
   LootBoxRewardEntry,
-  LootBoxStepConfig,
 } from "@/src/domain/types/lootbox.types";
 import type { Item } from "@/src/domain/types/item.types";
 

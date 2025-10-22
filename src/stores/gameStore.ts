@@ -1,7 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Character } from "@/src/domain/types/character.types";
+import type { Character, RarityType } from "@/src/domain/types/character.types";
 import { ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
+import {
+  LootBoxService,
+  type LootBoxOpenResult,
+} from "@/src/application/services/lootbox/LootBoxService";
+import type {
+  LootBoxCostType,
+  LootBoxDefinition,
+} from "@/src/domain/types/lootbox.types";
 
 /**
  * Game Store - Centralized state management
@@ -116,6 +124,7 @@ interface GameState {
   inventory: InventoryItem[];
   inventoryConfig: InventoryConfig;
   gold: number;
+  lootbox: LootBoxState;
   
   // Game Progress
   progress: GameProgress;
@@ -155,6 +164,19 @@ interface GameState {
   getInventoryCapacity: () => InventoryCapacityStatus;
   addGold: (amount: number) => void;
   removeGold: (amount: number) => boolean;
+
+  // ==================== Loot Box Actions ====================
+
+  listLootBoxes: () => LootBoxDefinition[];
+  getLootBoxDefinition: (lootBoxId: string) => LootBoxDefinition | undefined;
+  getLootBoxTicketCount: (ticketId: string) => number;
+  addLootBoxTicket: (ticketId: string, amount: number) => void;
+  consumeLootBoxTicket: (ticketId: string, amount: number) => boolean;
+  openLootBox: (params: {
+    lootBoxId: string;
+    costType?: LootBoxCostType;
+    step?: number;
+  }) => LootBoxOpenResult | null;
   
   // ==================== Progress Actions ====================
 
@@ -214,6 +236,37 @@ const initialProgress: GameProgress = {
 // Helper function to generate UUID
 const generateId = () => `party_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+const lootBoxService = new LootBoxService();
+
+const rarityPriority: Record<RarityType, number> = {
+  common: 1,
+  uncommon: 2,
+  rare: 3,
+  epic: 4,
+  legendary: 5,
+  mythic: 6,
+};
+
+const getRarityValue = (rarity?: RarityType) => (rarity ? rarityPriority[rarity] : 0);
+
+const resolveNextStep = (lootBox: LootBoxDefinition, currentStep?: number): number | undefined => {
+  if (!lootBox.stepConfigs?.length) {
+    return currentStep;
+  }
+
+  const orderedSteps = [...lootBox.stepConfigs]
+    .map((config) => config.step)
+    .sort((a, b) => a - b);
+  const activeStep = currentStep ?? orderedSteps[0];
+  const currentIndex = orderedSteps.findIndex((step) => step === activeStep);
+
+  if (currentIndex === -1) {
+    return orderedSteps[0];
+  }
+
+  return orderedSteps[(currentIndex + 1) % orderedSteps.length];
+};
+
 export interface InventorySlot {
   slotIndex: number;
   itemId: string | null;
@@ -225,6 +278,14 @@ export interface InventoryCapacityStatus {
   capacity: number;
   remaining: number;
   isFull: boolean;
+}
+
+export interface LootBoxState {
+  tickets: Record<string, number>;
+  pityCounters: Record<string, number>;
+  openedCount: Record<string, number>;
+  stepState: Record<string, number | undefined>;
+  history: LootBoxOpenResult[];
 }
 
 export const useGameStore = create<GameState>()(
@@ -242,6 +303,13 @@ export const useGameStore = create<GameState>()(
         selectedItemId: null,
       },
       gold: 1000,
+      lootbox: {
+        tickets: {},
+        pityCounters: {},
+        openedCount: {},
+        stepState: {},
+        history: [],
+      },
       progress: initialProgress,
       events: [],
       isLoading: false,
@@ -372,8 +440,14 @@ export const useGameStore = create<GameState>()(
               case "type":
                 return (itemA?.type ?? "").localeCompare(itemB?.type ?? "");
               case "rarity-desc":
-              default:
-                return (itemB?.rarity ?? 0) - (itemA?.rarity ?? 0);
+              default: {
+                const rarityA = getRarityValue(itemA?.rarity as RarityType | undefined);
+                const rarityB = getRarityValue(itemB?.rarity as RarityType | undefined);
+                if (rarityB !== rarityA) {
+                  return rarityB - rarityA;
+                }
+                return (itemA?.name ?? "").localeCompare(itemB?.name ?? "");
+              }
             }
           }),
         });
@@ -443,6 +517,154 @@ export const useGameStore = create<GameState>()(
         }
         set({ gold: state.gold - amount });
         return true;
+      },
+
+      // ==================== Loot Box Actions ====================
+
+      listLootBoxes: () => lootBoxService.listLootBoxes(),
+
+      getLootBoxDefinition: (lootBoxId: string) => lootBoxService.getLootBoxById(lootBoxId),
+
+      getLootBoxTicketCount: (ticketId: string) => get().lootbox.tickets[ticketId] ?? 0,
+
+      addLootBoxTicket: (ticketId: string, amount: number) => {
+        if (amount <= 0) {
+          return;
+        }
+        set((state) => ({
+          lootbox: {
+            ...state.lootbox,
+            tickets: {
+              ...state.lootbox.tickets,
+              [ticketId]: (state.lootbox.tickets[ticketId] ?? 0) + amount,
+            },
+          },
+        }));
+      },
+
+      consumeLootBoxTicket: (ticketId: string, amount: number) => {
+        const state = get();
+        const current = state.lootbox.tickets[ticketId] ?? 0;
+        if (amount <= 0 || current < amount) {
+          return false;
+        }
+        set((setState) => ({
+          lootbox: {
+            ...setState.lootbox,
+            tickets: {
+              ...setState.lootbox.tickets,
+              [ticketId]: current - amount,
+            },
+          },
+        }));
+        return true;
+      },
+
+      openLootBox: ({ lootBoxId, costType, step }) => {
+        const state = get();
+        const lootBox = lootBoxService.getLootBoxById(lootBoxId);
+        if (!lootBox) {
+          console.warn(`LootBox ${lootBoxId} not found`);
+          return null;
+        }
+
+        const activeStep =
+          lootBox.type === "stepup"
+            ? step ?? state.lootbox.stepState[lootBoxId] ?? lootBox.stepConfigs?.[0]?.step
+            : undefined;
+
+        const resolveCostOption = () => {
+          let baseCost = costType
+            ? lootBox.costOptions.find((option) => option.type === costType)
+            : lootBox.costOptions[0];
+
+          if (lootBox.type === "stepup" && activeStep) {
+            const stepConfig = lootBox.stepConfigs?.find((config) => config.step === activeStep);
+            baseCost = stepConfig?.cost ?? baseCost;
+          }
+
+          return baseCost;
+        };
+
+        const costOption = resolveCostOption();
+        if (!costOption) {
+          console.warn(`No cost option available for loot box ${lootBoxId}`);
+          return null;
+        }
+
+        const payCost = () => {
+          switch (costOption.type) {
+            case "gold":
+              return get().removeGold(costOption.amount);
+            case "ticket": {
+              const ticketId = costOption.ticketId;
+              if (!ticketId) {
+                console.warn(`Ticket ID missing for cost option in loot box ${lootBoxId}`);
+                return false;
+              }
+              return get().consumeLootBoxTicket(ticketId, costOption.amount);
+            }
+            default:
+              console.warn(`Unsupported loot box cost type ${costOption.type}`);
+              return false;
+          }
+        };
+
+        const paid = payCost();
+        if (!paid) {
+          console.warn(`Unable to pay cost for loot box ${lootBoxId}`);
+          return null;
+        }
+
+        const result = lootBoxService.openLootBox(costOption, {
+          lootBoxId,
+          step: activeStep,
+          pityCounters: state.lootbox.pityCounters,
+          openedCount: state.lootbox.openedCount,
+        });
+
+        result.rewards.forEach((reward) => {
+          get().addItem(reward.item.id, reward.quantity);
+        });
+
+        const nextStep =
+          lootBox.type === "stepup" ? resolveNextStep(lootBox, activeStep) : undefined;
+
+        set((setState) => {
+          const updatedStepState = { ...setState.lootbox.stepState };
+          if (lootBox.type === "stepup") {
+            updatedStepState[lootBoxId] = nextStep;
+          } else {
+            delete updatedStepState[lootBoxId];
+          }
+
+          return {
+            lootbox: {
+              tickets: setState.lootbox.tickets,
+              pityCounters: { ...result.pityCounters },
+              openedCount: { ...result.openedCount },
+              stepState: updatedStepState,
+              history: [...setState.lootbox.history, result].slice(-20),
+            },
+          };
+        });
+
+        get().addEvent({
+          type: "discovery",
+          data: {
+            action: "open_lootbox",
+            lootBoxId,
+            rollId: result.rollId,
+            rewards: result.rewards.map((reward) => ({
+              itemId: reward.item.id,
+              quantity: reward.quantity,
+              rarity: reward.rarity,
+              guaranteeSource: reward.guaranteeSource,
+            })),
+          },
+        });
+
+        return result;
       },
 
       // ==================== Progress Actions ====================
