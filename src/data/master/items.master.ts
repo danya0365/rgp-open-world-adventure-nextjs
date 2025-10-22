@@ -63,6 +63,28 @@ export const WEAPONS_MASTER: Weapon[] = [
   },
 
   {
+    id: "weapon-050",
+    name: "ดาบสายฟ้าศักดิ์สิทธิ์",
+    type: "weapon",
+    weaponType: "sword",
+    rarity: "epic",
+    description: "ดาบที่อัดแน่นด้วยพลังสายฟ้า เพิ่มความว่องไวให้ผู้ใช้",
+    icon: "/images/items/holy-thunderblade.png",
+    stackable: false,
+    buyPrice: 3200,
+    sellPrice: 800,
+    atk: 120,
+    critRate: 18,
+    element: "light",
+    statBonus: {
+      agi: 20,
+      mp: 30,
+    },
+    requiredLevel: 20,
+    requiredClass: ["warrior", "paladin"],
+  },
+
+  {
     id: "weapon-200",
     name: "เอ็กซ์คาลิเบอร์",
     type: "weapon",
@@ -236,6 +258,32 @@ export const CONSUMABLES_MASTER: Consumable[] = [
   },
 
   {
+    id: "item-050",
+    name: "น้ำอมฤตปลุกพลัง",
+    type: "consumable",
+    rarity: "epic",
+    description: "ฟื้นฟู HP 1000 และเพิ่มพลังทุกด้านชั่วคราว",
+    icon: "/images/items/awakening-elixir.png",
+    stackable: true,
+    maxStack: 20,
+    buyPrice: 1500,
+    sellPrice: 300,
+    effects: [
+      {
+        type: "heal",
+        value: 1000,
+        target: "self",
+      },
+      {
+        type: "buff",
+        value: 20,
+        target: "self",
+        duration: 3,
+      },
+    ],
+  },
+
+  {
     id: "item-100",
     name: "อีลิกเซอร์",
     type: "consumable",
@@ -290,6 +338,28 @@ export const MATERIALS_MASTER: Item[] = [
   },
 ];
 
+// Accessories
+export const ACCESSORIES_MASTER: Item[] = [
+  {
+    id: "acc-001",
+    name: "แหวนพิทักษ์สวรรค์",
+    type: "accessory",
+    rarity: "mythic",
+    description: "เครื่องรางจากเทพพิทักษ์ เพิ่มพลังชีวิตและป้องกันเวทมนตร์",
+    icon: "/images/items/heavenly-ward-ring.png",
+    stackable: false,
+    buyPrice: 60000,
+    sellPrice: 15000,
+    statBonus: {
+      hp: 400,
+      def: 40,
+      wis: 35,
+    },
+    element: "light",
+    requiredLevel: 45,
+  },
+];
+
 // Key Items
 export const KEY_ITEMS_MASTER: Item[] = [
   {
@@ -311,6 +381,7 @@ export const ITEMS_MASTER: Item[] = [
   ...ARMOR_MASTER,
   ...CONSUMABLES_MASTER,
   ...MATERIALS_MASTER,
+  ...ACCESSORIES_MASTER,
   ...KEY_ITEMS_MASTER,
 ];
 
