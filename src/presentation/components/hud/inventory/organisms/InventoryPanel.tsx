@@ -21,6 +21,10 @@ import {
   InventorySortControls,
   type EquipmentViewMode,
 } from "../molecules/InventorySortControls";
+import {
+  InventoryRarityFilters,
+  type InventoryRarityFilter,
+} from "../molecules/InventoryRarityFilters";
 import { Button } from "@/src/presentation/components/ui/Button";
 
 interface InventoryPanelProps {
@@ -103,6 +107,7 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
   const [isSelectingCharacter, setIsSelectingCharacter] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [equipmentViewMode, setEquipmentViewMode] = useState<EquipmentViewMode>("all");
+  const [rarityFilter, setRarityFilter] = useState<InventoryRarityFilter>("all");
 
   const capacityStatus = getInventoryCapacity();
 
@@ -117,6 +122,13 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
         return master?.name.toLowerCase().includes(searchTerm.toLowerCase());
       })
       .filter((entry) => {
+        if (rarityFilter === "all") {
+          return true;
+        }
+        const master = ITEMS_MASTER_MAP[entry.itemId];
+        return master?.rarity === rarityFilter;
+      })
+      .filter((entry) => {
         switch (equipmentViewMode) {
           case "equipped":
             return Boolean(entry.equippedBy);
@@ -127,7 +139,13 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
             return true;
         }
       });
-  }, [inventory, inventoryConfig.filteredCategory, searchTerm, equipmentViewMode]);
+  }, [
+    inventory,
+    inventoryConfig.filteredCategory,
+    searchTerm,
+    equipmentViewMode,
+    rarityFilter,
+  ]);
 
   const slots = useMemo<InventorySlotData[]>(() => {
     const maxSlots = inventoryConfig.capacity;
@@ -178,6 +196,27 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
   const equippedCharacterMaster = equippedCharacterRecruit
     ? CHARACTERS_BY_ID[equippedCharacterRecruit.characterId] ?? null
     : null;
+
+  const inventorySummary = useMemo(() => {
+    const totalQuantity = inventory.reduce((acc, item) => acc + item.quantity, 0);
+    const equippedCount = inventory.filter((item) => Boolean(item.equippedBy)).length;
+    const consumableCount = inventory.filter((item) => {
+      const master = ITEMS_MASTER_MAP[item.itemId];
+      return master?.type === "consumable";
+    }).length;
+    const materialCount = inventory.filter((item) => {
+      const master = ITEMS_MASTER_MAP[item.itemId];
+      return master?.type === "material";
+    }).length;
+
+    return {
+      uniqueItems: inventory.length,
+      totalQuantity,
+      equippedCount,
+      consumableCount,
+      materialCount,
+    };
+  }, [inventory]);
 
   const handleUseItem = () => {
     if (!selectedEntry) {
@@ -300,6 +339,33 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
         />
         <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/70">
           {capacityStatus.used}/{capacityStatus.capacity} ช่อง
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <InventoryRarityFilters
+          selected={rarityFilter}
+          onSelect={setRarityFilter}
+          className="flex-1"
+        />
+
+        <div className="grid grid-cols-2 gap-2 text-sm md:w-auto md:grid-cols-4">
+          <div className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-white/80">
+            <p className="text-xs uppercase tracking-wide text-white/50">รายการ</p>
+            <p className="text-lg font-bold text-white">{inventorySummary.uniqueItems}</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-white/80">
+            <p className="text-xs uppercase tracking-wide text-white/50">จำนวนรวม</p>
+            <p className="text-lg font-bold text-white">{inventorySummary.totalQuantity}</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-white/80">
+            <p className="text-xs uppercase tracking-wide text-white/50">สวมใส่</p>
+            <p className="text-lg font-bold text-white">{inventorySummary.equippedCount}</p>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-white/80">
+            <p className="text-xs uppercase tracking-wide text-white/50">ไอเทมใช้</p>
+            <p className="text-lg font-bold text-white">{inventorySummary.consumableCount}</p>
+          </div>
         </div>
       </div>
 
