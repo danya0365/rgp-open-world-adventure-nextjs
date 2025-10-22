@@ -64,39 +64,34 @@ export function LootBoxOpeningOverlay({
   });
 
   const burstSpring = useSpring({
-    from: { scale: 0.6, opacity: 0.4, rotateZ: 0 },
-    to: async (next) => {
-      if (!isOpen) return;
-      await next({ scale: 1.35, opacity: 0.9, rotateZ: 15 });
-      await next({ scale: 1.05, opacity: 0.5, rotateZ: 0 });
-    },
-    reset: isOpen,
+    from: { scale: 0.6, opacity: 0.3, rotateZ: 0 },
+    to: isOpen
+      ? [
+          { scale: 1.35, opacity: 0.9, rotateZ: 15 },
+          { scale: 1.05, opacity: 0.5, rotateZ: 0 },
+        ]
+      : { scale: 0.6, opacity: 0.3, rotateZ: 0 },
     config: config.wobbly,
-    immediate: !isOpen,
   });
 
   const chestSpring = useSpring({
     from: { scale: 0.9, rotateX: 65, opacity: 0 },
-    to: async (next) => {
-      if (!isOpen) return;
-      await next({ opacity: 1, scale: 1.1, rotateX: 0 });
-      await next({ scale: 1, rotateX: 0 });
-    },
-    reset: isOpen,
+    to: isOpen
+      ? [
+          { opacity: 1, scale: 1.1, rotateX: 0 },
+          { opacity: 1, scale: 1, rotateX: 0 },
+        ]
+      : { opacity: 0, scale: 0.85, rotateX: 45 },
     config: { tension: 220, friction: 20 },
-    immediate: !isOpen,
   });
 
   const trail = useTrail(rewards.length, {
     from: { opacity: 0, y: 40, rotateX: -45, scale: 0.85 },
-    to: async (next) => {
-      if (!isOpen) return;
-      await next({ opacity: 1, y: 0, rotateX: 0, scale: 1 });
-    },
-    delay: 600,
+    to: isOpen
+      ? { opacity: 1, y: 0, rotateX: 0, scale: 1 }
+      : { opacity: 0, y: 40, rotateX: -45, scale: 0.85 },
+    delay: isOpen ? 600 : 0,
     config: config.gentle,
-    reset: isOpen,
-    immediate: !isOpen,
   });
 
   useEffect(() => {
