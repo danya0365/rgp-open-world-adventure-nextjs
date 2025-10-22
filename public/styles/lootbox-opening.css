@@ -1,0 +1,73 @@
+@layer utilities {
+  .lootbox-rarity-common {
+    @apply bg-slate-600/40 text-slate-200;
+  }
+
+  .lootbox-rarity-uncommon {
+    @apply bg-emerald-600/30 text-emerald-200;
+  }
+
+  .lootbox-rarity-rare {
+    @apply bg-blue-600/30 text-blue-200;
+  }
+
+  .lootbox-rarity-epic {
+    @apply bg-purple-600/30 text-purple-200;
+  }
+
+  .lootbox-rarity-legendary {
+    @apply bg-amber-500/30 text-amber-200;
+  }
+
+  .lootbox-rarity-mythic {
+    @apply bg-rose-600/30 text-rose-200;
+  }
+
+  .lootbox-glow-common {
+    @apply border border-slate-500/40 shadow-[0_0_25px_rgba(148,163,184,0.25)];
+  }
+
+  .lootbox-glow-uncommon {
+    @apply border border-emerald-400/40 shadow-[0_0_30px_rgba(74,222,128,0.3)];
+  }
+
+  .lootbox-glow-rare {
+    @apply border border-blue-400/50 shadow-[0_0_35px_rgba(96,165,250,0.35)];
+  }
+
+  .lootbox-glow-epic {
+    @apply border border-purple-400/50 shadow-[0_0_40px_rgba(192,132,252,0.45)];
+  }
+
+  .lootbox-glow-legendary {
+    @apply border border-amber-300/60 shadow-[0_0_45px_rgba(252,211,77,0.55)];
+  }
+
+  .lootbox-glow-mythic {
+    @apply border border-rose-400/60 shadow-[0_0_45px_rgba(244,63,94,0.55)];
+  }
+
+  .lootbox-gradient-common {
+    @apply from-slate-500/40 via-slate-600/20 to-slate-900/80;
+  }
+
+  .lootbox-gradient-uncommon {
+    @apply from-emerald-500/45 via-teal-500/25 to-slate-900/80;
+  }
+
+  .lootbox-gradient-rare {
+    @apply from-blue-500/50 via-cyan-500/25 to-slate-900/80;
+  }
+
+  .lootbox-gradient-epic {
+    @apply from-purple-500/50 via-indigo-500/30 to-slate-900/80;
+  }
+
+  .lootbox-gradient-legendary {
+    @apply from-amber-400/50 via-yellow-500/30 to-slate-900/80;
+  }
+
+  .lootbox-gradient-mythic {
+    @apply from-rose-500/50 via-pink-500/30 to-slate-900/80;
+  }
+}

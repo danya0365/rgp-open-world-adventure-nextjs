@@ -7,6 +7,7 @@ import type { LootBoxDefinition } from "@/src/domain/types/lootbox.types";
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
 import { LootBoxOptionCard } from "../molecules/LootBoxOptionCard";
 import { Button } from "@/src/presentation/components/ui/Button";
+import { LootBoxOpeningOverlay } from "./LootBoxOpeningOverlay";
 
 const rarityLabels: Record<string, string> = {
   common: "Common",
@@ -18,12 +19,12 @@ const rarityLabels: Record<string, string> = {
 };
 
 const rarityBadgeClass: Record<string, string> = {
-  common: "bg-slate-600/40 text-slate-200",
-  uncommon: "bg-emerald-600/30 text-emerald-200",
-  rare: "bg-blue-600/30 text-blue-200",
-  epic: "bg-purple-600/30 text-purple-200",
-  legendary: "bg-amber-500/30 text-amber-200",
-  mythic: "bg-rose-600/30 text-rose-200",
+  common: "lootbox-rarity-common",
+  uncommon: "lootbox-rarity-uncommon",
+  rare: "lootbox-rarity-rare",
+  epic: "lootbox-rarity-epic",
+  legendary: "lootbox-rarity-legendary",
+  mythic: "lootbox-rarity-mythic",
 };
 
 export function LootBoxPanel() {
@@ -45,6 +46,9 @@ export function LootBoxPanel() {
   const [selectedLootBoxId, setSelectedLootBoxId] = useState<string | null>(null);
   const [selectedCostType, setSelectedCostType] = useState<string | undefined>();
   const [isOpening, setIsOpening] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showOpeningOverlay, setShowOpeningOverlay] = useState(false);
+  const [openingResult, setOpeningResult] = useState<LootBoxOpenResult | null>(null);
   const [feedback, setFeedback] = useState<
     | {
         type: "success" | "error";
@@ -165,6 +169,8 @@ export function LootBoxPanel() {
       const rewardText = response.rewards
         .map((reward) => `${reward.item.name} x${reward.quantity}`)
         .join(", ");
+      setOpeningResult(response);
+      setShowOpeningOverlay(true);
       setFeedback({
         type: "success",
         message: rewardText ? `ได้รับ ${rewardText}` : "เปิดสำเร็จ",
@@ -222,7 +228,20 @@ export function LootBoxPanel() {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 text-white">
+    <>
+      <LootBoxOpeningOverlay
+        isOpen={showOpeningOverlay}
+        result={openingResult}
+        onClose={() => {
+          setShowOpeningOverlay(false);
+          setOpeningResult(null);
+          setIsAnimating(false);
+        }}
+        onAnimationStart={() => setIsAnimating(true)}
+        onAnimationFinish={() => setIsAnimating(false)}
+      />
+
+      <div className="flex h-full flex-col gap-4 text-white">
       <header className="flex flex-col gap-3 rounded-xl border border-white/15 bg-black/40 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -349,7 +368,7 @@ export function LootBoxPanel() {
                 variant="action"
                 size="lg"
                 className="self-start"
-                disabled={!canAfford || isOpening}
+                disabled={!canAfford || isOpening || isAnimating || showOpeningOverlay}
                 onClick={handleOpen}
               >
                 {canAfford ? "เปิดกล่อง" : "สกุลเงินไม่พอ"}
@@ -373,6 +392,7 @@ export function LootBoxPanel() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </>
   );
 }
