@@ -462,9 +462,10 @@ export function VirtualMapFullView({
             icon={<span className="text-xl">🎒</span>}
             position="top-right"
             onClose={() => setShowInventoryPanel(false)}
-            maxHeight="520px"
-            maxWidth="460px"
-            className="translate-y-16"
+            layout="fullscreen"
+            fullscreenMaxWidth="min(1200px, 95vw)"
+            fullscreenMaxHeight="min(750px, 90vh)"
+            className=""
           >
             <InventoryPanel />
           </HUDPanel>

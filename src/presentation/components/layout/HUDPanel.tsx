@@ -20,6 +20,10 @@ export interface HUDPanelProps {
   maxHeight?: string;
   maxWidth?: string;
   defaultOpen?: boolean;
+  layout?: "floating" | "fullscreen";
+  fullscreenMaxWidth?: string;
+  fullscreenMaxHeight?: string;
+  showOverlay?: boolean;
   /**
    * Use portal to render at document body level
    * Prevents z-index conflicts with other UI elements
@@ -43,6 +47,10 @@ export function HUDPanel({
   className = "",
   maxHeight = "500px",
   maxWidth = "400px",
+  layout = "floating",
+  fullscreenMaxWidth = "calc(100vw - 3rem)",
+  fullscreenMaxHeight = "calc(100vh - 3rem)",
+  showOverlay = true,
   usePortal = true,
   portalZIndex = "medium",
 }: HUDPanelProps) {
@@ -54,39 +62,61 @@ export function HUDPanel({
     "bottom-right": "bottom-4 right-4",
   };
 
+  const isFullscreen = layout === "fullscreen";
+  const containerClasses = isFullscreen
+    ? `fixed inset-0 z-50 flex items-center justify-center p-4 ${className}`
+    : `absolute ${positionClasses[position]} z-50 ${className}`;
+
+  const contentStyle = isFullscreen
+    ? { width: fullscreenMaxWidth, height: fullscreenMaxHeight }
+    : { maxWidth };
+
+  const scrollStyle = isFullscreen ? undefined : { maxHeight };
+
+  const contentClassNames = `relative bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4 pointer-events-auto ${
+    isFullscreen ? "flex h-full w-full flex-col shadow-2xl" : ""
+  }`;
+
   const panelContent = (
-    <div
-      className={`absolute ${positionClasses[position]} z-50 ${className}`}
-      style={{ maxWidth }}
-    >
-      <div className="relative bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4 pointer-events-auto">
-        {/* Close Button */}
-        {closable && onClose && (
-          <button
-            onClick={onClose}
-            className="absolute -top-2 -right-2 z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors border border-slate-600 shadow-lg"
+    <>
+      {isFullscreen && showOverlay && (
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" aria-hidden />
+      )}
+
+      <div className={containerClasses}>
+        <div className={contentClassNames} style={contentStyle}>
+          {/* Close Button */}
+          {closable && onClose && (
+            <button
+              onClick={onClose}
+              className={`absolute z-20 p-1 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors border border-slate-600 shadow-lg ${
+                isFullscreen ? "top-4 right-4" : "-top-2 -right-2"
+              }`}
+            >
+              <X className="w-4 h-4 text-gray-400 hover:text-white" />
+            </button>
+          )}
+
+          {/* Header */}
+          {(title || icon) && (
+            <div className={`flex items-center gap-2 ${isFullscreen ? "mb-4" : "mb-3"}`}>
+              {icon && <div className="text-purple-400">{icon}</div>}
+              {title && <h3 className="text-lg font-bold text-white">{title}</h3>}
+            </div>
+          )}
+
+          {/* Content with scrollable area */}
+          <div
+            className={`overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/50 ${
+              isFullscreen ? "flex-1" : ""
+            }`}
+            style={scrollStyle}
           >
-            <X className="w-4 h-4 text-gray-400 hover:text-white" />
-          </button>
-        )}
-
-        {/* Header */}
-        {(title || icon) && (
-          <div className="flex items-center gap-2 mb-3">
-            {icon && <div className="text-purple-400">{icon}</div>}
-            {title && <h3 className="text-lg font-bold text-white">{title}</h3>}
+            {children}
           </div>
-        )}
-
-        {/* Content with scrollable area */}
-        <div
-          className="overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/50"
-          style={{ maxHeight }}
-        >
-          {children}
         </div>
       </div>
-    </div>
+    </>
   );
 
   // Use portal to render at document body level
