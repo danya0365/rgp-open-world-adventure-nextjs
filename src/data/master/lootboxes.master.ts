@@ -2,6 +2,28 @@ import type { LootBoxDefinition } from "@/src/domain/types/lootbox.types";
 
 export const LOOT_BOX_MASTER: LootBoxDefinition[] = [
   {
+    id: "lootbox-daily-gift",
+    name: "หีบของขวัญรายวัน",
+    description: "ล็อกอินทุกวัน รับไอเทมเสริมพลังแบบสุ่มฟรี 1 ครั้ง",
+    type: "standard",
+    costOptions: [
+      {
+        type: "gold",
+        amount: 0,
+      },
+    ],
+    rewardTable: [
+      { itemId: "item-010", weight: 400, rarity: "uncommon" },
+      { itemId: "item-020", weight: 250, rarity: "rare" },
+      { itemId: "item-030", weight: 200, rarity: "rare" },
+      { itemId: "item-050", weight: 100, rarity: "epic" },
+      { itemId: "item-070", weight: 40, rarity: "legendary" },
+      { itemId: "ticket-standard", weight: 10, rarity: "epic", featured: true },
+    ],
+    dailyLimit: 1,
+    tags: ["daily", "free"],
+  },
+  {
     id: "lootbox-standard-001",
     name: "หีบคริสตัลรวม",
     description: "สุ่มไอเทมหลายระดับความหายาก พร้อมอัตราตามมาตรฐาน",

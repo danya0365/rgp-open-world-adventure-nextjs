@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
 import { LOOT_BOX_MASTER } from "@/src/data/master/lootboxes.master";
 import type {
@@ -7,6 +6,14 @@ import type {
   LootBoxRewardEntry,
 } from "@/src/domain/types/lootbox.types";
 import type { Item } from "@/src/domain/types/item.types";
+
+const generateRollId = () => {
+  if (typeof globalThis !== "undefined" && globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `loot-roll-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
 
 export interface LootBoxOpenContext {
   lootBoxId: string;
@@ -87,7 +94,7 @@ export class LootBoxService {
       itemId: costSelection.itemId,
     };
 
-    const rollId = randomUUID();
+    const rollId = generateRollId();
 
     return {
       lootBox,

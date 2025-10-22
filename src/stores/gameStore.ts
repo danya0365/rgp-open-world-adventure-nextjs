@@ -176,7 +176,7 @@ interface GameState {
     lootBoxId: string;
     costType?: LootBoxCostType;
     step?: number;
-  }) => LootBoxOpenResult | null;
+  }) => LootBoxOpenResponse;
   
   // ==================== Progress Actions ====================
 
@@ -249,6 +249,8 @@ const rarityPriority: Record<RarityType, number> = {
 
 const getRarityValue = (rarity?: RarityType) => (rarity ? rarityPriority[rarity] : 0);
 
+const getTodayKey = () => new Date().toISOString().split("T")[0];
+
 const resolveNextStep = (lootBox: LootBoxDefinition, currentStep?: number): number | undefined => {
   if (!lootBox.stepConfigs?.length) {
     return currentStep;
@@ -286,7 +288,15 @@ export interface LootBoxState {
   openedCount: Record<string, number>;
   stepState: Record<string, number | undefined>;
   history: LootBoxOpenResult[];
+  dailyUsage: Record<string, { date: string; count: number }>;
 }
+
+export type LootBoxOpenError =
+  | { error: "not-found"; message: string }
+  | { error: "daily-limit"; message: string }
+  | { error: "insufficient-funds"; message: string };
+
+export type LootBoxOpenResponse = LootBoxOpenResult | LootBoxOpenError;
 
 export const useGameStore = create<GameState>()(
   persist(
@@ -309,6 +319,7 @@ export const useGameStore = create<GameState>()(
         openedCount: {},
         stepState: {},
         history: [],
+        dailyUsage: {},
       },
       progress: initialProgress,
       events: [],
@@ -564,8 +575,21 @@ export const useGameStore = create<GameState>()(
         const state = get();
         const lootBox = lootBoxService.getLootBoxById(lootBoxId);
         if (!lootBox) {
-          console.warn(`LootBox ${lootBoxId} not found`);
-          return null;
+          return {
+            error: "not-found",
+            message: "ไม่พบกล่องสุ่มนี้",
+          } satisfies LootBoxOpenError;
+        }
+
+        const todayKey = getTodayKey();
+        const usageEntry = state.lootbox.dailyUsage[lootBoxId];
+        const usageCount = usageEntry?.date === todayKey ? usageEntry.count : 0;
+
+        if (lootBox.dailyLimit && usageCount >= lootBox.dailyLimit) {
+          return {
+            error: "daily-limit",
+            message: "วันนี้เปิดกล่องนี้ครบแล้ว ลองใหม่พรุ่งนี้",
+          } satisfies LootBoxOpenError;
         }
 
         const activeStep =
@@ -588,8 +612,10 @@ export const useGameStore = create<GameState>()(
 
         const costOption = resolveCostOption();
         if (!costOption) {
-          console.warn(`No cost option available for loot box ${lootBoxId}`);
-          return null;
+          return {
+            error: "insufficient-funds",
+            message: "ไม่มีตัวเลือกการชำระสำหรับกล่องนี้",
+          } satisfies LootBoxOpenError;
         }
 
         const payCost = () => {
@@ -599,21 +625,21 @@ export const useGameStore = create<GameState>()(
             case "ticket": {
               const ticketId = costOption.ticketId;
               if (!ticketId) {
-                console.warn(`Ticket ID missing for cost option in loot box ${lootBoxId}`);
                 return false;
               }
               return get().consumeLootBoxTicket(ticketId, costOption.amount);
             }
             default:
-              console.warn(`Unsupported loot box cost type ${costOption.type}`);
               return false;
           }
         };
 
         const paid = payCost();
         if (!paid) {
-          console.warn(`Unable to pay cost for loot box ${lootBoxId}`);
-          return null;
+          return {
+            error: "insufficient-funds",
+            message: "สกุลเงินไม่เพียงพอ",
+          } satisfies LootBoxOpenError;
         }
 
         const result = lootBoxService.openLootBox(costOption, {
@@ -638,6 +664,16 @@ export const useGameStore = create<GameState>()(
             delete updatedStepState[lootBoxId];
           }
 
+          const prevUsage = setState.lootbox.dailyUsage[lootBoxId];
+          const baseCount = prevUsage?.date === todayKey ? prevUsage.count : 0;
+          const updatedDailyUsage = {
+            ...setState.lootbox.dailyUsage,
+            [lootBoxId]: {
+              date: todayKey,
+              count: baseCount + 1,
+            },
+          };
+
           return {
             lootbox: {
               tickets: setState.lootbox.tickets,
@@ -645,6 +681,7 @@ export const useGameStore = create<GameState>()(
               openedCount: { ...result.openedCount },
               stepState: updatedStepState,
               history: [...setState.lootbox.history, result].slice(-20),
+              dailyUsage: updatedDailyUsage,
             },
           };
         });

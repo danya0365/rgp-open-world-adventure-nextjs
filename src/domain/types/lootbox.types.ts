@@ -59,4 +59,5 @@ export interface LootBoxDefinition {
   isLimitedTime?: boolean;
   startsAt?: string;
   endsAt?: string;
+  dailyLimit?: number;
 }

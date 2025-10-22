@@ -45,6 +45,13 @@ export function LootBoxPanel() {
   const [selectedLootBoxId, setSelectedLootBoxId] = useState<string | null>(null);
   const [selectedCostType, setSelectedCostType] = useState<string | undefined>();
   const [isOpening, setIsOpening] = useState(false);
+  const [feedback, setFeedback] = useState<
+    | {
+        type: "success" | "error";
+        message: string;
+      }
+    | null
+  >(null);
   const history = lootboxState.history.slice().reverse();
 
   useEffect(() => {
@@ -142,10 +149,25 @@ export function LootBoxPanel() {
     }
     setIsOpening(true);
     try {
-      openLootBox({
+      const response = openLootBox({
         lootBoxId: selectedLootBox.id,
         costType: currentCostOption.type,
         step: activeStep,
+      });
+      if (!response) {
+        setFeedback({ type: "error", message: "ไม่สามารถเปิดกล่องได้" });
+        return;
+      }
+      if ("error" in response) {
+        setFeedback({ type: "error", message: response.message });
+        return;
+      }
+      const rewardText = response.rewards
+        .map((reward) => `${reward.item.name} x${reward.quantity}`)
+        .join(", ");
+      setFeedback({
+        type: "success",
+        message: rewardText ? `ได้รับ ${rewardText}` : "เปิดสำเร็จ",
       });
     } finally {
       setIsOpening(false);
@@ -154,6 +176,7 @@ export function LootBoxPanel() {
 
   const handleSelectLootBox = (lootBox: LootBoxDefinition) => {
     setSelectedLootBoxId(lootBox.id);
+    setFeedback(null);
   };
 
   const renderHistoryItem = (result: LootBoxOpenResult) => {
@@ -309,6 +332,18 @@ export function LootBoxPanel() {
                   })}
                 </div>
               </div>
+
+              {feedback ? (
+                <div
+                  className={
+                    feedback.type === "success"
+                      ? "mt-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
+                      : "mt-3 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200"
+                  }
+                >
+                  {feedback.message}
+                </div>
+              ) : null}
 
               <Button
                 variant="action"
