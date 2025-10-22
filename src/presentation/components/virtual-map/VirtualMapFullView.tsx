@@ -8,9 +8,12 @@ import {
 import { Location } from "@/src/domain/types/location.types";
 import { useKeyboardMovement } from "@/src/hooks/useKeyboardMovement";
 import { useMovementAnimation } from "@/src/hooks/useMovementAnimation";
-import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
-import { HUDPanel, HUDPanelToggle } from "@/src/presentation/components/layout/HUDPanel";
 import { InventoryPanel } from "@/src/presentation/components/hud/inventory/organisms/InventoryPanel";
+import { GameLayoutOverlay } from "@/src/presentation/components/layout/GameLayout";
+import {
+  HUDPanel,
+  HUDPanelToggle,
+} from "@/src/presentation/components/layout/HUDPanel";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import {
   ChevronRight,
@@ -467,7 +470,7 @@ export function VirtualMapFullView({
           </HUDPanel>
         ) : (
           <HUDPanelToggle
-            label="Inventory"
+            label="คลังไอเทม"
             icon={<span className="text-lg">🎒</span>}
             onClick={() => setShowInventoryPanel(true)}
             position="top-right"

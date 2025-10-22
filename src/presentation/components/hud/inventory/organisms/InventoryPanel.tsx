@@ -17,6 +17,10 @@ import Image from "next/image";
 import { InventorySlotGrid } from "../molecules/InventorySlotGrid";
 import { InventoryFilters } from "../molecules/InventoryFilters";
 import { InventoryDetailCard } from "../molecules/InventoryDetailCard";
+import {
+  InventorySortControls,
+  type EquipmentViewMode,
+} from "../molecules/InventorySortControls";
 import { Button } from "@/src/presentation/components/ui/Button";
 
 interface InventoryPanelProps {
@@ -77,6 +81,8 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
     removeItem,
     getActiveParty,
     progress,
+    setInventorySortOrder,
+    toggleInventoryAutoSort,
   } = useGameStore(
     useShallow((state) => ({
       inventory: state.inventory,
@@ -89,11 +95,14 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
       removeItem: state.removeItem,
       getActiveParty: state.getActiveParty,
       progress: state.progress,
+      setInventorySortOrder: state.setInventorySortOrder,
+      toggleInventoryAutoSort: state.toggleInventoryAutoSort,
     }))
   );
 
   const [isSelectingCharacter, setIsSelectingCharacter] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [equipmentViewMode, setEquipmentViewMode] = useState<EquipmentViewMode>("all");
 
   const capacityStatus = getInventoryCapacity();
 
@@ -106,8 +115,19 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
         }
         const master = ITEMS_MASTER_MAP[entry.itemId];
         return master?.name.toLowerCase().includes(searchTerm.toLowerCase());
+      })
+      .filter((entry) => {
+        switch (equipmentViewMode) {
+          case "equipped":
+            return Boolean(entry.equippedBy);
+          case "available":
+            return !entry.equippedBy;
+          case "all":
+          default:
+            return true;
+        }
       });
-  }, [inventory, inventoryConfig.filteredCategory, searchTerm]);
+  }, [inventory, inventoryConfig.filteredCategory, searchTerm, equipmentViewMode]);
 
   const slots = useMemo<InventorySlotData[]>(() => {
     const maxSlots = inventoryConfig.capacity;
@@ -282,6 +302,15 @@ export function InventoryPanel({ className }: InventoryPanelProps) {
           {capacityStatus.used}/{capacityStatus.capacity} ช่อง
         </div>
       </div>
+
+      <InventorySortControls
+        sortOrder={inventoryConfig.sortOrder}
+        autoSort={inventoryConfig.autoSort}
+        onChangeSortOrder={setInventorySortOrder}
+        onToggleAutoSort={toggleInventoryAutoSort}
+        equipmentViewMode={equipmentViewMode}
+        onChangeEquipmentView={setEquipmentViewMode}
+      />
 
       <div className="flex items-center gap-2">
         <input
