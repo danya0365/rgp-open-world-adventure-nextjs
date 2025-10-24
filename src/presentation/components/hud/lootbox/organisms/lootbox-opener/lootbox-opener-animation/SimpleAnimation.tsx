@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { animated, config, useSpring, useTrail } from "react-spring";
 import { cn } from "@/lib/utils";
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
+import { useEffect, useMemo, useState } from "react";
+import { animated, config, useSpring, useTrail } from "react-spring";
 
 interface LootBoxOpeningOverlayProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ const rarityGradientClass: Record<string, string> = {
   common: "lootbox-gradient-common",
 };
 
-export function LootBoxOpeningOverlay({
+export function SimpleAnimation({
   isOpen,
   result,
   onClose,
@@ -54,7 +54,9 @@ export function LootBoxOpeningOverlay({
     return rewards.reduce<string | null>((highest, reward) => {
       const rarity = reward.rarity ?? reward.item.rarity ?? "common";
       if (!highest) return rarity;
-      return rarityPriority[rarity] > rarityPriority[highest] ? rarity : highest;
+      return rarityPriority[rarity] > rarityPriority[highest]
+        ? rarity
+        : highest;
     }, null);
   }, [rewards]);
 
@@ -126,7 +128,9 @@ export function LootBoxOpeningOverlay({
     >
       <animated.div
         style={{
-          transform: burstSpring.scale.to((s) => `scale(${s})`) as unknown as undefined,
+          transform: burstSpring.scale.to(
+            (s) => `scale(${s})`
+          ) as unknown as undefined,
           opacity: burstSpring.opacity,
           rotateZ: burstSpring.rotateZ,
         }}
@@ -142,22 +146,29 @@ export function LootBoxOpeningOverlay({
         )}
       >
         <div className="flex flex-col items-center gap-2">
-          <p className="text-sm uppercase tracking-[0.4em] text-white/50">Summoning Result</p>
-          <h2 className="text-3xl font-bold text-white">{result.lootBox.name}</h2>
+          <p className="text-sm uppercase tracking-[0.4em] text-white/50">
+            Summoning Result
+          </p>
+          <h2 className="text-3xl font-bold text-white">
+            {result.lootBox.name}
+          </h2>
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
           {trail.map((style, index) => {
             const reward = rewards[index];
             if (!reward) return null;
-            const rewardRarity = reward.rarity ?? reward.item.rarity ?? "common";
+            const rewardRarity =
+              reward.rarity ?? reward.item.rarity ?? "common";
 
             return (
               <animated.div
                 key={`${reward.item.id}-${index}`}
                 style={{
                   opacity: style.opacity,
-                  transform: style.y.to((y) => `translateY(${y}px)`) as unknown as undefined,
+                  transform: style.y.to(
+                    (y) => `translateY(${y}px)`
+                  ) as unknown as undefined,
                 }}
                 className={cn(
                   "relative flex min-w-[140px] flex-col items-center gap-2 rounded-2xl border bg-slate-900/60 px-4 py-5 text-white shadow-lg",
@@ -167,10 +178,16 @@ export function LootBoxOpeningOverlay({
                 <span className="text-xs uppercase tracking-[0.3em] text-white/60">
                   {rewardRarity}
                 </span>
-                <span className="text-lg font-semibold text-white/95">{reward.item.name}</span>
-                <span className="text-sm text-white/70">x{reward.quantity}</span>
+                <span className="text-lg font-semibold text-white/95">
+                  {reward.item.name}
+                </span>
+                <span className="text-sm text-white/70">
+                  x{reward.quantity}
+                </span>
                 {reward.guaranteeSource ? (
-                  <span className="text-xs text-amber-300/80">{reward.guaranteeSource}</span>
+                  <span className="text-xs text-amber-300/80">
+                    {reward.guaranteeSource}
+                  </span>
                 ) : null}
               </animated.div>
             );
