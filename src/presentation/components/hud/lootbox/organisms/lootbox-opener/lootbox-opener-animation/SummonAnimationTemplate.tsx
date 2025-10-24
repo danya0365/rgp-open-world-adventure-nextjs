@@ -102,7 +102,7 @@ export interface LootBoxOpenResult {
   rollId: string;
 }
 
-interface DuelOfFateSummonAnimationProps {
+interface SummonAnimationTemplateProps {
   isOpen: boolean;
   result: LootBoxOpenResult | null;
   onClose: () => void;
@@ -110,12 +110,12 @@ interface DuelOfFateSummonAnimationProps {
   onAnimationFinish?: () => void;
 }
 
-export function DuelOfFateSummonAnimation({
+export function SummonAnimationTemplate({
   isOpen,
   result,
   onClose,
   onAnimationStart,
   onAnimationFinish,
-}: DuelOfFateSummonAnimationProps) {
-  return <p>Duel of Fate Summon Animation</p>;
+}: SummonAnimationTemplateProps) {
+  return <p>Summon Animation Template</p>;
 }
