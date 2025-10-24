@@ -1,6 +1,7 @@
 "use client";
 
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
+import { DuelOfFateSummonAnimation } from "./lootbox-opener-animation/DuelOfFateSummonAnimation";
 import { SimpleAnimation } from "./lootbox-opener-animation/SimpleAnimation";
 
 interface LootBoxOpeningOverlayProps {
@@ -11,6 +12,13 @@ interface LootBoxOpeningOverlayProps {
   onAnimationFinish?: () => void;
 }
 
+const enum LootBoxOpenerType {
+  Simple = "simple",
+  DuelOfFate = "duelOfFate",
+}
+
+const lootboxOpenerType: LootBoxOpenerType = LootBoxOpenerType.DuelOfFate;
+
 export function LootBoxOpeningOverlay({
   isOpen,
   result,
@@ -18,13 +26,28 @@ export function LootBoxOpeningOverlay({
   onAnimationStart,
   onAnimationFinish,
 }: LootBoxOpeningOverlayProps) {
-  return (
-    <SimpleAnimation
-      isOpen={isOpen}
-      result={result}
-      onClose={onClose}
-      onAnimationStart={onAnimationStart}
-      onAnimationFinish={onAnimationFinish}
-    />
-  );
+  switch (lootboxOpenerType) {
+    case LootBoxOpenerType.Simple:
+      return (
+        <SimpleAnimation
+          isOpen={isOpen}
+          result={result}
+          onClose={onClose}
+          onAnimationStart={onAnimationStart}
+          onAnimationFinish={onAnimationFinish}
+        />
+      );
+    case LootBoxOpenerType.DuelOfFate:
+      return (
+        <DuelOfFateSummonAnimation
+          isOpen={isOpen}
+          result={result}
+          onClose={onClose}
+          onAnimationStart={onAnimationStart}
+          onAnimationFinish={onAnimationFinish}
+        />
+      );
+    default:
+      return null;
+  }
 }
