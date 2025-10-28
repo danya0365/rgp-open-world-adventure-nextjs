@@ -44,15 +44,17 @@ export function StarfallSummonAnimation({
     Array<{ id: number; x: number; delay: number; rarity?: string }>
   >([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationTriggeredRef = useRef(false);
 
   const isMultiSummon = (result?.rewards.length ?? 0) > 1;
 
   useEffect(() => {
-    if (isOpen && result) {
+    if (isOpen && result && !animationTriggeredRef.current) {
+      animationTriggeredRef.current = true;
       onAnimationStart?.();
       setPhase("prayer");
 
-      setTimeout(() => {
+      const timer1 = setTimeout(() => {
         setPhase("starfall");
 
         if (isMultiSummon) {
@@ -75,25 +77,32 @@ export function StarfallSummonAnimation({
         }
       }, 1500);
 
-      setTimeout(
+      const timer2 = setTimeout(
         () => {
           setPhase("reveal");
         },
         isMultiSummon ? 3500 : 2500
       );
 
-      setTimeout(
+      const timer3 = setTimeout(
         () => {
           setPhase("display");
           onAnimationFinish?.();
         },
         isMultiSummon ? 4500 : 3500
       );
-    } else {
+
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+      };
+    } else if (!isOpen) {
       setPhase("idle");
       setStars([]);
+      animationTriggeredRef.current = false;
     }
-  }, [isOpen, result, isMultiSummon, onAnimationStart, onAnimationFinish]);
+  }, [isOpen, result]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -197,10 +206,11 @@ export function StarfallSummonAnimation({
           style={prayerSpring}
           className="absolute inset-0 flex flex-col items-center justify-center z-10"
         >
-          <div className="text-6xl mb-8 animate-pulse">🙏</div>
+          <div className="text-6xl mb-8 animate-pulse">🤲</div>
           <div className="text-2xl text-white font-bold tracking-wider">
-            อธิษฐานต่อดวงดาว...
+            บิสมิลลาฮิรเราะห์มานิรเราะฮีม...
           </div>
+          <div className="text-lg text-slate-300 mt-2">ขออัลลอฮฺประทานพร</div>
         </animated.div>
       )}
 
