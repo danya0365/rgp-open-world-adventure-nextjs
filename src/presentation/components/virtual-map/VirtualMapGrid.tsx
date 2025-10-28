@@ -680,9 +680,28 @@ export function VirtualMapGrid({
         showSteps={false} // Set to true for debugging
       />
 
+      {/* Encounter Battle View - Full Screen Overlay */}
+      {showBattle && (
+        <EncounterBattleView
+          onForfeit={() => {
+            setShowBattle(false);
+          }}
+          onVictory={(rewards) => {
+            console.log("Victory! Rewards:", rewards);
+            // TODO: Add rewards to player inventory
+            setShowBattle(false);
+          }}
+          onDefeat={() => {
+            console.log("Defeat...");
+            // TODO: Handle defeat (respawn, lose gold, etc.)
+            setShowBattle(false);
+          }}
+        />
+      )}
+
       {/* No Party Modal */}
       {showNoPartyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-299 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-slate-900 to-slate-800 border-2 border-yellow-500/50 rounded-xl shadow-2xl p-6">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500/20 border border-yellow-500 rounded-full flex items-center justify-center">
@@ -706,25 +725,6 @@ export function VirtualMapGrid({
             </div>
           </div>
         </div>
-      )}
-
-      {/* Encounter Battle View - Full Screen Overlay */}
-      {showBattle && (
-        <EncounterBattleView
-          onForfeit={() => {
-            setShowBattle(false);
-          }}
-          onVictory={(rewards) => {
-            console.log("Victory! Rewards:", rewards);
-            // TODO: Add rewards to player inventory
-            setShowBattle(false);
-          }}
-          onDefeat={() => {
-            console.log("Defeat...");
-            // TODO: Handle defeat (respawn, lose gold, etc.)
-            setShowBattle(false);
-          }}
-        />
       )}
     </div>
   );

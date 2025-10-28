@@ -1,3 +1,4 @@
+import { useBattleSessionStore } from "@/src/stores/battleSessionStore";
 import { useVirtualMapStore } from "@/src/stores/virtualMapStore";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -12,9 +13,13 @@ export function useKeyboardMovement(enabled: boolean = true) {
     startMovementToTile,
     movementState,
     currentLocationData,
+    currentEncounter,
   } = useVirtualMapStore();
   const keysPressed = useRef<Set<string>>(new Set());
   const moveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasActiveBattleSession = useBattleSessionStore(
+    (state) => state.currentSession !== null
+  );
 
   // Calculate target tile based on pressed keys
   const calculateTargetTile = useCallback(() => {
@@ -59,6 +64,14 @@ export function useKeyboardMovement(enabled: boolean = true) {
 
   // Handle movement based on pressed keys
   const handleMovement = useCallback(() => {
+    if (!enabled) {
+      return;
+    }
+
+    if (hasActiveBattleSession || currentEncounter) {
+      return;
+    }
+
     // Don't move if already moving
     if (movementState.isMoving) {
       return;
@@ -99,12 +112,19 @@ export function useKeyboardMovement(enabled: boolean = true) {
     movementState.isMoving,
     currentLocationData,
     startMovementToTile,
+    enabled,
+    hasActiveBattleSession,
+    currentEncounter,
   ]);
 
   // Handle keydown
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!enabled) return;
+
+      if (hasActiveBattleSession || currentEncounter) {
+        return;
+      }
 
       const key = e.key.toLowerCase();
       const validKeys = [
@@ -137,7 +157,7 @@ export function useKeyboardMovement(enabled: boolean = true) {
         }
       }
     },
-    [enabled, handleMovement]
+    [enabled, handleMovement, hasActiveBattleSession, currentEncounter]
   );
 
   // Handle keyup
