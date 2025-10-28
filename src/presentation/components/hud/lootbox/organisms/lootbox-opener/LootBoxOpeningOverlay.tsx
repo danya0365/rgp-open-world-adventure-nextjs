@@ -2,9 +2,9 @@
 
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
 import { AncientSummoningRitualAnimation } from "./lootbox-opener-animation/AncientSummoningRitualAnimation";
+import { BattleWithDestinyCrystalAnimation } from "./lootbox-opener-animation/BattleWithDestinyCrystalAnimation";
 import { DuelOfFateSummonAnimation } from "./lootbox-opener-animation/DuelOfFateSummonAnimation";
 import { SimpleAnimation } from "./lootbox-opener-animation/SimpleAnimation";
-import { BattleWithDestinyCrystalAnimation } from "./lootbox-opener-animation/SummonAnimationTemplate copy";
 
 interface LootBoxOpeningOverlayProps {
   isOpen: boolean;

@@ -57,11 +57,7 @@ export function BattleWithDestinyCrystalAnimation({
   const rarityColor = RARITY_COLORS[highestRarity] || RARITY_COLORS.common;
 
   useEffect(() => {
-    if (isOpen && result) {
-      setStage("intro");
-      setCanAttack(false);
-      setCrackIntensity(0);
-      setShowRewards(false);
+    if (isOpen && result && stage === "intro") {
       onAnimationStart?.();
 
       animationTimerRef.current = setTimeout(() => {
@@ -75,7 +71,16 @@ export function BattleWithDestinyCrystalAnimation({
         clearTimeout(animationTimerRef.current);
       }
     };
-  }, [isOpen, result, onAnimationStart]);
+  }, [isOpen, result, stage, onAnimationStart]);
+
+  useEffect(() => {
+    if (isOpen && result) {
+      setStage("intro");
+      setCanAttack(false);
+      setCrackIntensity(0);
+      setShowRewards(false);
+    }
+  }, [isOpen, result]);
 
   const containerSpring = useSpring({
     opacity: isOpen ? 1 : 0,
