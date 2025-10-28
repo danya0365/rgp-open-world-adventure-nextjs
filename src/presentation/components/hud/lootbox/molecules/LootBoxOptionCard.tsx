@@ -1,5 +1,6 @@
 "use client";
 
+import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { LootBoxDefinition } from "@/src/domain/types/lootbox.types";
 
@@ -8,6 +9,7 @@ interface LootBoxOptionCardProps {
   isSelected?: boolean;
   onSelect: () => void;
   stepLabel?: string;
+  children?: ReactNode;
 }
 
 const TYPE_LABELS: Record<LootBoxDefinition["type"], string> = {
@@ -35,19 +37,21 @@ function formatCost(lootBox: LootBoxDefinition) {
     .join(" • ");
 }
 
-export function LootBoxOptionCard({ lootBox, isSelected, onSelect, stepLabel }: LootBoxOptionCardProps) {
+export function LootBoxOptionCard({ lootBox, isSelected, onSelect, stepLabel, children }: LootBoxOptionCardProps) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <div
       className={cn(
-        "w-full rounded-xl border px-4 py-3 text-left transition-colors",
+        "w-full overflow-hidden rounded-xl border transition-colors",
         isSelected
-          ? "border-purple-500 bg-purple-500/20 text-white"
-          : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:text-white"
+          ? "border-purple-500/80 bg-purple-500/10 text-white shadow-[0_0_40px_rgba(168,85,247,0.25)]"
+          : "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10 hover:text-white"
       )}
     >
-      <div className="flex items-center justify-between gap-2">
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
+      >
         <div>
           <p className="text-sm font-semibold text-white">{lootBox.name}</p>
           <p className="text-xs text-white/60">{TYPE_LABELS[lootBox.type]}</p>
@@ -57,9 +61,18 @@ export function LootBoxOptionCard({ lootBox, isSelected, onSelect, stepLabel }: 
             {stepLabel}
           </span>
         ) : null}
+      </button>
+
+      <div className="px-4 pb-4 text-xs text-white/60">
+        <p>{lootBox.description}</p>
+        <p className="mt-2 font-medium text-white/70">{formatCost(lootBox)}</p>
       </div>
-      <p className="mt-2 text-xs text-white/50">{lootBox.description}</p>
-      <p className="mt-3 text-xs font-medium text-white/70">{formatCost(lootBox)}</p>
-    </button>
+
+      {children ? (
+        <div className="border-t border-white/10 bg-black/40 px-4 py-4 text-sm text-white/80">
+          {children}
+        </div>
+      ) : null}
+    </div>
   );
 }
