@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { animated, useTrail } from "@react-spring/web";
 import { useGameStore } from "@/src/stores/gameStore";
 import type { LootBoxDefinition } from "@/src/domain/types/lootbox.types";
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
@@ -36,6 +37,48 @@ const itemTypeLabels: Record<string, string> = {
   material: "วัสดุ",
   key: "ไอเทมกุญแจ",
   quest: "ไอเทมเควส",
+};
+
+const rarityAccent: Record<
+  string,
+  { gradient: string; border: string; glow: string; pill: string }
+> = {
+  common: {
+    gradient: "from-slate-800/70 via-slate-900/80 to-slate-950/90",
+    border: "border-slate-600/40",
+    glow: "rgba(148,163,184,0.35)",
+    pill: "bg-slate-700/60",
+  },
+  uncommon: {
+    gradient: "from-emerald-900/60 via-emerald-800/70 to-slate-950/90",
+    border: "border-emerald-500/40",
+    glow: "rgba(16,185,129,0.35)",
+    pill: "bg-emerald-600/50",
+  },
+  rare: {
+    gradient: "from-sky-900/60 via-indigo-900/70 to-slate-950/90",
+    border: "border-sky-500/40",
+    glow: "rgba(59,130,246,0.4)",
+    pill: "bg-sky-600/50",
+  },
+  epic: {
+    gradient: "from-violet-900/60 via-purple-900/70 to-slate-950/90",
+    border: "border-purple-500/40",
+    glow: "rgba(168,85,247,0.45)",
+    pill: "bg-purple-600/50",
+  },
+  legendary: {
+    gradient: "from-amber-900/60 via-orange-900/70 to-slate-950/90",
+    border: "border-amber-500/40",
+    glow: "rgba(245,158,11,0.45)",
+    pill: "bg-amber-600/50",
+  },
+  mythic: {
+    gradient: "from-rose-900/60 via-red-900/70 to-slate-950/90",
+    border: "border-rose-500/40",
+    glow: "rgba(239,68,68,0.45)",
+    pill: "bg-rose-600/50",
+  },
 };
 
 export function LootBoxPanel() {
@@ -165,6 +208,10 @@ export function LootBoxPanel() {
     return lootboxState.openedCount[selectedLootBox.id] ?? 0;
   }, [lootboxState.openedCount, selectedLootBox]);
 
+  const rewardEntries = useMemo(() => {
+    return selectedLootBox?.rewardTable ?? [];
+  }, [selectedLootBox]);
+
   const rewardTableTotalWeight = useMemo(() => {
     if (!selectedLootBox) {
       return 0;
@@ -174,6 +221,20 @@ export function LootBoxPanel() {
       0
     );
   }, [selectedLootBox]);
+
+  const [animateRewards, setAnimateRewards] = useState(true);
+
+  useEffect(() => {
+    setAnimateRewards(false);
+    const timeout = setTimeout(() => setAnimateRewards(true), 40);
+    return () => clearTimeout(timeout);
+  }, [selectedLootBox?.id]);
+
+  const rewardTrail = useTrail(rewardEntries.length, {
+    opacity: animateRewards ? 1 : 0,
+    y: animateRewards ? 0 : 24,
+    config: { tension: 240, friction: 26, mass: 1 },
+  });
 
   const handleOpen = () => {
     if (!selectedLootBox || !currentCostOption || !canAfford || isOpening) {
@@ -377,17 +438,17 @@ export function LootBoxPanel() {
                   <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">
                     ตารางรางวัลหลัก
                   </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedLootBox.rewardTable.map((entry) => {
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {rewardEntries.map((entry, index) => {
+                      const spring = rewardTrail[index];
                       const item = ITEMS_MASTER_MAP[entry.itemId];
                       const itemName = item?.name ?? entry.itemId;
                       const itemTypeLabel = item
                         ? itemTypeLabels[item.type] ?? item.type
                         : null;
-                      const rarityKey = entry.rarity ?? item?.rarity;
-                      const rarityLabel = rarityKey
-                        ? rarityLabels[rarityKey] ?? rarityKey
-                        : null;
+                      const rarityKey = entry.rarity ?? item?.rarity ?? "common";
+                      const rarityLabel = rarityLabels[rarityKey] ?? rarityKey;
+                      const accent = rarityAccent[rarityKey] ?? rarityAccent.common;
                       const weightPercent =
                         rewardTableTotalWeight > 0
                           ? ((entry.weight / rewardTableTotalWeight) * 100).toFixed(1)
@@ -398,43 +459,60 @@ export function LootBoxPanel() {
                           : `x${entry.quantity.min}-${entry.quantity.max}`
                         : null;
                       return (
-                        <div
+                        <animated.div
                           key={`${entry.itemId}-${entry.weight}`}
-                          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2"
+                          style={{
+                            opacity: spring.opacity,
+                            transform: spring.y.to((y) => `translateY(${y}px)`),
+                            boxShadow: `0 0 28px ${accent.glow}`,
+                          }}
+                          className={`group relative overflow-hidden rounded-xl border ${accent.border} bg-gradient-to-br ${accent.gradient} p-4 transition-transform duration-200 hover:scale-[1.02]`}
                         >
-                          <p className="text-sm font-semibold text-white">
-                            {itemName}
-                          </p>
-                          {itemTypeLabel ? (
-                            <p className="text-[11px] text-white/50">
-                              ประเภท: {itemTypeLabel}
+                          <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-60" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), transparent 55%)" }} />
+                          <div className="relative flex flex-col gap-2">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-base font-bold text-white drop-shadow-sm">
+                                  {itemName}
+                                </p>
+                                <div className="mt-1 flex flex-wrap gap-1 text-[11px]">
+                                  {itemTypeLabel ? (
+                                    <span className={`rounded-full px-2 py-0.5 text-white/80 ${accent.pill}`}>
+                                      {itemTypeLabel}
+                                    </span>
+                                  ) : null}
+                                  <span className={`rounded-full px-2 py-0.5 text-white ${accent.pill}`}>
+                                    {rarityLabel}
+                                  </span>
+                                  <span className={`rounded-full px-2 py-0.5 text-white/70 ${accent.pill}`}>
+                                    อัตรา {weightPercent}%
+                                  </span>
+                                  {quantityText ? (
+                                    <span className={`rounded-full px-2 py-0.5 text-white/70 ${accent.pill}`}>
+                                      จำนวน {quantityText}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+                              {entry.featured ? (
+                                <div className="shrink-0 rounded-full bg-amber-500/90 px-3 py-1 text-[11px] font-semibold text-black shadow-lg">
+                                  ★ Featured
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <p className="text-[12px] leading-relaxed text-white/80">
+                              {item?.description ?? "ไม่พบข้อมูลใน master data"}
                             </p>
-                          ) : null}
-                          <p className="text-[11px] text-white/40">
-                            อัตรา: {weightPercent}%
-                          </p>
-                          {rarityLabel ? (
-                            <p className="text-[11px] text-white/40">
-                              ระดับ: {rarityLabel}
-                            </p>
-                          ) : null}
-                          {quantityText ? (
-                            <p className="text-[11px] text-white/40">
-                              จำนวน: {quantityText}
-                            </p>
-                          ) : null}
-                          {entry.featured ? (
-                            <p className="text-[11px] text-amber-300/80">
-                              Featured
-                            </p>
-                          ) : null}
-                          <p className="text-[11px] text-white/30">
-                            ID: {entry.itemId}
-                          </p>
-                          <p className="text-[11px] text-white/50">
-                            {item?.description ?? "ไม่พบข้อมูลใน master data"}
-                          </p>
-                        </div>
+
+                            <div className="flex items-center justify-between text-[11px] text-white/50">
+                              <span>ID: {entry.itemId}</span>
+                              {item?.sellPrice !== undefined ? (
+                                <span>ขายได้ {item.sellPrice.toLocaleString()} Gold</span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </animated.div>
                       );
                     })}
                   </div>
