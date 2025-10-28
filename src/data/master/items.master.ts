@@ -1,4 +1,4 @@
-import { Item, Weapon, Armor, Consumable } from "@/src/domain/types/item.types";
+import { Armor, Consumable, Item, Weapon } from "@/src/domain/types/item.types";
 
 /**
  * Master Data: Items, Weapons, Armor, Consumables
@@ -258,6 +258,27 @@ export const CONSUMABLES_MASTER: Consumable[] = [
   },
 
   {
+    id: "item-030",
+    name: "ยาเร่งความเร็ว",
+    type: "consumable",
+    rarity: "rare",
+    description: "เพิ่มความเร็วการเคลื่อนที่และโอกาสหลบหลีกชั่วคราว",
+    icon: "/images/items/haste-potion.png",
+    stackable: true,
+    maxStack: 50,
+    buyPrice: 320,
+    sellPrice: 65,
+    effects: [
+      {
+        type: "buff",
+        value: 25,
+        target: "self",
+        duration: 3,
+      },
+    ],
+  },
+
+  {
     id: "item-050",
     name: "น้ำอมฤตปลุกพลัง",
     type: "consumable",
@@ -277,6 +298,32 @@ export const CONSUMABLES_MASTER: Consumable[] = [
       {
         type: "buff",
         value: 20,
+        target: "self",
+        duration: 3,
+      },
+    ],
+  },
+
+  {
+    id: "item-070",
+    name: "ยาวาร์ปเทพ",
+    type: "consumable",
+    rarity: "legendary",
+    description: "ฟื้นฟู HP จำนวนมากและเพิ่มพลังต่อสู้ชั่วคราว",
+    icon: "/images/items/divine-warp-potion.png",
+    stackable: true,
+    maxStack: 10,
+    buyPrice: 2500,
+    sellPrice: 500,
+    effects: [
+      {
+        type: "heal",
+        value: 1500,
+        target: "self",
+      },
+      {
+        type: "buff",
+        value: 35,
         target: "self",
         duration: 3,
       },

@@ -5,6 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useGameStore } from "@/src/stores/gameStore";
 import type { LootBoxDefinition } from "@/src/domain/types/lootbox.types";
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
+import { ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
 import { LootBoxOptionCard } from "../molecules/LootBoxOptionCard";
 import { Button } from "@/src/presentation/components/ui/Button";
 import { LootBoxOpeningOverlay } from "./lootbox-opener/LootBoxOpeningOverlay";
@@ -25,6 +26,16 @@ const rarityBadgeClass: Record<string, string> = {
   epic: "lootbox-rarity-epic",
   legendary: "lootbox-rarity-legendary",
   mythic: "lootbox-rarity-mythic",
+};
+
+const itemTypeLabels: Record<string, string> = {
+  weapon: "อาวุธ",
+  armor: "เกราะ",
+  accessory: "เครื่องประดับ",
+  consumable: "ไอเทมใช้แล้ว",
+  material: "วัสดุ",
+  key: "ไอเทมกุญแจ",
+  quest: "ไอเทมเควส",
 };
 
 export function LootBoxPanel() {
@@ -153,6 +164,16 @@ export function LootBoxPanel() {
     }
     return lootboxState.openedCount[selectedLootBox.id] ?? 0;
   }, [lootboxState.openedCount, selectedLootBox]);
+
+  const rewardTableTotalWeight = useMemo(() => {
+    if (!selectedLootBox) {
+      return 0;
+    }
+    return selectedLootBox.rewardTable.reduce(
+      (sum, entry) => sum + entry.weight,
+      0
+    );
+  }, [selectedLootBox]);
 
   const handleOpen = () => {
     if (!selectedLootBox || !currentCostOption || !canAfford || isOpening) {
@@ -358,29 +379,48 @@ export function LootBoxPanel() {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedLootBox.rewardTable.map((entry) => {
+                      const item = ITEMS_MASTER_MAP[entry.itemId];
+                      const itemName = item?.name ?? entry.itemId;
+                      const itemTypeLabel = item
+                        ? itemTypeLabels[item.type] ?? item.type
+                        : null;
+                      const rarityKey = entry.rarity ?? item?.rarity;
+                      const rarityLabel = rarityKey
+                        ? rarityLabels[rarityKey] ?? rarityKey
+                        : null;
+                      const weightPercent =
+                        rewardTableTotalWeight > 0
+                          ? ((entry.weight / rewardTableTotalWeight) * 100).toFixed(1)
+                          : "0.0";
+                      const quantityText = entry.quantity
+                        ? entry.quantity.min === entry.quantity.max
+                          ? `x${entry.quantity.min}`
+                          : `x${entry.quantity.min}-${entry.quantity.max}`
+                        : null;
                       return (
                         <div
                           key={`${entry.itemId}-${entry.weight}`}
                           className="rounded-lg border border-white/10 bg-black/40 px-3 py-2"
                         >
-                          <p className="text-sm font-semibold text-white/80">
-                            {entry.itemId}
+                          <p className="text-sm font-semibold text-white">
+                            {itemName}
                           </p>
-                          <p className="text-[11px] text-white/50">
-                            อัตรา:{" "}
-                            {(
-                              (entry.weight /
-                                selectedLootBox.rewardTable.reduce(
-                                  (sum, e) => sum + e.weight,
-                                  0
-                                )) *
-                              100
-                            ).toFixed(1)}
-                            %
+                          {itemTypeLabel ? (
+                            <p className="text-[11px] text-white/50">
+                              ประเภท: {itemTypeLabel}
+                            </p>
+                          ) : null}
+                          <p className="text-[11px] text-white/40">
+                            อัตรา: {weightPercent}%
                           </p>
-                          {entry.rarity ? (
+                          {rarityLabel ? (
                             <p className="text-[11px] text-white/40">
-                              ระดับ: {rarityLabels[entry.rarity]}
+                              ระดับ: {rarityLabel}
+                            </p>
+                          ) : null}
+                          {quantityText ? (
+                            <p className="text-[11px] text-white/40">
+                              จำนวน: {quantityText}
                             </p>
                           ) : null}
                           {entry.featured ? (
@@ -388,6 +428,12 @@ export function LootBoxPanel() {
                               Featured
                             </p>
                           ) : null}
+                          <p className="text-[11px] text-white/30">
+                            ID: {entry.itemId}
+                          </p>
+                          <p className="text-[11px] text-white/50">
+                            {item?.description ?? "ไม่พบข้อมูลใน master data"}
+                          </p>
                         </div>
                       );
                     })}

@@ -4,6 +4,7 @@ import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootB
 import { AncientSummoningRitualAnimation } from "./lootbox-opener-animation/AncientSummoningRitualAnimation";
 import { DuelOfFateSummonAnimation } from "./lootbox-opener-animation/DuelOfFateSummonAnimation";
 import { SimpleAnimation } from "./lootbox-opener-animation/SimpleAnimation";
+import { BattleWithDestinyCrystalAnimation } from "./lootbox-opener-animation/SummonAnimationTemplate copy";
 
 interface LootBoxOpeningOverlayProps {
   isOpen: boolean;
@@ -17,10 +18,11 @@ const enum LootBoxOpenerType {
   Simple = "simple",
   DuelOfFate = "duelOfFate",
   AncientSummoningRitual = "ancientSummoningRitual",
+  BattleWithDestinyCrystal = "battleWithDestinyCrystal",
 }
 
 const lootboxOpenerType: LootBoxOpenerType =
-  LootBoxOpenerType.AncientSummoningRitual;
+  LootBoxOpenerType.BattleWithDestinyCrystal;
 
 export function LootBoxOpeningOverlay({
   isOpen,
@@ -53,6 +55,16 @@ export function LootBoxOpeningOverlay({
     case LootBoxOpenerType.AncientSummoningRitual:
       return (
         <AncientSummoningRitualAnimation
+          isOpen={isOpen}
+          result={result}
+          onClose={onClose}
+          onAnimationStart={onAnimationStart}
+          onAnimationFinish={onAnimationFinish}
+        />
+      );
+    case LootBoxOpenerType.BattleWithDestinyCrystal:
+      return (
+        <BattleWithDestinyCrystalAnimation
           isOpen={isOpen}
           result={result}
           onClose={onClose}
