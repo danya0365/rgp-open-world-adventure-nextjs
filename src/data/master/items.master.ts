@@ -373,6 +373,32 @@ export const KEY_ITEMS_MASTER: Item[] = [
     buyPrice: 0,
     sellPrice: 0,
   },
+
+  {
+    id: "ticket-standard",
+    name: "บัตรสุ่มมาตรฐาน",
+    type: "key",
+    rarity: "epic",
+    description: "ตั๋วสำหรับเปิดหีบสุ่มมาตรฐาน",
+    icon: "/images/items/standard-ticket.png",
+    stackable: true,
+    maxStack: 99,
+    buyPrice: 0,
+    sellPrice: 0,
+  },
+
+  {
+    id: "ticket-guaranteed",
+    name: "บัตรสุ่มการันตี",
+    type: "key",
+    rarity: "legendary",
+    description: "ตั๋วพิเศษสำหรับเปิดหีบการันตีระดับสูง",
+    icon: "/images/items/guaranteed-ticket.png",
+    stackable: true,
+    maxStack: 99,
+    buyPrice: 0,
+    sellPrice: 0,
+  },
 ];
 
 // Combined Items
