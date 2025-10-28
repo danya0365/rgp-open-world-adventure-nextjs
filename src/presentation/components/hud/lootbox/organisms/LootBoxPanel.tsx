@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { animated, useTrail } from "@react-spring/web";
+import { animated, useTrail, useSpring, config } from "@react-spring/web";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGameStore } from "@/src/stores/gameStore";
-import type { LootBoxDefinition } from "@/src/domain/types/lootbox.types";
 import type { LootBoxOpenResult } from "@/src/application/services/lootbox/LootBoxService";
 import { ITEMS_MASTER_MAP } from "@/src/data/master/items.master";
 import { LootBoxOptionCard } from "../molecules/LootBoxOptionCard";
@@ -95,6 +95,7 @@ export function LootBoxPanel() {
   const [selectedLootBoxId, setSelectedLootBoxId] = useState<string | null>(
     null
   );
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCostType, setSelectedCostType] = useState<
     string | undefined
   >();
@@ -110,9 +111,28 @@ export function LootBoxPanel() {
   } | null>(null);
   const history = lootboxState.history.slice().reverse();
 
+  const slideProps = useSpring({
+    transform: `translateX(-${currentIndex * 100}%)`,
+    config: config.gentle,
+  });
+
   useEffect(() => {
     if (!selectedLootBoxId && lootBoxes.length > 0) {
       setSelectedLootBoxId(lootBoxes[0].id);
+    }
+  }, [lootBoxes, selectedLootBoxId]);
+
+  useEffect(() => {
+    if (lootBoxes.length === 0) {
+      setCurrentIndex(0);
+      return;
+    }
+    if (!selectedLootBoxId) {
+      return;
+    }
+    const index = lootBoxes.findIndex((box) => box.id === selectedLootBoxId);
+    if (index >= 0) {
+      setCurrentIndex(index);
     }
   }, [lootBoxes, selectedLootBoxId]);
 
@@ -269,9 +289,27 @@ export function LootBoxPanel() {
     }
   };
 
-  const handleSelectLootBox = (lootBox: LootBoxDefinition) => {
-    setSelectedLootBoxId(lootBox.id);
+  const selectLootBoxByIndex = (index: number) => {
+    if (lootBoxes.length === 0) {
+      return;
+    }
+    const normalizedIndex =
+      ((index % lootBoxes.length) + lootBoxes.length) % lootBoxes.length;
+    const target = lootBoxes[normalizedIndex];
+    if (!target) {
+      return;
+    }
+    setCurrentIndex(normalizedIndex);
+    setSelectedLootBoxId(target.id);
     setFeedback(null);
+  };
+
+  const handlePrevious = () => {
+    selectLootBoxByIndex(currentIndex - 1);
+  };
+
+  const handleNext = () => {
+    selectLootBoxByIndex(currentIndex + 1);
   };
 
   const renderHistoryItem = (result: LootBoxOpenResult) => {
@@ -369,30 +407,89 @@ export function LootBoxPanel() {
           ) : null}
         </header>
 
-        <section className="grid gap-3 md:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold text-white/70">เลือกกล่อง</h3>
-            <div className="grid gap-2">
-              {lootBoxes.map((lootBox) => {
-                const stepLabel =
-                  lootBox.type === "stepup"
-                    ? `ขั้น ${
-                        lootboxState.stepState[lootBox.id] ??
-                        lootBox.stepConfigs?.[0]?.step ??
-                        1
-                      }`
-                    : undefined;
-                return (
-                  <LootBoxOptionCard
-                    key={lootBox.id}
-                    lootBox={lootBox}
-                    isSelected={lootBox.id === selectedLootBoxId}
-                    onSelect={() => handleSelectLootBox(lootBox)}
-                    stepLabel={stepLabel}
-                  />
-                );
-              })}
+        <section className="flex flex-col gap-4">
+          <div className="rounded-xl border border-white/10 bg-black/30 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-white/70">
+                เลือกกล่อง
+              </h3>
+              {selectedLootBox && selectedLootBox.type === "stepup" && activeStep ? (
+                <span className="rounded-full bg-purple-500/20 px-3 py-1 text-xs font-medium text-purple-200">
+                  ขั้นปัจจุบัน: {activeStep}
+                </span>
+              ) : null}
             </div>
+
+            {lootBoxes.length === 0 ? (
+              <div className="mt-4 flex h-32 items-center justify-center text-white/50">
+                ไม่มีข้อมูลกล่องสุ่ม
+              </div>
+            ) : (
+              <>
+                <div className="mt-4 overflow-hidden">
+                  <animated.div style={slideProps} className="flex">
+                    {lootBoxes.map((lootBox, index) => {
+                      const stepLabel =
+                        lootBox.type === "stepup"
+                          ? `ขั้น ${
+                              lootboxState.stepState[lootBox.id] ??
+                              lootBox.stepConfigs?.[0]?.step ??
+                              1
+                            }`
+                          : undefined;
+                      return (
+                        <div key={lootBox.id} className="min-w-full px-1">
+                          <LootBoxOptionCard
+                            lootBox={lootBox}
+                            isSelected={index === currentIndex}
+                            onSelect={() => selectLootBoxByIndex(index)}
+                            stepLabel={stepLabel}
+                          />
+                        </div>
+                      );
+                    })}
+                  </animated.div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={handlePrevious}
+                    className="p-2 text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={lootBoxes.length <= 1}
+                  >
+                    <span className="sr-only">ก่อนหน้า</span>
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+
+                  <div className="flex gap-2">
+                    {lootBoxes.map((lootBox, index) => (
+                      <button
+                        key={lootBox.id}
+                        type="button"
+                        onClick={() => selectLootBoxByIndex(index)}
+                        className={`h-2 rounded-full transition-all ${
+                          index === currentIndex
+                            ? "w-8 bg-purple-500"
+                            : "w-2 bg-white/30 hover:w-4 hover:bg-white/50"
+                        }`}
+                        aria-label={lootBox.name}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="p-2 text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={lootBoxes.length <= 1}
+                  >
+                    <span className="sr-only">ถัดไป</span>
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col gap-4 rounded-xl border border-white/10 bg-black/30 p-4">
