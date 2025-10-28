@@ -5,6 +5,7 @@ import { AncientSummoningRitualAnimation } from "./lootbox-opener-animation/Anci
 import { BattleWithDestinyCrystalAnimation } from "./lootbox-opener-animation/BattleWithDestinyCrystalAnimation";
 import { DuelOfFateSummonAnimation } from "./lootbox-opener-animation/DuelOfFateSummonAnimation";
 import { SimpleAnimation } from "./lootbox-opener-animation/SimpleAnimation";
+import { StarfallSummonAnimation } from "./lootbox-opener-animation/StarfallSummonAnimation";
 
 interface LootBoxOpeningOverlayProps {
   isOpen: boolean;
@@ -19,10 +20,10 @@ const enum LootBoxOpenerType {
   DuelOfFate = "duelOfFate",
   AncientSummoningRitual = "ancientSummoningRitual",
   BattleWithDestinyCrystal = "battleWithDestinyCrystal",
+  Starfall = "starfall",
 }
 
-const lootboxOpenerType: LootBoxOpenerType =
-  LootBoxOpenerType.BattleWithDestinyCrystal;
+const lootboxOpenerType: LootBoxOpenerType = LootBoxOpenerType.Starfall;
 
 export function LootBoxOpeningOverlay({
   isOpen,
@@ -65,6 +66,16 @@ export function LootBoxOpeningOverlay({
     case LootBoxOpenerType.BattleWithDestinyCrystal:
       return (
         <BattleWithDestinyCrystalAnimation
+          isOpen={isOpen}
+          result={result}
+          onClose={onClose}
+          onAnimationStart={onAnimationStart}
+          onAnimationFinish={onAnimationFinish}
+        />
+      );
+    case LootBoxOpenerType.Starfall:
+      return (
+        <StarfallSummonAnimation
           isOpen={isOpen}
           result={result}
           onClose={onClose}
