@@ -287,11 +287,11 @@ export function LootBoxPanel() {
           <span className="text-white/50">#{result.rollId.slice(0, 6)}</span>
         </div>
         <div className="mt-2 space-y-1">
-          {result.rewards.map((reward) => {
+          {result.rewards.map((reward, index) => {
             const rarityKey = reward.rarity ?? reward.item.rarity;
             return (
               <div
-                key={`${result.rollId}-${reward.item.id}`}
+                key={`${result.rollId}-${reward.item.id}-${index}`}
                 className="flex items-center justify-between gap-2 rounded-md bg-black/30 px-2 py-1"
               >
                 <div className="flex items-center gap-2">
