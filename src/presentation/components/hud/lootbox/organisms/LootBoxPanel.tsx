@@ -109,6 +109,7 @@ export function LootBoxPanel() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [rewardSlideIndex, setRewardSlideIndex] = useState(0);
   const history = lootboxState.history.slice().reverse();
 
   const slideProps = useSpring({
@@ -246,6 +247,7 @@ export function LootBoxPanel() {
 
   useEffect(() => {
     setAnimateRewards(false);
+    setRewardSlideIndex(0);
     const timeout = setTimeout(() => setAnimateRewards(true), 40);
     return () => clearTimeout(timeout);
   }, [selectedLootBox?.id]);
@@ -451,20 +453,19 @@ export function LootBoxPanel() {
                             stepLabel={stepLabel}
                           >
                             {displayLootBox ? (
-                              <div className="space-y-4">
-                                <div className="flex flex-wrap items-center justify-between gap-3 text-white">
-                                  <div>
-                                    <h2 className="text-lg font-bold text-white">
-                                      {displayLootBox.name}
-                                    </h2>
-                                    <p className="text-sm text-white/60">
-                                      เปิดไปแล้ว {openedCount} ครั้ง
-                                    </p>
-                                    {activeStep ? (
-                                      <p className="text-xs text-purple-200">
-                                        ขั้นปัจจุบัน: {activeStep}
+                              <div className="flex h-[420px] flex-col">
+                                {/* Header Section - Fixed Height */}
+                                <div className="flex-shrink-0 space-y-2 border-b border-white/10 pb-3">
+                                  <div className="flex items-start justify-between gap-3 text-white">
+                                    <div>
+                                      <h2 className="text-lg font-bold text-white">
+                                        {displayLootBox.name}
+                                      </h2>
+                                      <p className="text-xs text-white/60">
+                                        เปิดไปแล้ว {openedCount} ครั้ง
+                                        {activeStep ? ` • ขั้น ${activeStep}` : ""}
                                       </p>
-                                    ) : null}
+                                    </div>
                                   </div>
                                   <div className="flex flex-wrap gap-2">
                                     {availableCostOptions.map((cost) => (
@@ -488,113 +489,151 @@ export function LootBoxPanel() {
                                   </div>
                                 </div>
 
-                                <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">
-                                    ตารางรางวัลหลัก
-                                  </h4>
-                                  <div className="grid gap-3 md:grid-cols-2">
-                                    {rewardEntries.map((entry, rewardIndex) => {
-                                      const spring = rewardTrail[rewardIndex];
-                                      const item = ITEMS_MASTER_MAP[entry.itemId];
-                                      const itemName = item?.name ?? entry.itemId;
-                                      const itemTypeLabel = item
-                                        ? itemTypeLabels[item.type] ?? item.type
-                                        : null;
-                                      const rarityKey = entry.rarity ?? item?.rarity ?? "common";
-                                      const rarityLabel = rarityLabels[rarityKey] ?? rarityKey;
-                                      const accent = rarityAccent[rarityKey] ?? rarityAccent.common;
-                                      const weightPercent =
-                                        rewardTableTotalWeight > 0
-                                          ? ((entry.weight / rewardTableTotalWeight) * 100).toFixed(1)
-                                          : "0.0";
-                                      const quantityText = entry.quantity
-                                        ? entry.quantity.min === entry.quantity.max
-                                          ? `x${entry.quantity.min}`
-                                          : `x${entry.quantity.min}-${entry.quantity.max}`
-                                        : null;
-                                      return (
-                                        <animated.div
-                                          key={`${entry.itemId}-${entry.weight}`}
-                                          style={{
-                                            opacity: spring.opacity,
-                                            transform: spring.y.to((y) => `translateY(${y}px)`),
-                                            boxShadow: `0 0 28px ${accent.glow}`,
-                                          }}
-                                          className={`group relative overflow-hidden rounded-xl border ${accent.border} bg-gradient-to-br ${accent.gradient} p-4 transition-transform duration-200 hover:scale-[1.02]`}
+                                {/* Rewards Carousel Section - Fixed Height */}
+                                <div className="flex-1 overflow-hidden py-3">
+                                  <div className="flex h-full flex-col">
+                                    <div className="mb-3 flex items-center justify-between">
+                                      <h4 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+                                        ตารางรางวัลหลัก ({rewardSlideIndex + 1}/{rewardEntries.length})
+                                      </h4>
+                                      <div className="flex gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => setRewardSlideIndex(Math.max(0, rewardSlideIndex - 1))}
+                                          disabled={rewardSlideIndex === 0}
+                                          className="rounded-lg bg-white/10 p-1.5 text-white transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
                                         >
-                                          <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-60" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), transparent 55%)" }} />
-                                          <div className="relative flex flex-col gap-2">
-                                            <div className="flex items-start justify-between gap-3">
-                                              <div>
-                                                <p className="text-base font-bold text-white drop-shadow-sm">
-                                                  {itemName}
-                                                </p>
-                                                <div className="mt-1 flex flex-wrap gap-1 text-[11px]">
-                                                  {itemTypeLabel ? (
-                                                    <span className={`rounded-full px-2 py-0.5 text-white/80 ${accent.pill}`}>
-                                                      {itemTypeLabel}
-                                                    </span>
+                                          <ChevronLeft className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => setRewardSlideIndex(Math.min(rewardEntries.length - 1, rewardSlideIndex + 1))}
+                                          disabled={rewardSlideIndex === rewardEntries.length - 1}
+                                          className="rounded-lg bg-white/10 p-1.5 text-white transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
+                                        >
+                                          <ChevronRight className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="relative flex-1 overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                                      {rewardEntries.length > 0 ? (
+                                        (() => {
+                                          const entry = rewardEntries[rewardSlideIndex];
+                                          const spring = rewardTrail[rewardSlideIndex];
+                                          const item = ITEMS_MASTER_MAP[entry.itemId];
+                                          const itemName = item?.name ?? entry.itemId;
+                                          const itemTypeLabel = item
+                                            ? itemTypeLabels[item.type] ?? item.type
+                                            : null;
+                                          const rarityKey = entry.rarity ?? item?.rarity ?? "common";
+                                          const rarityLabel = rarityLabels[rarityKey] ?? rarityKey;
+                                          const accent = rarityAccent[rarityKey] ?? rarityAccent.common;
+                                          const weightPercent =
+                                            rewardTableTotalWeight > 0
+                                              ? ((entry.weight / rewardTableTotalWeight) * 100).toFixed(1)
+                                              : "0.0";
+                                          const quantityText = entry.quantity
+                                            ? entry.quantity.min === entry.quantity.max
+                                              ? `x${entry.quantity.min}`
+                                              : `x${entry.quantity.min}-${entry.quantity.max}`
+                                            : null;
+                                          return (
+                                            <animated.div
+                                              key={`${entry.itemId}-${entry.weight}`}
+                                              style={{
+                                                opacity: spring.opacity,
+                                                transform: spring.y.to((y) => `translateY(${y}px)`),
+                                                boxShadow: `0 0 28px ${accent.glow}`,
+                                              }}
+                                              className={`group relative h-full overflow-hidden rounded-lg border ${accent.border} bg-gradient-to-br ${accent.gradient} p-4 transition-transform duration-200`}
+                                            >
+                                              <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-60" style={{ background: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), transparent 55%)" }} />
+                                              <div className="relative flex h-full flex-col gap-3">
+                                                <div className="flex items-start justify-between gap-3">
+                                                  <div className="flex-1">
+                                                    <p className="text-xl font-bold text-white drop-shadow-sm">
+                                                      {itemName}
+                                                    </p>
+                                                    <div className="mt-1.5 flex flex-wrap gap-1.5 text-[10px]">
+                                                      {itemTypeLabel ? (
+                                                        <span className={`rounded-full px-2 py-0.5 text-white/90 ${accent.pill}`}>
+                                                          {itemTypeLabel}
+                                                        </span>
+                                                      ) : null}
+                                                      <span className={`rounded-full px-2 py-0.5 text-white ${accent.pill}`}>
+                                                        {rarityLabel}
+                                                      </span>
+                                                      <span className={`rounded-full px-2 py-0.5 text-white/70 ${accent.pill}`}>
+                                                        อัตรา {weightPercent}%
+                                                      </span>
+                                                      {quantityText ? (
+                                                        <span className={`rounded-full px-2 py-0.5 text-white/70 ${accent.pill}`}>
+                                                          จำนวน {quantityText}
+                                                        </span>
+                                                      ) : null}
+                                                    </div>
+                                                  </div>
+                                                  {entry.featured ? (
+                                                    <div className="shrink-0 rounded-full bg-amber-500/90 px-3 py-1 text-[10px] font-semibold text-black shadow-lg">
+                                                      ★ Featured
+                                                    </div>
                                                   ) : null}
-                                                  <span className={`rounded-full px-2 py-0.5 text-white ${accent.pill}`}>
-                                                    {rarityLabel}
-                                                  </span>
-                                                  <span className={`rounded-full px-2 py-0.5 text-white/70 ${accent.pill}`}>
-                                                    อัตรา {weightPercent}%
-                                                  </span>
-                                                  {quantityText ? (
-                                                    <span className={`rounded-full px-2 py-0.5 text-white/70 ${accent.pill}`}>
-                                                      จำนวน {quantityText}
+                                                </div>
+
+                                                <div className="flex-1 overflow-y-auto">
+                                                  <p className="text-xs leading-relaxed text-white/90">
+                                                    {item?.description ?? "ไม่พบข้อมูลใน master data"}
+                                                  </p>
+                                                </div>
+
+                                                <div className="flex items-center justify-between border-t border-white/10 pt-2 text-[10px] text-white/60">
+                                                  <span>ID: {entry.itemId}</span>
+                                                  {item?.sellPrice !== undefined ? (
+                                                    <span className="text-yellow-300/80">
+                                                      ขายได้ {item.sellPrice.toLocaleString()} Gold
                                                     </span>
                                                   ) : null}
                                                 </div>
                                               </div>
-                                              {entry.featured ? (
-                                                <div className="shrink-0 rounded-full bg-amber-500/90 px-3 py-1 text-[11px] font-semibold text-black shadow-lg">
-                                                  ★ Featured
-                                                </div>
-                                              ) : null}
-                                            </div>
-
-                                            <p className="text-[12px] leading-relaxed text-white/80">
-                                              {item?.description ?? "ไม่พบข้อมูลใน master data"}
-                                            </p>
-
-                                            <div className="flex items-center justify-between text-[11px] text-white/50">
-                                              <span>ID: {entry.itemId}</span>
-                                              {item?.sellPrice !== undefined ? (
-                                                <span>ขายได้ {item.sellPrice.toLocaleString()} Gold</span>
-                                              ) : null}
-                                            </div>
-                                          </div>
-                                        </animated.div>
-                                      );
-                                    })}
+                                            </animated.div>
+                                          );
+                                        })()
+                                      ) : (
+                                        <div className="flex h-full items-center justify-center text-white/50">
+                                          ไม่มีรางวัล
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
 
-                                {feedback ? (
-                                  <div
-                                    className={
-                                      feedback.type === "success"
-                                        ? "rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
-                                        : "rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200"
-                                    }
-                                  >
-                                    {feedback.message}
-                                  </div>
-                                ) : null}
+                                {/* Action Section - Fixed Height */}
+                                <div className="flex-shrink-0 space-y-2 border-t border-white/10 pt-3">
+                                  {feedback ? (
+                                    <div
+                                      className={
+                                        feedback.type === "success"
+                                          ? "rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200"
+                                          : "rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-200"
+                                      }
+                                    >
+                                      {feedback.message}
+                                    </div>
+                                  ) : null}
 
-                                <Button
-                                  variant="action"
-                                  size="lg"
-                                  className="self-start"
-                                  disabled={
-                                    !canAfford || isOpening || isAnimating || showOpeningOverlay
-                                  }
-                                  onClick={handleOpen}
-                                >
-                                  {canAfford ? "เปิดกล่อง" : "สกุลเงินไม่พอ"}
-                                </Button>
+                                  <Button
+                                    variant="action"
+                                    size="lg"
+                                    className="w-full"
+                                    disabled={
+                                      !canAfford || isOpening || isAnimating || showOpeningOverlay
+                                    }
+                                    onClick={handleOpen}
+                                  >
+                                    {canAfford ? "เปิดกล่อง" : "สกุลเงินไม่พอ"}
+                                  </Button>
+                                </div>
                               </div>
                             ) : null}
                           </LootBoxOptionCard>
