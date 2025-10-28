@@ -702,6 +702,12 @@ export const useVirtualMapStore = create<VirtualMapState>()(
             // Update camera to follow player
             get().setCameraPosition({ x: newX, y: newY });
           }
+
+          // ✅ Count steps and evaluate encounters when reaching a tile center
+          const hasReachedTileCenter = distance <= moveDistance;
+          if (hasReachedTileCenter) {
+            get().incrementSteps();
+          }
         },
 
         // ========================================
